@@ -162,14 +162,19 @@ function updateLiqFormat() {
   var liq8Digit = (getCol(sheetLiq.getDataRange().getValues(),7));
   var orderID = auctions[0][0];
   
-  // Check to see if the first order has already been copied.
-  /* 
-  ***POTENTIAL PROBLEM IF FIRST ORDER WAS SKIPPED AND OTHER ORDERS COPIED OVER***
-  Fix: Create function that loops through an array to see if any of its elements
-       are contained in a second array. The function should return true if a single
-       element from the first array is contained in the second array.
-  */
-  if (liq8Digit.indexOf(orderID) == -1) {
+  // Create function that checks to see if objects from one array are contained in a second array.
+  function containedIn(needles, haystack) {
+    var check = [];
+    for (i=0; i < needles.length; i++) {
+      check[i] = haystack.indexOf(needles[i][0]) > -1;
+    }
+    return check.indexOf(true) > -1;
+  }
+         
+  // If data has already been copied, output error message.
+  if (containedIn(auctions, liq8Digit)) {
+    SpreadsheetApp.getUi().alert('LIQ FORMAT is already up to date. Halting script.');
+  } else {
     for (i=0; i < auctionCount; i++) {
       // Update orderID to the next order #.
       var orderID = auctions[i][0];
@@ -180,7 +185,6 @@ function updateLiqFormat() {
       if (orderIndex == -1) {
         SpreadsheetApp.getUi().alert('Could not find order #' + orderID + '. Hit OK to continue.');
       } else {
-      
         // Find last row of data.
         var liqLastRow = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("LIQ FORMAT").getLastRow();
         // Save order as range with itemCount number of rows
@@ -206,8 +210,6 @@ function updateLiqFormat() {
         var prices = sheetLiq.getRange(liqLastRow+1, 14, itemCount).getValues()
         var orderTotal = sheetLiq.getRange(liqLastRow+1,10).getValue()
         var roundedTotal = Number(round(sumArray(prices), 2));
-        Logger.log("Order Total: " + orderTotal);
-        Logger.log("Pre Item Sum: " + roundedTotal);
         if (roundedTotal < orderTotal) {
           // If rounded is lower, compensate top per item cost
           sheetLiq.getRange(liqLastRow+1, 14).setValue(Number(prices[0]) + orderTotal - roundedTotal);
@@ -218,9 +220,6 @@ function updateLiqFormat() {
         }
       }
     }
-  // If data has already been copied, output error message.
-  } else {
-    SpreadsheetApp.getUi().alert('The data has already been copied. Halting script to avoid duplicity.');
   }
 }
 
