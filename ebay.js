@@ -5,9 +5,9 @@ function pullWork() {
   */
   
   // Cache ID's for sheets to be accessed.
-  var ebayID = "1EIDj7gxkk_QXf10ddvX70-756Ah7W395MRPQq0Q84Zw";
-  var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
-  var liquidID = "1Xqsc6Qe_hxrWN8wRd_vgdBdrCtJXVlvVC9w53XJ0BUM";
+  var ebayID = "1nbEos0-LK6lmr50FJHM7T0vPOt1hNuxqVfHGaYqy_zc";
+  var workID = "1w28MV69JaR99e2m-2hveMLDY_Ukbz1Meg-9RQK0-sik";
+  var liquidID = "1Vfzm-MogYyJB88YFmA4oWQ1M4bpT4Onw-ZGeFSpqseo";
 }
 
 function pushReturns() {
@@ -16,7 +16,7 @@ function pushReturns() {
   */
   
   // Cache ID's for sheets to be accessed.
-  var ebayID = "1EIDj7gxkk_QXf10ddvX70-756Ah7W395MRPQq0Q84Zw";
-  var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
-  var liquidID = "1Xqsc6Qe_hxrWN8wRd_vgdBdrCtJXVlvVC9w53XJ0BUM";
+  var ebayID = "1nbEos0-LK6lmr50FJHM7T0vPOt1hNuxqVfHGaYqy_zc";
+  var workID = "1w28MV69JaR99e2m-2hveMLDY_Ukbz1Meg-9RQK0-sik";
+  var liquidID = "1Vfzm-MogYyJB88YFmA4oWQ1M4bpT4Onw-ZGeFSpqseo";
 }
