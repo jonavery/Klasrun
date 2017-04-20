@@ -34,13 +34,19 @@ function auditListings() {
   
   // Loop through each row and cache tested item rows.
   var doneListings = [];
-  var today = "4/14/2017";
+  // var today = new Date().getDate();
+  var today = "14";
   for (i=0; i < allListings.length; i++) {
-    if (allListings[i][0] == today
-       || allListings[i][6] != ""
-       || allListings[i][7] != ""
-       || allListings[i][8] != ""
-       || allListings[i][9] != ""
-       || allListings[i][14] != "") {doneListings.push(allListings[i]);}
+    var aerMeasurements = allListings[i].slice(6).join("");
+    if (aerMeasurements != "") {
+      doneListings.push(allListings[i]);
+    }
   }
+//  for (i=0; i < doneListings.length(); i++) {
+//    if (!doneListings[i][0].includes(today)) {
+//        doneListings.splice(i, 1);
+//    }
+//  }
+  Logger.log("Rows: " + doneListings.length);
+  Logger.log("Cols: " + doneListings[0].length);
 }
