@@ -34,7 +34,7 @@ function auditListings() {
   
   // Loop through each row and cache tested item rows.
   var doneListings = [];
-  var today = todayDate();
+  var today = "4/14/2017";
   for (i=0; i < allListings.length; i++) {
     if (allListings[i][0] == today
        || allListings[i][6] != ""
@@ -43,5 +43,4 @@ function auditListings() {
        || allListings[i][9] != ""
        || allListings[i][14] != "") {doneListings.push(allListings[i]);}
   }
-  Logger.log(doneListings);
 }
