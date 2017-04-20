@@ -5,7 +5,7 @@ function onOpen() {
     .addToUi()
 }
 
-function today() {
+function todayDate() {
 // Return today's properly formatted date.
   var today = new Date();
   var dd = today.getDate();
@@ -34,7 +34,7 @@ function auditListings() {
   
   // Loop through each row and cache tested item rows.
   var doneListings = [];
-  var today = today();
+  var today = todayDate();
   for (i=0; i < allListings.length; i++) {
     if (allListings[i][0] == today
        || allListings[i][6] != ""
