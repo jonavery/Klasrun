@@ -166,6 +166,10 @@ function updateLiqFormat() {
   var liq8Digit = (getCol(sheetLiq.getDataRange().getValues(),7));
   var orderID = auctions[0][0];
   
+  // Initialize variables for counting/reporting purposes.
+  var orderCopy = 0;
+  var itemCopy = 0;
+  
   // Create function that checks to see if objects from one array are contained in a second array.
   function containedIn(needles, haystack) {
     var check = [];
@@ -222,9 +226,12 @@ function updateLiqFormat() {
           // If rounded is higher, compensate bottom per item cost
           sheetLiq.getRange(liqLastRow+itemCount, 14).setValue(Number(prices[itemCount-1]) + orderTotal - roundedTotal);
         }
+        orderCopy++;
+        itemCopy = itemCopy + itemCount;
       }
     }
-    //***POST TO SCREEN HOW MANY ORDERS AND ITEMS WERE COPIED.***
+    //POST TO SCREEN HOW MANY ORDERS AND ITEMS WERE COPIED.
+    SpreadsheetApp.getUi().alert('Script finished.\n\nOrders Copied: ' +  orderCopy + '\nItems Copied: ' + itemCopy);
   }
 }
 
