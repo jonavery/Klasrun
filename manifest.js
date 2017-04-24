@@ -52,19 +52,21 @@ function updateSheets() {
   } else {
     // Check to see if auctions are up to date.
     var oldOrderNum = sheetAuctions.getRange("A1").getValue();
-    var newOrderNum = sheetNewAuctions.getRange("K3").getValue();
+    //***ADD IF/SWITCH HERE TO ACCOUNT FOR AUCTIONS BEING ON RIGHT OR LEFT***
+    var newOrderNum = sheetNewAuctions.getRange("B4").getValue();
     if (oldOrderNum != newOrderNum) {
       // Find old order in liq orders1.ods sheet and cache index.
-      if (oldOrderNum > 0) {
-        var orders = sheetNewOrders.getDataRange().getValues();
-        var liqOrders = (getCol(orders,0));
-        var orderIndex = liqOrders.indexOf(oldOrderNum);
-        // Cache new order information.
+      var orders = sheetNewOrders.getDataRange().getValues();
+      var liqOrders = (getCol(orders,0));
+      var orderIndex = liqOrders.indexOf(oldOrderNum);
+      // Cache new order information.
+      if (orderIndex > 0) {
         var newOrders = sheetNewOrders.getRange(6, 1, orderIndex-6, 5).getValues();
       } else {
         var newOrders = sheetNewOrders.getRange(6, 1, sheetNewOrders.getLastRow()-6, 5).getValues();
       }
-      var newAuctions = sheetNewAuctions.getRange(3, 11, 30, 6).getValues();
+      //***ADD IF/SWITCH HERE TO ACCOUNT FOR AUCTIONS BEING ON RIGHT OR LEFT***
+      var newAuctions = sheetNewAuctions.getRange(3, 2, 30, 6).getValues();
       
       // Clear the sheets.
       sheetLiq.getRange(3, 2, sheetLiq.getLastRow(), 13).clearContent();
@@ -72,6 +74,7 @@ function updateSheets() {
       if (oldOrderNum>0) {sheetAuctions.getRange(1, 1, sheetAuctions.getLastRow(), 7).clear();}
       
       // Transfer order information into manifest.
+      // ***CREATE SCRIPT TO ONLY COPY ROWS WITH VALUES***
       sheetAuctions.getRange(1, 1, newAuctions.length, newAuctions[0].length).setValues(newAuctions);
       sheetOrders.getRange(2, 1, newOrders.length, newOrders[0].length).setValues(newOrders);
       
@@ -221,6 +224,7 @@ function updateLiqFormat() {
         }
       }
     }
+    //***POST TO SCREEN HOW MANY ORDERS AND ITEMS WERE COPIED.***
   }
 }
 
@@ -263,7 +267,7 @@ function transferData() {
   // Cache all order numbers currently in liquidation sheet and check to see if data has already been transferred.
   var allOrderNums = getCol(sheetLiquid.getRange(1, 8, liqLastRow).getValues(), 0);
   if (allOrderNums.indexOf(maniValues[2][8]) == -1) {
-    for (i=2; i < maniLastRow-2; i++) {   
+    for (i=2; i < maniLastRow; i++) {   
       var k = i-1;
       // To Future(column): Title(3), UPC(4), A/E/R(5), and 7-digit Order #(6) from Manifest.
       sheetFuture.getRange(futureLastRow + k, 2).setValue(highSKU + k);
