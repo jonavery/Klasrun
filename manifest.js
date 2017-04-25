@@ -42,64 +42,69 @@ function updateSheets() {
   
   // Initialize liquidation sheet and check if manifest data has been transferred.
   var sheetLiquid = SpreadsheetApp.openById(liquidID).getSheetByName("Liquidation Orders");
-  var maniValues = sheetLiq.getDataRange().getValues();  
-  
-  // Cache all order numbers currently in liquidation sheet and check to see if data has already been transferred.
+  var maniValues = sheetLiq.getDataRange().getValues();
+  // Cache all order numbers currently in liquidation sheet.
   var currentOrderNums = getCol(sheetLiquid.getRange(1, 8, sheetLiquid.getLastRow()).getValues(), 0);
-  if (currentOrderNums.indexOf(maniValues[2][8]) == -1) {
-    SpreadsheetApp.getUi().alert('LIQ FORMAT has not been transferred to LIQ and WORK yet. Transfer data before updating auctions.');
-  
-  } else {
-    // Prompt user for SKU.
-    var ui = SpreadsheetApp.getUi();
-    var response = ui.prompt('Auctions on right(R) or left(L)?');
-    var side = parseInt(response.getResponseText());
-    switch (side) {
-      case 'r':
-      case 'R':
-      case 'right':
-        var rangeAuctions = sheetNewAuctions.getRange(3, 2, 30, 6);
-        break;
-      case 'l':
-      case 'L':
-      case 'left':
-        var rangeAuctions = sheetNewAuctions.getRange(3, 11, 30, 6);
-        break;
-      default:
-        ui.alert('Invalid side entry. Assuming right side.');
-        var rangeAuctions = sheetNewAuctions.getRange(3, 2, 30, 6);
-        break;
+  // Check to see if data has already been transferred.
+  if (maniValues[2][8]) {
+    if (currentOrderNums.indexOf(maniValues[2][8]) == -1) {
+      SpreadsheetApp.getUi().alert('LIQ FORMAT has not been transferred to LIQ and WORK yet. Transfer data before updating auctions.');
+      return;
     }
-    // Check to see if auctions are up to date.
-    var oldOrderNum = sheetAuctions.getRange("A1").getValue();
-    var newOrderNum = rangeAuctions.getValue();
-    if (oldOrderNum != newOrderNum) {
-      // Find old order in liq orders1.ods sheet and cache index.
-      var orders = sheetNewOrders.getDataRange().getValues();
-      var liqOrders = (getCol(orders,0));
-      var orderIndex = liqOrders.indexOf(oldOrderNum);
-      // Cache new order information.
-      if (orderIndex > 0) {
-        var newOrders = sheetNewOrders.getRange(6, 1, orderIndex-6, 5).getValues();
-      } else {
-        var newOrders = sheetNewOrders.getRange(6, 1, sheetNewOrders.getLastRow()-6, 5).getValues();
-      }
-      var newAuctions = rangeAuctions.getValues();
+  }
+  // Prompt user for SKU.
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.prompt('Auctions on right(R) or left(L)?');
+  var side = parseInt(response.getResponseText());
+  switch (side) {
+    case 'r':
+    case 'R':
+    case 'right':
+      var rangeAuctions = sheetNewAuctions.getRange(3, 2, 30, 6);
+      break;
+    case 'l':
+    case 'L':
+    case 'left':
+      var rangeAuctions = sheetNewAuctions.getRange(3, 11, 30, 6);
+      break;
+    default:
+      ui.alert('Invalid side entry. Assuming right side.');
+      var rangeAuctions = sheetNewAuctions.getRange(3, 2, 30, 6);
+      break;
+  }
+  // Check to see if auctions are up to date.
+  var oldOrderNum = sheetAuctions.getRange("A1").getValue();
+  var newOrderNum = rangeAuctions.getValue();
+  if (oldOrderNum != newOrderNum) {
+    // Find old order in liq orders1.ods sheet and cache index.
+    var orders = sheetNewOrders.getDataRange().getValues();
+    var liqOrders = (getCol(orders,0));
+    var orderIndex = liqOrders.indexOf(oldOrderNum);
+    // Cache new order information.
+    if (orderIndex > 0) {
+      var newOrders = sheetNewOrders.getRange(6, 1, orderIndex-6, 5).getValues();
+    } else {
+      var newOrders = sheetNewOrders.getRange(6, 1, sheetNewOrders.getLastRow()-6, 5).getValues();
+    }
+    var newAuctions = rangeAuctions.getValues();
+    
+    // Clean out empty rows from new auctions.
+    while (newAuctions[0][0] == "") {
+      newAuctions = newAuctions.slice(1);
+    }
       
-      // Clear the sheets.
-      sheetLiq.getRange(3, 2, sheetLiq.getLastRow(), 13).clearContent();
-      sheetOrders.getRange(2, 1, sheetOrders.getLastRow(), 12).clear();
-      if (oldOrderNum>0) {sheetAuctions.getRange(1, 1, sheetAuctions.getLastRow(), 7).clear();}
-      
-      // Transfer order information into manifest.
-      // ***CREATE SCRIPT TO ONLY COPY ROWS WITH VALUES***
-      sheetAuctions.getRange(1, 1, newAuctions.length, newAuctions[0].length).setValues(newAuctions);
-      sheetOrders.getRange(2, 1, newOrders.length, newOrders[0].length).setValues(newOrders);
+    // Clear the sheets.
+    sheetLiq.getRange(3, 2, sheetLiq.getLastRow(), 13).clearContent();
+    sheetOrders.getRange(2, 1, sheetOrders.getLastRow(), 12).clear();
+    if (oldOrderNum>0) {sheetAuctions.getRange(1, 1, sheetAuctions.getLastRow(), 7).clear();}
+            
+    // Transfer order information into manifest.
+    sheetAuctions.getRange(1, 1, newAuctions.length, newAuctions[0].length).setValues(newAuctions);
+    sheetOrders.getRange(2, 1, newOrders.length, newOrders[0].length).setValues(newOrders);
       
     // Stop script if auction information is already up to date.
-    } else if (oldOrderNum == newOrderNum) {
-      SpreadsheetApp.getUi().alert('Auction information is already up to date. Halting script.');
-    }
+  } else if (oldOrderNum == newOrderNum) {
+    SpreadsheetApp.getUi().alert('Auction information is already up to date. Halting script.');
   }
 }
 
@@ -200,57 +205,57 @@ function updateLiqFormat() {
   // If data has already been copied, output error message.
   if (containedIn(auctions, liq8Digit)) {
     SpreadsheetApp.getUi().alert('LIQ FORMAT is already up to date. Halting script.');
-  } else {
-    for (i=0; i < auctionCount; i++) {
-      // Update orderID to the next order #.
-      var orderID = auctions[i][0];
-      // Save item count for that order as a variable
-      var itemCount = auctions[i][3];
-      // Find order in Copy of Liq Orders Scrap
-      var orderIndex = liqOrders.indexOf(orderID);
-      if (orderIndex == -1) {
-        SpreadsheetApp.getUi().alert('Could not find order #' + orderID + '. Hit OK to continue.');
-      } else {
-        // Find last row of data.
-        var liqLastRow = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("LIQ FORMAT").getLastRow();
-        // Save order as range with itemCount number of rows
-        var orderItems = sheetOrders.getRange(orderIndex+1, 2, itemCount, 4);
-        // Copy range values over to LIQ FORMAT
-        orderItems.copyValuesToRange(sheetLiq, 3, 6, liqLastRow+1, liqLastRow+itemCount+1)
-        
-        // Copy A/E/R from Buy Site to correct column
-        var AER = sheetLiq.getRange(liqLastRow+1, 7, itemCount);
-        sheetLiq.getRange(liqLastRow+1, 6, itemCount).moveTo(AER);
-        var formulaRange = sheetLiq.getRange(2, 9, 1, 5);
-        // Fill in date and buy site information.
-        for (j=0; j < itemCount; j++) {
-          sheetLiq.getRange(liqLastRow+1+j, 2).setValue(today);
-          sheetLiq.getRange(liqLastRow+1+j, 6).setValue("LIQUIDATION");
-          sheetLiq.getRange(liqLastRow+1+j, 8).setValue(orderID);
-          formulaRange.copyTo(sheetLiq.getRange(liqLastRow+1+j, 9, 1, 5));
-        }
-        
-        // Copy per item cost values.
-        sheetLiq.getRange(liqLastRow+1, 14, itemCount).setValue(sheetLiq.getRange(liqLastRow+1, 13, itemCount).getDisplayValues());
-        // Have if statement comparing rounded cost to actual cost
-        var prices = sheetLiq.getRange(liqLastRow+1, 14, itemCount).getValues()
-        var orderTotal = sheetLiq.getRange(liqLastRow+1,10).getValue()
-        var roundedTotal = Number(round(sumArray(prices), 2));
-        if (roundedTotal < orderTotal) {
-          // If rounded is lower, compensate top per item cost
-          sheetLiq.getRange(liqLastRow+1, 14).setValue(Number(prices[0]) + orderTotal - roundedTotal);
-        }
-        else if (roundedTotal > orderTotal) {
-          // If rounded is higher, compensate bottom per item cost
-          sheetLiq.getRange(liqLastRow+itemCount, 14).setValue(Number(prices[itemCount-1]) + orderTotal - roundedTotal);
-        }
-        orderCopy++;
-        itemCopy = itemCopy + itemCount;
-      }
-    }
-    // Post dialogue box showing # of orders and items copied to LIQ FORMAT.
-    SpreadsheetApp.getUi().alert('Script finished.\n\nOrders Copied: ' +  orderCopy + '\nItems Copied: ' + itemCopy);
+    return;
   }
+  for (i=0; i < auctionCount; i++) {
+    // Update orderID to the next order #.
+    var orderID = auctions[i][0];
+    // Save item count for that order as a variable
+    var itemCount = auctions[i][3];
+    // Find order in Copy of Liq Orders Scrap
+    var orderIndex = liqOrders.indexOf(orderID);
+    if (orderIndex == -1) {
+      SpreadsheetApp.getUi().alert('Could not find order #' + orderID + '. Hit OK to continue.');
+    } else {
+      // Find last row of data.
+      var liqLastRow = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("LIQ FORMAT").getLastRow();
+      // Save order as range with itemCount number of rows
+      var orderItems = sheetOrders.getRange(orderIndex+1, 2, itemCount, 4);
+      // Copy range values over to LIQ FORMAT
+      orderItems.copyValuesToRange(sheetLiq, 3, 6, liqLastRow+1, liqLastRow+itemCount+1)
+      
+      // Copy A/E/R from Buy Site to correct column
+      var AER = sheetLiq.getRange(liqLastRow+1, 7, itemCount);
+      sheetLiq.getRange(liqLastRow+1, 6, itemCount).moveTo(AER);
+      var formulaRange = sheetLiq.getRange(2, 9, 1, 5);
+      // Fill in date and buy site information.
+      for (j=0; j < itemCount; j++) {
+        sheetLiq.getRange(liqLastRow+1+j, 2).setValue(today);
+        sheetLiq.getRange(liqLastRow+1+j, 6).setValue("LIQUIDATION");
+        sheetLiq.getRange(liqLastRow+1+j, 8).setValue(orderID);
+        formulaRange.copyTo(sheetLiq.getRange(liqLastRow+1+j, 9, 1, 5));
+      }
+       
+      // Copy per item cost values.
+      sheetLiq.getRange(liqLastRow+1, 14, itemCount).setValue(sheetLiq.getRange(liqLastRow+1, 13, itemCount).getDisplayValues());
+      // Have if statement comparing rounded cost to actual cost
+      var prices = sheetLiq.getRange(liqLastRow+1, 14, itemCount).getValues()
+      var orderTotal = sheetLiq.getRange(liqLastRow+1,10).getValue()
+      var roundedTotal = Number(round(sumArray(prices), 2));
+      if (roundedTotal < orderTotal) {
+        // If rounded is lower, compensate top per item cost
+        sheetLiq.getRange(liqLastRow+1, 14).setValue(Number(prices[0]) + orderTotal - roundedTotal);
+      }
+      else if (roundedTotal > orderTotal) {
+        // If rounded is higher, compensate bottom per item cost
+        sheetLiq.getRange(liqLastRow+itemCount, 14).setValue(Number(prices[itemCount-1]) + orderTotal - roundedTotal);
+      }
+      orderCopy++;
+      itemCopy = itemCopy + itemCount;
+    }
+  }
+  // Post dialogue box showing # of orders and items copied to LIQ FORMAT.
+  SpreadsheetApp.getUi().alert('Script finished.\n\nOrders Copied: ' +  orderCopy + '\nItems Copied: ' + itemCopy);
 }
 
 function transferData() {
@@ -318,4 +323,3 @@ function transferData() {
      SpreadsheetApp.getUi().alert('The data has already been copied. Halting script to avoid duplicity.');
   }
 }
-
