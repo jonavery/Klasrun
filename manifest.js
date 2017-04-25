@@ -46,7 +46,7 @@ function updateSheets() {
   // Cache all order numbers currently in liquidation sheet.
   var currentOrderNums = getCol(sheetLiquid.getRange(1, 8, sheetLiquid.getLastRow()).getValues(), 0);
   // Check to see if data has already been transferred.
-  if (maniValues[2][8]) {
+  if (maniValues[2]) {
     if (currentOrderNums.indexOf(maniValues[2][8]) == -1) {
       SpreadsheetApp.getUi().alert('LIQ FORMAT has not been transferred to LIQ and WORK yet. Transfer data before updating auctions.');
       return;
@@ -55,59 +55,62 @@ function updateSheets() {
   // Prompt user for SKU.
   var ui = SpreadsheetApp.getUi();
   var response = ui.prompt('Auctions on right(R) or left(L)?');
-  var side = parseInt(response.getResponseText());
+  var side = response.getResponseText();
   switch (side) {
     case 'r':
     case 'R':
     case 'right':
-      var rangeAuctions = sheetNewAuctions.getRange(3, 2, 30, 6);
+      var rangeAuctions = sheetNewAuctions.getRange(3, 11, 30, 6);
       break;
     case 'l':
     case 'L':
     case 'left':
-      var rangeAuctions = sheetNewAuctions.getRange(3, 11, 30, 6);
+      var rangeAuctions = sheetNewAuctions.getRange(3, 2, 30, 6);
       break;
     default:
       ui.alert('Invalid side entry. Assuming right side.');
       var rangeAuctions = sheetNewAuctions.getRange(3, 2, 30, 6);
       break;
   }
+  
+  var newAuctions = rangeAuctions.getValues();
+  // Clean out empty rows from new auctions.
+  while (newAuctions[0][0] == "") {
+    newAuctions = newAuctions.slice(1);
+  }
+  
   // Check to see if auctions are up to date.
   var oldOrderNum = sheetAuctions.getRange("A1").getValue();
-  var newOrderNum = rangeAuctions.getValue();
-  if (oldOrderNum != newOrderNum) {
-    // Find old order in liq orders1.ods sheet and cache index.
-    var orders = sheetNewOrders.getDataRange().getValues();
-    var liqOrders = (getCol(orders,0));
-    var orderIndex = liqOrders.indexOf(oldOrderNum);
-    // Cache new order information.
-    if (orderIndex > 0) {
-      var newOrders = sheetNewOrders.getRange(6, 1, orderIndex-6, 5).getValues();
-    } else {
-      var newOrders = sheetNewOrders.getRange(6, 1, sheetNewOrders.getLastRow()-6, 5).getValues();
-    }
-    var newAuctions = rangeAuctions.getValues();
-    
-    // Clean out empty rows from new auctions.
-    while (newAuctions[0][0] == "") {
-      newAuctions = newAuctions.slice(1);
-    }
-      
-    // Clear the sheets.
-    sheetLiq.getRange(3, 2, sheetLiq.getLastRow(), 13).clearContent();
-    sheetOrders.getRange(2, 1, sheetOrders.getLastRow(), 12).clear();
-    if (oldOrderNum>0) {sheetAuctions.getRange(1, 1, sheetAuctions.getLastRow(), 7).clear();}
-            
-    // Transfer order information into manifest.
-    sheetAuctions.getRange(1, 1, newAuctions.length, newAuctions[0].length).setValues(newAuctions);
-    sheetOrders.getRange(2, 1, newOrders.length, newOrders[0].length).setValues(newOrders);
-      
+  if (oldOrderNum == newAuctions[0][0]) {
     // Stop script if auction information is already up to date.
-  } else if (oldOrderNum == newOrderNum) {
     SpreadsheetApp.getUi().alert('Auction information is already up to date. Halting script.');
+    return;
   }
-}
-
+  
+  // Find old order in liq orders1.ods sheet and cache index.
+  var orders = sheetNewOrders.getDataRange().getValues();
+  var liqOrders = (getCol(orders,0));
+  if (oldOrderNum) {
+    var orderIndex = liqOrders.indexOf(oldOrderNum);
+  } else {
+    var orderIndex = 0;
+  }
+  
+  // Cache new order information.
+  if (orderIndex > 0) {
+    var newOrders = sheetNewOrders.getRange(6, 1, orderIndex-6, 5).getValues();
+  } else {
+    var newOrders = sheetNewOrders.getRange(6, 1, sheetNewOrders.getLastRow()-6, 5).getValues();
+  }
+  
+  // Clear the sheets.
+  sheetLiq.getRange(3, 2, sheetLiq.getLastRow(), 13).clearContent();
+  sheetOrders.getRange(2, 1, sheetOrders.getLastRow(), 12).clear();
+  if (oldOrderNum>0) {sheetAuctions.getRange(1, 1, sheetAuctions.getLastRow(), 7).clear();}
+  // Transfer order information into manifest.
+  sheetAuctions.getRange(1, 1, newAuctions.length, newAuctions[0].length).setValues(newAuctions);
+  sheetOrders.getRange(2, 1, newOrders.length, newOrders[0].length).setValues(newOrders);
+}  
 
 function updateLiqFormat() {
   /*
