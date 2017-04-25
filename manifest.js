@@ -296,30 +296,30 @@ function transferData() {
   
   // Cache all order numbers currently in liquidation sheet and check to see if data has already been transferred.
   var allOrderNums = getCol(sheetLiquid.getRange(1, 8, liqLastRow).getValues(), 0);
-  if (allOrderNums.indexOf(maniValues[2][8]) == -1) {
-    for (i=2; i < maniLastRow; i++) {   
-      var k = i-1;
-      // To Future(column): Title(3), UPC(4), A/E/R(5), and 7-digit Order #(6) from Manifest.
-      sheetFuture.getRange(futureLastRow + k, 2).setValue(highSKU + k);
-      sheetFuture.getRange(futureLastRow + k, 3).setValue(maniValues[i][2]);
-      sheetFuture.getRange(futureLastRow + k, 4).setValue(maniValues[i][4]);
-      sheetFuture.getRange(futureLastRow + k, 5).setValue(maniValues[i][6]);
-      sheetFuture.getRange(futureLastRow + k, 6).setValue(maniValues[i][8]);
-      // To Liquid(column): Date(2), Title(3), Quantity(4), UPC(5), Buy Site(6), A/E/R(7), 7-digit #(8), Buy Price(11), and Card(12) from Manifest.
-      sheetLiquid.getRange(liqLastRow + k, 1).setValue(highSKU + k);
-      sheetLiquid.getRange(liqLastRow + k, 2).setValue(maniValues[i][1]);
-      sheetLiquid.getRange(liqLastRow + k, 3).setValue(maniValues[i][2]);
-      sheetLiquid.getRange(liqLastRow + k, 4).setValue(maniValues[i][3]);
-      sheetLiquid.getRange(liqLastRow + k, 5).setValue(maniValues[i][4]);
-      sheetLiquid.getRange(liqLastRow + k, 6).setValue(maniValues[i][5]);
-      sheetLiquid.getRange(liqLastRow + k, 7).setValue(maniValues[i][6]);
-      sheetLiquid.getRange(liqLastRow + k, 8).setValue(maniValues[i][8]);
-      sheetLiquid.getRange(liqLastRow + k, 9).setValue("FBA");
-      sheetLiquid.getRange(liqLastRow + k, 10).setValue("FBA");
-      sheetLiquid.getRange(liqLastRow + k, 11).setValue(maniValues[i][13]);
-      sheetLiquid.getRange(liqLastRow + k, 12).setValue(maniValues[i][10]);
-     }
-  } else {
-     SpreadsheetApp.getUi().alert('The data has already been copied. Halting script to avoid duplicity.');
+  if (allOrderNums.indexOf(maniValues[2][8]) > -1) {
+    SpreadsheetApp.getUi().alert('The data has already been copied. Halting script to avoid duplicity.');
+    return;
+  }
+  for (i=2; i < maniLastRow; i++) {   
+    var k = i-1;
+    // To Future(column): Title(3), UPC(4), A/E/R(5), and 7-digit Order #(6) from Manifest.
+    sheetFuture.getRange(futureLastRow + k, 2).setValue(highSKU + k);
+    sheetFuture.getRange(futureLastRow + k, 3).setValue(maniValues[i][2]);
+    sheetFuture.getRange(futureLastRow + k, 4).setValue(maniValues[i][4]);
+    sheetFuture.getRange(futureLastRow + k, 5).setValue(maniValues[i][6]);
+    sheetFuture.getRange(futureLastRow + k, 6).setValue(maniValues[i][8]);
+    // To Liquid(column): Date(2), Title(3), Quantity(4), UPC(5), Buy Site(6), A/E/R(7), 7-digit #(8), Buy Price(11), and Card(12) from Manifest.
+    sheetLiquid.getRange(liqLastRow + k, 1).setValue(highSKU + k);
+    sheetLiquid.getRange(liqLastRow + k, 2).setValue(maniValues[i][1]);
+    sheetLiquid.getRange(liqLastRow + k, 3).setValue(maniValues[i][2]);
+    sheetLiquid.getRange(liqLastRow + k, 4).setValue(maniValues[i][3]);
+    sheetLiquid.getRange(liqLastRow + k, 5).setValue(maniValues[i][4]);
+    sheetLiquid.getRange(liqLastRow + k, 6).setValue(maniValues[i][5]);
+    sheetLiquid.getRange(liqLastRow + k, 7).setValue(maniValues[i][6]);
+    sheetLiquid.getRange(liqLastRow + k, 8).setValue(maniValues[i][8]);
+    sheetLiquid.getRange(liqLastRow + k, 9).setValue("FBA");
+    sheetLiquid.getRange(liqLastRow + k, 10).setValue("FBA");
+    sheetLiquid.getRange(liqLastRow + k, 11).setValue(maniValues[i][13]);
+    sheetLiquid.getRange(liqLastRow + k, 12).setValue(maniValues[i][10]);
   }
 }
