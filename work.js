@@ -101,37 +101,48 @@ function bulkUpdateLiquid() {
   var response = ui.alert('This will update the liquidation sheet to match all items in the currently selected sheet.'
                          +'\n\nHit OK to continue.\nClose this window to cancel.');
   
-  if (response.getSelectedButton() == ui.Button.OK) {
+  if (response == ui.Button.OK) {
     // Cache user-given SKU and initialize work and liquidation SKU's.
     var workSKU = getCol(sheetListings.getRange(1, 2, sheetListings.getLastRow()).getValues(), 0);
     var liquidSKU = getCol(sheetLiquid.getRange(1, 1, sheetLiquid.getLastRow()).getValues(), 0);
-    var count = 0;
+    var liquidTitles = getCol(sheetLiquid.getRange(1, 3, sheetLiquid.getLastRow()).getValues(), 0);
     
-    for (i = 0; i < workSKU.length; i++) {
+    // Initialize counting variables.
+    var updated = 0;
+    var notFound = 0;
+    var notUpdated = 0;
+    
+    for (i = 1; i < workSKU.length; i++) {
       // Find index of SKU in work and liquidation.
       var sku = parseInt(workSKU[i]);
       var workIndex = workSKU.indexOf(sku);
       var liquidIndex = liquidSKU.indexOf(sku);
+      Logger.log("SKU: " + sku)
       Logger.log("Work: " + workIndex)
       Logger.log("Liquid: " + liquidIndex)
     
       // Check if SKU is in liquidation sheet.
-      if (liquidIndex == -1) {
-        var button = ui.alert('SKU not found in Liquidation.\nHit OK to continue.');
-        if (response.getSelectedButton() == ui.Button.OK) {continue;}
-        else {break;}
+      if (liquidIndex == -1) {notFound++; continue;}
+      
+      // Check if title is blank or already up to date.
+      var workValues = sheetListings.getRange(workIndex+1, 3, 1, 3).getValues();
+      if (workValues[0][0] == "") {notUpdated++; continue;}
+      if (workValues[0][0] == liquidTitles[liquidIndex]) {
+        notUpdated++; 
+        continue;
       }
       
       // Copy work information into liquidation.
-      var workValues = sheetListings.getRange(workIndex+1, 3, 1, 3).getValues();
       sheetLiquid.getRange(liquidIndex+1, 3).setValue(workValues[0][0]);
       sheetLiquid.getRange(liquidIndex+1, 5).setValue(workValues[0][1]);
       sheetLiquid.getRange(liquidIndex+1, 7).setValue(workValues[0][2]);
-      count++;
+      updated++;
     }
     // Show changes to user.
     ui.alert(
-      'Items updated: ' + count);
+      'Items updated: ' + updated
+      + '\nItems already up to date: ' + notUpdated
+      + '\nItems not found: ' + notFound);
   }
 }
 
