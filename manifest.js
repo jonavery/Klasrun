@@ -40,11 +40,13 @@ function updateSheets() {
   var sheetNewAuctions = SpreadsheetApp.openById(liqOrdersID).getSheetByName("AUCTION");
   var sheetNewOrders = SpreadsheetApp.openById(liqOrdersID).getSheetByName("Sheet6")
   
-  // Initialize liquidation sheet and check if manifest data has been transferred.
+  // Initialize liquidation sheet and cache current manifest sheet values.
   var sheetLiquid = SpreadsheetApp.openById(liquidID).getSheetByName("Liquidation Orders");
   var maniValues = sheetLiq.getDataRange().getValues();
   // Cache all order numbers currently in liquidation sheet.
   var currentOrderNums = getCol(sheetLiquid.getRange(1, 8, sheetLiquid.getLastRow()).getValues(), 0);
+  
+  // @TODO: This is broken. Fix.
   // Check to see if data has already been transferred.
   if (maniValues[2]) {
     if (currentOrderNums.indexOf(maniValues[2][8]) == -1) {
@@ -52,29 +54,34 @@ function updateSheets() {
       return;
     }
   }
-  // Prompt user for SKU.
+  
+  // Prompt user for SKU and last row of auctions.
+  // @TODO: Prompt user for number of auctions instead of last row?????
   var ui = SpreadsheetApp.getUi();
-  var response = ui.prompt('Auctions on right(R) or left(L)?');
-  var side = response.getResponseText();
+  var response1 = ui.prompt('Auctions on right(R) or left(L)?');
+  var side = response1.getResponseText();
+  var response2 = ui.prompt('Last row number?');
+  var lastRow = response2.getResponseText();
   switch (side) {
     case 'r':
     case 'R':
     case 'right':
-      var rangeAuctions = sheetNewAuctions.getRange(3, 11, 30, 6);
+      var rangeAuctions = sheetNewAuctions.getRange(3, 11, lastRow-2, 6);
       break;
     case 'l':
     case 'L':
     case 'left':
-      var rangeAuctions = sheetNewAuctions.getRange(3, 2, 30, 6);
+      var rangeAuctions = sheetNewAuctions.getRange(3, 2, lastRow-2, 6);
       break;
     default:
       ui.alert('Invalid side entry. Assuming right side.');
-      var rangeAuctions = sheetNewAuctions.getRange(3, 2, 30, 6);
+      var rangeAuctions = sheetNewAuctions.getRange(3, 2, lastRow-2, 6);
       break;
   }
   
-  var newAuctions = rangeAuctions.getValues();
   // Clean out empty rows from new auctions.
+  var newAuctions = rangeAuctions.getValues();
+  newAuctions = newAuctions.sort();
   while (newAuctions[0][0] == "") {
     newAuctions = newAuctions.slice(1);
   }
@@ -98,9 +105,9 @@ function updateSheets() {
   
   // Cache new order information.
   if (orderIndex > 0) {
-    var newOrders = sheetNewOrders.getRange(6, 1, orderIndex-6, 5).getValues();
+    var newOrders = sheetNewOrders.getRange(3, 1, orderIndex-6, 5).getValues();
   } else {
-    var newOrders = sheetNewOrders.getRange(6, 1, sheetNewOrders.getLastRow()-6, 5).getValues();
+    var newOrders = sheetNewOrders.getRange(3, 1, sheetNewOrders.getLastRow()-6, 5).getValues();
   }
   
   // Clear the sheets.
@@ -110,6 +117,8 @@ function updateSheets() {
   // Transfer order information into manifest.
   sheetAuctions.getRange(1, 1, newAuctions.length, newAuctions[0].length).setValues(newAuctions);
   sheetOrders.getRange(2, 1, newOrders.length, newOrders[0].length).setValues(newOrders);
+  
+  // @TODO: Print out the number of auctions copied and the total items in those auctions.
 }  
 
 function updateLiqFormat() {
