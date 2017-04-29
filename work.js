@@ -30,6 +30,22 @@ function getCol(matrix, col){
   return column;
 }
 
+function highlightAER() {
+  /**
+  * This script highlights each A/E/R cell according to its designation.
+  */
+  
+  // Initialize sheet and save values.
+  var sheetWork = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var workValues = sheetWork.getDataRange().getValues();
+  
+  // Cache A/E/R column of sheet.
+  var aerValues = getCol(workValues, 4);
+  
+  // @TODO: Loop through A/E/R column and color cells with a switch statement.
+  
+}
+
 function updateAssorted() {
   /**
   * This script gets an SKU from the user and updates the item in
