@@ -104,7 +104,8 @@ function updateSheets() {
     for (i=0; i < oldAuctions.length; i++) {
       for(j=0; j < newAuctions.length; j++) {
         if (oldAuctions[i] == newAuctions[j][0]) {
-          newAuctions = newAuctions.splice(j, 1);
+          newAuctions.splice(j, 1);
+          Logger.log('Old i: ' + i + '    New j: ' + j);
         }
       }
     }
