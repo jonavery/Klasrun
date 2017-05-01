@@ -1,23 +1,3 @@
-function onOpen() {
-  var ui = SpreadsheetApp.getUi();
-  ui.createMenu('Automation Menu')
-    .addItem('Update Orders and Auctions', 'updateSheets')
-    .addItem('Update LIQ FORMAT', 'updateLiqFormat')
-    .addSeparator()
-    .addItem('Transfer to LIQ & WORK', 'transferData')
-    .addToUi();
-}
-
-// Create function that strips specified column from an array.
-function getCol(matrix, col){
-  var column = [];
-  var l = matrix.length;
-  for(var i=0; i<l; i++){
-     column.push(matrix[i][col]);
-  }
-  return column;
-}
-
 function updateSheets() {
   /*
   This script accomplishes the following:
@@ -55,27 +35,27 @@ function updateSheets() {
     }
   }
   
-  // Prompt user for SKU and last row of auctions.
+  // Prompt user for SKU and total number of auctions.
   // @TODO: Prompt user for number of auctions instead of last row?????
   var ui = SpreadsheetApp.getUi();
   var response1 = ui.prompt('Auctions on right(R) or left(L)?');
   var side = response1.getResponseText();
-  var response2 = ui.prompt('Last row number?');
-  var lastRow = response2.getResponseText();
+  var response2 = ui.prompt('Total number of auctions?');
+  var numAuctions = response2.getResponseText();
   switch (side) {
     case 'r':
     case 'R':
     case 'right':
-      var rangeAuctions = sheetNewAuctions.getRange(3, 11, lastRow-2, 6);
+      var rangeAuctions = sheetNewAuctions.getRange(3, 11, sheetNewAuctions.getLastRow()-2, 6);
       break;
     case 'l':
     case 'L':
     case 'left':
-      var rangeAuctions = sheetNewAuctions.getRange(3, 2, lastRow-2, 6);
+      var rangeAuctions = sheetNewAuctions.getRange(3, 2, sheetNewAuctions.getLastRow()-2, 6);
       break;
     default:
       ui.alert('Invalid side entry. Assuming right side.');
-      var rangeAuctions = sheetNewAuctions.getRange(3, 2, lastRow-2, 6);
+      var rangeAuctions = sheetNewAuctions.getRange(3, 2, sheetNewAuctions.getLastRow()-2, 6);
       break;
   }
   
@@ -85,41 +65,40 @@ function updateSheets() {
   while (newAuctions[0][0] == "") {
     newAuctions = newAuctions.slice(1);
   }
+  newAuctions = newAuctions.slice(0, numAuctions-1);
   
+  // @TODO: Sorting the auctions probably breaks this. Fix.
+  // FIX: Loop through all old auctions and compare them to new auctions.
+  // FIX: Pop all new auctions that match.
+  // FIX: If no auctions remain, halt script and print alert.
   // Check to see if auctions are up to date.
-  var oldOrderNum = sheetAuctions.getRange("A1").getValue();
-  if (oldOrderNum == newAuctions[0][0]) {
-    // Stop script if auction information is already up to date.
+  var oldAuctions = getCol(sheetAuctions.getRange(1,1,sheetAuctions.getLastRow()-1).getValues(), 0);
+  for (i=0; i < oldAuctions.length; i++) {
+    for(j=0; j < newAuctions.length; j++) {
+      if (oldAuctions[i] == newAuctions[j][0]) {
+        newAuctions = newAuctions.splice(j, 1);
+      }
+    }
+  }
+      
+  // Stop script if auction information is already up to date.
+  if (newAuctions.length == 0) {
     SpreadsheetApp.getUi().alert('Auction information is already up to date. Halting script.');
     return;
   }
   
-  // Find old order in liq orders1.ods sheet and cache index.
-  var orders = sheetNewOrders.getDataRange().getValues();
-  var liqOrders = (getCol(orders,0));
-  if (oldOrderNum) {
-    var orderIndex = liqOrders.indexOf(oldOrderNum);
-  } else {
-    var orderIndex = 0;
-  }
-  
   // Cache new order information.
-  if (orderIndex > 0) {
-    var newOrders = sheetNewOrders.getRange(3, 1, orderIndex-6, 5).getValues();
-  } else {
-    var newOrders = sheetNewOrders.getRange(3, 1, sheetNewOrders.getLastRow()-6, 5).getValues();
-  }
-  
+  var newOrders = sheetNewOrders.getRange(3, 1, sheetNewOrders.getLastRow()-6, 5).getValues();
   // Clear the sheets.
   sheetLiq.getRange(3, 2, sheetLiq.getLastRow(), 13).clearContent();
   sheetOrders.getRange(2, 1, sheetOrders.getLastRow(), 12).clear();
-  if (oldOrderNum>0) {sheetAuctions.getRange(1, 1, sheetAuctions.getLastRow(), 7).clear();}
+  sheetAuctions.getRange(1, 1, sheetAuctions.getLastRow(), 7).clear();
   // Transfer order information into manifest.
   sheetAuctions.getRange(1, 1, newAuctions.length, newAuctions[0].length).setValues(newAuctions);
   sheetOrders.getRange(2, 1, newOrders.length, newOrders[0].length).setValues(newOrders);
   
   // @TODO: Print out the number of auctions copied and the total items in those auctions.
-}  
+}
 
 function updateLiqFormat() {
   /*
