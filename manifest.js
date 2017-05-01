@@ -18,6 +18,19 @@ function getCol(matrix, col){
   return column;
 }
 
+// Create function that finds the sum of an array.
+function sumArray(array) {
+  for (
+    var
+    i = 0,
+    length = array.length,      // Cache the array length
+    sum = 0;                    // The total amount
+    i < length;                 // The "for"-loop condition
+    sum += Number(array[i++])   // Add number on each iteration
+  );
+  return sum;
+}
+
 function updateSheets() {
   /*
   This script accomplishes the following:
@@ -43,12 +56,12 @@ function updateSheets() {
   // Initialize liquidation sheet and cache current manifest sheet values.
   var sheetLiquid = SpreadsheetApp.openById(liquidID).getSheetByName("Liquidation Orders");
   var maniValues = sheetLiq.getDataRange().getValues();
-  // Cache all order numbers currently in liquidation sheet.
-  var currentOrderNums = getCol(sheetLiquid.getRange(1, 8, sheetLiquid.getLastRow()).getValues(), 0);
   
   // Check to see if data has already been transferred.
   if (sheetLiq.getLastRow() > 2) {
-    if (currentOrderNums.indexOf(maniValues[2][8]) < 0) {
+    // Cache all order numbers currently in liquidation sheet.
+    var currentOrderNums = getCol(sheetLiquid.getRange(1, 8, sheetLiquid.getLastRow()).getValues(), 0);
+    if (currentOrderNums.indexOf(maniValues[2][8]) < 0 && maniValues[2][8] != "#N/A") {
       SpreadsheetApp.getUi().alert('LIQ FORMAT has not been transferred to LIQ and WORK yet. Transfer data before updating auctions.');
       return;
     }
@@ -86,9 +99,8 @@ function updateSheets() {
   newAuctions = newAuctions.slice(0, numAuctions);
   
   // Loop through all old auctions and compare them to new auctions.
-  // If no auctions remain, halt script and print alert.
-  if (sheetOldAuctions.getLastRow()){
-    var oldAuctions = getCol(sheetOldAuctions.getRange(1,1,sheetOldAuctions.getLastRow()-1).getValues(), 0);
+  if (sheetOldAuctions.getLastRow() > 0){
+    var oldAuctions = getCol(sheetOldAuctions.getRange(1,1,sheetOldAuctions.getLastRow()).getValues(), 0);
     for (i=0; i < oldAuctions.length; i++) {
       for(j=0; j < newAuctions.length; j++) {
         if (oldAuctions[i] == newAuctions[j][0]) {
@@ -98,7 +110,7 @@ function updateSheets() {
     }
   }
       
-  // Stop script if auction information is already up to date.
+  // If no auctions remain, halt script and print alert.
   if (newAuctions.length == 0) {
     ui.alert('Auction information is already up to date. Halting script.');
     return;
@@ -114,7 +126,8 @@ function updateSheets() {
   sheetOldAuctions.getRange(1, 1, newAuctions.length, newAuctions[0].length).setValues(newAuctions);
   sheetOrders.getRange(2, 1, newOrders.length, newOrders[0].length).setValues(newOrders);
   
-  // @TODO: Print out the number of auctions copied and the total items in those auctions.
+  // Print out the number of auctions copied and the total items in those auctions.
+  ui.alert('Script finished.\n\nAuctions Copied: ' + sheetOldAuctions.getLastRow()  + '\nItems In Auctions: ' + sumArray(getCol(newAuctions, 3)));
 }  
 
 function updateLiqFormat() {
@@ -158,19 +171,6 @@ function updateLiqFormat() {
     var arr = [[]];
     for (i=0; i < n; i++) {arr[i][0].push(obj);}
     return arr;
-  }
-  
-  // Create function that finds the sum of an array.
-  function sumArray(array) {
-    for (
-      var
-        i = 0,
-        length = array.length,      // Cache the array length
-        sum = 0;                    // The total amount
-        i < length;                 // The "for"-loop condition
-        sum += Number(array[i++])   // Add number on each iteration
-    );
-    return sum;
   }
   
   // Create function that rounds a value to exp decimal places
