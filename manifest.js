@@ -46,10 +46,9 @@ function updateSheets() {
   // Cache all order numbers currently in liquidation sheet.
   var currentOrderNums = getCol(sheetLiquid.getRange(1, 8, sheetLiquid.getLastRow()).getValues(), 0);
   
-  // @TODO: This is broken. Fix.
   // Check to see if data has already been transferred.
   if (sheetLiq.getLastRow() > 2) {
-    if (currentOrderNums.indexOf(maniValues[2][8]) == -1) {
+    if (currentOrderNums.indexOf(maniValues[2][8]) < 0) {
       SpreadsheetApp.getUi().alert('LIQ FORMAT has not been transferred to LIQ and WORK yet. Transfer data before updating auctions.');
       return;
     }
@@ -101,7 +100,7 @@ function updateSheets() {
       
   // Stop script if auction information is already up to date.
   if (newAuctions.length == 0) {
-    SpreadsheetApp.getUi().alert('Auction information is already up to date. Halting script.');
+    ui.alert('Auction information is already up to date. Halting script.');
     return;
   }
   
