@@ -1,3 +1,23 @@
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Automation Menu')
+    .addItem('Update Orders and Auctions', 'updateSheets')
+    .addItem('Update LIQ FORMAT', 'updateLiqFormat')
+    .addSeparator()
+    .addItem('Transfer to LIQ & WORK', 'transferData')
+    .addToUi();
+}
+
+// Create function that strips specified column from an array.
+function getCol(matrix, col){
+  var column = [];
+  var l = matrix.length;
+  for(var i=0; i<l; i++){
+     column.push(matrix[i][col]);
+  }
+  return column;
+}
+
 function updateSheets() {
   /*
   This script accomplishes the following:
@@ -14,7 +34,7 @@ function updateSheets() {
   // Initialize the sheets to be updated.
   var sheetLiq = SpreadsheetApp.openById(maniID).getSheetByName("LIQ FORMAT");
   var sheetOrders = SpreadsheetApp.openById(maniID).getSheetByName("Copy of Liq Orders Scrap");
-  var sheetAuctions = SpreadsheetApp.openById(maniID).getSheetByName("Auctions");
+  var sheetOldAuctions = SpreadsheetApp.openById(maniID).getSheetByName("Auctions");
   
   // Initialize liq orders1.ods sheets.
   var sheetNewAuctions = SpreadsheetApp.openById(liqOrdersID).getSheetByName("AUCTION");
@@ -28,7 +48,7 @@ function updateSheets() {
   
   // @TODO: This is broken. Fix.
   // Check to see if data has already been transferred.
-  if (maniValues[2]) {
+  if (sheetLiq.getLastRow() > 2) {
     if (currentOrderNums.indexOf(maniValues[2][8]) == -1) {
       SpreadsheetApp.getUi().alert('LIQ FORMAT has not been transferred to LIQ and WORK yet. Transfer data before updating auctions.');
       return;
@@ -36,7 +56,6 @@ function updateSheets() {
   }
   
   // Prompt user for SKU and total number of auctions.
-  // @TODO: Prompt user for number of auctions instead of last row?????
   var ui = SpreadsheetApp.getUi();
   var response1 = ui.prompt('Auctions on right(R) or left(L)?');
   var side = response1.getResponseText();
@@ -65,18 +84,17 @@ function updateSheets() {
   while (newAuctions[0][0] == "") {
     newAuctions = newAuctions.slice(1);
   }
-  newAuctions = newAuctions.slice(0, numAuctions-1);
+  newAuctions = newAuctions.slice(0, numAuctions);
   
-  // @TODO: Sorting the auctions probably breaks this. Fix.
-  // FIX: Loop through all old auctions and compare them to new auctions.
-  // FIX: Pop all new auctions that match.
-  // FIX: If no auctions remain, halt script and print alert.
-  // Check to see if auctions are up to date.
-  var oldAuctions = getCol(sheetAuctions.getRange(1,1,sheetAuctions.getLastRow()-1).getValues(), 0);
-  for (i=0; i < oldAuctions.length; i++) {
-    for(j=0; j < newAuctions.length; j++) {
-      if (oldAuctions[i] == newAuctions[j][0]) {
-        newAuctions = newAuctions.splice(j, 1);
+  // Loop through all old auctions and compare them to new auctions.
+  // If no auctions remain, halt script and print alert.
+  if (sheetOldAuctions.getLastRow()){
+    var oldAuctions = getCol(sheetOldAuctions.getRange(1,1,sheetOldAuctions.getLastRow()-1).getValues(), 0);
+    for (i=0; i < oldAuctions.length; i++) {
+      for(j=0; j < newAuctions.length; j++) {
+        if (oldAuctions[i] == newAuctions[j][0]) {
+          newAuctions = newAuctions.splice(j, 1);
+        }
       }
     }
   }
@@ -92,13 +110,13 @@ function updateSheets() {
   // Clear the sheets.
   sheetLiq.getRange(3, 2, sheetLiq.getLastRow(), 13).clearContent();
   sheetOrders.getRange(2, 1, sheetOrders.getLastRow(), 12).clear();
-  sheetAuctions.getRange(1, 1, sheetAuctions.getLastRow(), 7).clear();
+  if (sheetOldAuctions.getLastRow()){sheetOldAuctions.getRange(1, 1, sheetOldAuctions.getLastRow(), 7).clear()};
   // Transfer order information into manifest.
-  sheetAuctions.getRange(1, 1, newAuctions.length, newAuctions[0].length).setValues(newAuctions);
+  sheetOldAuctions.getRange(1, 1, newAuctions.length, newAuctions[0].length).setValues(newAuctions);
   sheetOrders.getRange(2, 1, newOrders.length, newOrders[0].length).setValues(newOrders);
   
   // @TODO: Print out the number of auctions copied and the total items in those auctions.
-}
+}  
 
 function updateLiqFormat() {
   /*
