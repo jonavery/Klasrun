@@ -3,6 +3,9 @@ function onOpen() {
   ui.createMenu('Automation Menu')
     .addItem('Update Item in Liquidation', 'updateAssorted')
     .addItem('Update All Work Items in Liquidation', 'bulkUpdateLiquid')
+    .addSeparator()
+    .addItem('Highlight Future Listings by A/E/R', 'highlightAER')
+    .addSeparator()
     .addItem('Audit Listings', 'auditListings')
     .addToUi()
 }
@@ -33,17 +36,44 @@ function getCol(matrix, col){
 function highlightAER() {
   /**
   * This script highlights each A/E/R cell according to its designation.
+  * The script is coded to leave highlighted cells/rows alone.
   */
   
   // Initialize sheet and save values.
-  var sheetWork = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-  var workValues = sheetWork.getDataRange().getValues();
+  var sheetWork = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Future Listing');
+  var rangeWork = sheetWork.getDataRange();
+  var workValues = rangeWork.getValues();
+  var workColors = rangeWork.getBackgrounds();
   
   // Cache A/E/R column of sheet.
   var aerValues = getCol(workValues, 4);
   
-  // @TODO: Loop through A/E/R column and color cells with a switch statement.
-  
+  // Loop through A/E/R column and color cells with a switch statement.
+  for (i=0; i<aerValues.length; i++) {
+    if (workColors[i][0] == "#ffffff") {
+      var activeRange = sheetWork.getRange(i+1, 2, 1, 5);
+      switch (aerValues[i]) {
+        case 'a':
+        case 'A':
+          activeRange.setBackground('white');
+          break;
+        case 'e':
+        case 'E':
+          activeRange.setBackground('#ff00ff');
+          break;
+        case 'r':
+        case 'R':
+          activeRange.setBackground('orange');
+          break;
+        case 'd':
+        case 'D':
+          activeRange.setBackground('red');
+          break;
+        default:
+          break;
+      }
+    }
+  }
 }
 
 function updateAssorted() {
