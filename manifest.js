@@ -94,5 +94,6 @@ function priceSearch() {
   }
   
   // Cache and paste values to overwrite the formulas.
-  
+  var vlookupValues = sheet.getRange(6, 5, itemCount, 3).getValues();
+  sheet.getRange(6, 5, itemCount, 3).setValues(vlookupValues);
 }
