@@ -305,12 +305,12 @@ function transferData() {
   
   // Cache all order numbers currently in liquidation sheet and check to see if data has already been transferred.
   var allOrderNums = getCol(sheetLiquid.getRange(1, 8, liqLastRow).getValues(), 0);
-  if (allOrderNums.indexOf(maniValues[2][8]) > -1) {
-    SpreadsheetApp.getUi().alert('The data has already been copied. Halting script to avoid duplicity.');
-    return;
-  }
   for (i=2; i < maniLastRow; i++) {   
     var k = i-1;
+    if (allOrderNums.indexOf(maniValues[i][8]) > -1) {
+      Logger.log('Order #' + maniValues[i][8] + ' has already been copied.');
+      break;
+    }
     // To Future(column): Title(3), UPC(4), A/E/R(5), and 7-digit Order #(6) from Manifest.
     sheetFuture.getRange(futureLastRow + k, 2).setValue(highSKU + k);
     sheetFuture.getRange(futureLastRow + k, 3).setValue(maniValues[i][2]);
