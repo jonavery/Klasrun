@@ -70,6 +70,7 @@ function priceSearch() {
   var upcRange = sheet.getRange(6, 6, itemCount);
   var notes = sheet.getRange(7, 7, itemCount-1).getValues();
   upcRange.copyTo(sheet.getRange(6, 4, itemCount));
+  sheet.getRange(6, 4, itemCount).setNumberFormat('000000000000');
   sheet.getRange(7, 1, itemCount-1).setValues(notes);
   sheet.getRange(6, 5, itemCount).clear();
   
@@ -92,6 +93,18 @@ function priceSearch() {
   for (i=0; i < itemCount; i++) {
       formulaRange.copyTo(sheet.getRange(6+i, 5, 1, 3));
   }
+  
+  // Make items returns if belonging to certain brands.
+  var banned = ['Gourmia', 'Cheftronic', 'Oliso', 'Wondermill', 'SKG'];
+  var items = sheet.getRange(6, 2, itemCount).getValues();
+  for (i=0; i < itemCount; i++) {
+    for (j=0; j < banned.length; j++) {
+      if (items[i][0].indexOf(banned[j]) != -1) {
+        sheet.getRange(6+i, 5).setValue('R');
+      }
+    }
+  }
+  
   
   // Cache and paste values to overwrite the formulas.
   var vlookupValues = sheet.getRange(6, 5, itemCount, 3).getValues();
