@@ -73,7 +73,7 @@ function highlightAER() {
   var aerValues = getCol(workValues, 4);
   
   // Loop through A/E/R column and color cells with a switch statement.
-  for (i=0; i<aerValues.length; i++) {
+  for (i=1; i<aerValues.length; i++) {
     if (workColors[i][0] == "#ffffff") {
       var activeRange = sheetWork.getRange(i+1, 2, 1, 5);
       switch (aerValues[i]) {
@@ -94,9 +94,11 @@ function highlightAER() {
           activeRange.setBackground('red');
           break;
         case 'RHD':
-          activeRange.setBackground('#00ffff');
+          activeRange.setBackground('blue');
+          activeRange.setFontColor('white');
           break;
         default:
+          activeRange.setBackground('gray');
           break;
       }
     }
