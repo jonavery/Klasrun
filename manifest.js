@@ -225,43 +225,42 @@ function updateLiqFormat() {
     var orderIndex = liqOrders.indexOf(orderID);
     if (orderIndex == -1) {
       SpreadsheetApp.getUi().alert('Could not find order #' + orderID + '. Hit OK to continue.');
-    } else {
-      // Find last row of data.
-      var liqLastRow = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("LIQ FORMAT").getLastRow();
-      // Save order as range with itemCount number of rows
-      var orderItems = sheetOrders.getRange(orderIndex+1, 2, itemCount, 4);
-      // Copy range values over to LIQ FORMAT
-      orderItems.copyValuesToRange(sheetLiq, 3, 6, liqLastRow+1, liqLastRow+itemCount+1)
-      
-      // Copy A/E/R from Buy Site to correct column
-      var AER = sheetLiq.getRange(liqLastRow+1, 7, itemCount);
-      sheetLiq.getRange(liqLastRow+1, 6, itemCount).moveTo(AER);
-      var formulaRange = sheetLiq.getRange(2, 9, 1, 5);
-      // Fill in date and buy site information.
-      for (j=0; j < itemCount; j++) {
-        sheetLiq.getRange(liqLastRow+1+j, 2).setValue(today);
-        sheetLiq.getRange(liqLastRow+1+j, 6).setValue("LIQUIDATION");
-        sheetLiq.getRange(liqLastRow+1+j, 8).setValue(orderID);
-        formulaRange.copyTo(sheetLiq.getRange(liqLastRow+1+j, 9, 1, 5));
-      }
-       
-      // Copy per item cost values.
-      sheetLiq.getRange(liqLastRow+1, 14, itemCount).setValue(sheetLiq.getRange(liqLastRow+1, 13, itemCount).getDisplayValues());
-      // Have if statement comparing rounded cost to actual cost
-      var prices = sheetLiq.getRange(liqLastRow+1, 14, itemCount).getValues()
-      var orderTotal = sheetLiq.getRange(liqLastRow+1,10).getValue()
-      var roundedTotal = Number(round(sumArray(prices), 2));
-      if (roundedTotal < orderTotal) {
-        // If rounded is lower, compensate top per item cost
-        sheetLiq.getRange(liqLastRow+1, 14).setValue(Number(prices[0]) + orderTotal - roundedTotal);
-      }
-      else if (roundedTotal > orderTotal) {
-        // If rounded is higher, compensate bottom per item cost
-        sheetLiq.getRange(liqLastRow+itemCount, 14).setValue(Number(prices[itemCount-1]) + orderTotal - roundedTotal);
-      }
-      orderCopy++;
-      itemCopy = itemCopy + itemCount;
+      break;
     }
+    // Find last row of data.
+    var liqLastRow = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("LIQ FORMAT").getLastRow();
+    // Save order as range with itemCount number of rows
+    var orderItems = sheetOrders.getRange(orderIndex+1, 2, itemCount, 4);
+    // Copy range values over to LIQ FORMAT
+    orderItems.copyValuesToRange(sheetLiq, 3, 6, liqLastRow+1, liqLastRow+itemCount+1)
+      
+    // Copy A/E/R from Buy Site to correct column
+    var AER = sheetLiq.getRange(liqLastRow+1, 7, itemCount);
+    sheetLiq.getRange(liqLastRow+1, 6, itemCount).moveTo(AER);
+    var formulaRange = sheetLiq.getRange(2, 9, 1, 5);
+    // Fill in date, buy site, and cost information.
+    for (j=0; j < itemCount; j++) {
+      sheetLiq.getRange(liqLastRow+1+j, 2).setValue(today);
+      sheetLiq.getRange(liqLastRow+1+j, 6).setValue("LIQUIDATION");
+      sheetLiq.getRange(liqLastRow+1+j, 8).setValue(orderID);
+      formulaRange.copyTo(sheetLiq.getRange(liqLastRow+1+j, 9, 1, 5));
+    }
+    // Copy per item cost values.
+    sheetLiq.getRange(liqLastRow+1, 14, itemCount).setValue(sheetLiq.getRange(liqLastRow+1, 13, itemCount).getDisplayValues());
+    // Have if statement comparing rounded cost to actual cost
+    var prices = sheetLiq.getRange(liqLastRow+1, 14, itemCount).getValues()
+    var orderTotal = sheetLiq.getRange(liqLastRow+1,10).getValue()
+    var roundedTotal = Number(round(sumArray(prices), 2));
+    if (roundedTotal < orderTotal) {
+      // If rounded is lower, compensate top per item cost
+      sheetLiq.getRange(liqLastRow+1, 14).setValue(Number(prices[0]) + orderTotal - roundedTotal);
+    }
+    else if (roundedTotal > orderTotal) {
+      // If rounded is higher, compensate bottom per item cost
+      sheetLiq.getRange(liqLastRow+itemCount, 14).setValue(Number(prices[itemCount-1]) + orderTotal - roundedTotal);
+    }
+    orderCopy++;
+    itemCopy = itemCopy + itemCount;
   }
   // Post dialogue box showing # of orders and items copied to LIQ FORMAT.
   SpreadsheetApp.getUi().alert('Script finished.\n\nOrders Copied: ' +  orderCopy + '\nItems Copied: ' + itemCopy);
