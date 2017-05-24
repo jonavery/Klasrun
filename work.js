@@ -33,30 +33,6 @@ function getCol(matrix, col){
   return column;
 }
 
-function exportXML() {
-  var root = XmlService.createElement('items');
-  var items = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('SCRAP').getDataRange().getValues();
-  for (i=1; i<items.length; i++) {
-    var child = XmlService.createElement('item')
-      .addContent(XmlService.createElement('SKU').setText(items[i][1]))
-      .addContent(XmlService.createElement('Title').setText(items[i][2]))
-      .addContent(XmlService.createElement('ASIN').setText(items[i][3]))
-      .addContent(XmlService.createElement('Condition').setText(items[i][15]))
-      .addContent(XmlService.createElement('Comment').setText(items[i][17]));
-    var grandchild = XmlService.createElement('dimensions')
-      .addContent(XmlService.createElement('Weight').setText(items[i][10]))
-      .addContent(XmlService.createElement('Length').setText(items[i][11]))
-      .addContent(XmlService.createElement('Width').setText(items[i][12]))
-      .addContent(XmlService.createElement('Height').setText(items[i][13]));
-    child.addContent(grandchild);
-    root.addContent(child);
-  }
-  var document = XmlService.createDocument(root);
-  var xml = XmlService.getPrettyFormat().format(document);
-  return xml;
-}
-
-
 function highlightAER() {
   /**
   * This script highlights each A/E/R cell according to its designation.
@@ -134,7 +110,6 @@ function updateAssorted() {
     var liquidIndex = liquidSKU.indexOf(sku);
     Logger.log("Work: " + workIndex)
     Logger.log("Liquid: " + liquidIndex)
-    Logger.log("In Liquid[5747]: " + liquidSKU[5747])
     
     if (liquidIndex == -1) {
       ui.alert('SKU not found in Liquidation.');
@@ -178,43 +153,53 @@ function bulkUpdateLiquid() {
   
   if (response == ui.Button.OK) {
     // Cache user-given SKU and initialize work and liquidation SKU's.
-    var workSKU = getCol(sheetListings.getRange(1, 2, sheetListings.getLastRow()).getValues(), 0);
-    var liquidSKU = getCol(sheetLiquid.getRange(1, 1, sheetLiquid.getLastRow()).getValues(), 0);
-    var liquidTitles = getCol(sheetLiquid.getRange(1, 3, sheetLiquid.getLastRow()).getValues(), 0);
+    var workLastRow = sheetListings.getLastRow();
+    var workSKU = getCol(sheetListings.getRange(1, 2, workLastRow).getValues(), 0);
+    var workValues = sheetListings.getRange(1, 2, workLastRow, 5).getValues();
+    var liqLastRow = sheetLiquid.getLastRow();
+    var liquidSKU = getCol(sheetLiquid.getRange(1, 1, liqLastRow).getValues(), 0);
+    var liquidTitles = getCol(sheetLiquid.getRange(1, 3, liqLastRow).getValues(), 0);
     
     // Initialize counting variables.
     var updated = 0;
-    var notFound = 0;
     var notUpdated = 0;
+    var created = 0;
     
     for (i = 1; i < workSKU.length; i++) {
       // Find index of SKU in work and liquidation.
       var sku = parseInt(workSKU[i]);
       var workIndex = workSKU.indexOf(sku);
       var liquidIndex = liquidSKU.indexOf(sku);
-    
-      // Check if SKU is in liquidation sheet.
-      if (liquidIndex == -1) {notFound++; Logger.log(sku); continue;}
-      
+           
       // Check if title is blank or already up to date.
-      var workValues = sheetListings.getRange(workIndex+1, 3, 1, 3).getValues();
-      if (workValues[0][0] == "") {notUpdated++; continue;}
-      if (workValues[0][0] == liquidTitles[liquidIndex]) {
+      if (workValues[i][0] == "" || workValues[i][0] == liquidTitles[liquidIndex]) {
         notUpdated++; 
         continue;
       }
       
+      if (liquidIndex == -1) {
+        created++;
+        liquidIndex = liqLastRow;
+        sheetLiquid.getRange(liquidIndex+1, 1).setValue(workValues[i][0]);
+        sheetLiquid.getRange(liquidIndex+1, 2).setValue(todayDate());
+        sheetLiquid.getRange(liquidIndex+1, 4).setValue("1");
+        sheetLiquid.getRange(liquidIndex+1, 6).setValue("LIQUIDATION");
+        sheetLiquid.getRange(liquidIndex+1, 8).setValue(workValues[i][4]);
+      }
+      
       // Copy work information into liquidation.
-      sheetLiquid.getRange(liquidIndex+1, 3).setValue(workValues[0][0]);
-      sheetLiquid.getRange(liquidIndex+1, 5).setValue(workValues[0][1]);
-      sheetLiquid.getRange(liquidIndex+1, 7).setValue(workValues[0][2]);
+      sheetLiquid.getRange(liquidIndex+1, 3).setValue(workValues[i][1]);
+      sheetLiquid.getRange(liquidIndex+1, 5).setValue(workValues[i][2]);
+      sheetLiquid.getRange(liquidIndex+1, 7).setValue(workValues[i][3]);
+      // Check if SKU is in liquidation sheet.
+      if (liquidIndex == liqLastRow) {liqLastRow++; continue;}
       updated++;
     }
     // Show changes to user.
     ui.alert(
       'Items updated: ' + updated
       + '\nItems already up to date: ' + notUpdated
-      + '\nItems not found: ' + notFound);
+      + '\nItems created: ' + created);
   }
 }
 
