@@ -16,6 +16,7 @@ function getXML() {
   var products = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS').getDataRange().getValues();
 
   for (i=1; i<products.length; i++) {
+    if(products[i][4] == "" || products[i][4] == "undefined") {continue;}
     var Inventory = XmlService.createElement('Inventory')
       .addContent(XmlService.createElement('SKU').setText(products[i][0]))
       .addContent(XmlService.createElement('Quantity').setText(1));
