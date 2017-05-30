@@ -253,7 +253,7 @@ function importPrices() {
 
   // Push array into MWS tab.
   var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
-  var range = sheetMWS.getRange(2, 1, itemCount, 11).clearContent();
+  var range = sheetMWS.getRange(2, 1, itemCount, 11).clearContent().setBackground('white');
   range.setValues(itemArray);
   
   // Highlight undefined entries that will not be listed.
