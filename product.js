@@ -17,6 +17,7 @@ function getXML() {
   var products = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS').getDataRange().getValues();
 
   for (i=1; i<products.length; i++) {
+    if(products[i][4] == "" || products[i][4] == "undefined") {continue;}
     var StandardProductID = XmlService.createElement('StandardProductID')
       .addContent(XmlService.createElement('Type').setText('ASIN'))
       .addContent(XmlService.createElement('Value').setText(products[i][3]));
