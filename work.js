@@ -6,7 +6,8 @@ function onOpen() {
     .addSeparator()
     .addItem('Highlight Future Listings by A/E/R', 'highlightAER')
     .addSeparator()
-    .addItem('Audit Listings', 'auditListings')
+    .addItem('Populate MWS Tab', 'importPrices')
+    .addItem('Post Listings', 'postListings')
     .addToUi()
 }
 
@@ -20,6 +21,18 @@ function todayDate() {
   if(mm<10) { mm = '0' + mm;}
   var today = mm + '/' + dd + '/' + yyyy;
   return today;
+}
+
+function makeArray(w, h, val) {
+// Create array with 'w' columns, 'h' rows, and filled with 'val'
+  var arr = [];
+  for(i = 0; i < h; i++) {
+    arr[i] = [];
+    for(j = 0; j < w; j++) {
+      arr[i][j] = val;
+    }
+  }
+  return arr;
 }
 
 function getCol(matrix, col){
@@ -170,10 +183,11 @@ function bulkUpdateLiquid() {
       var sku = parseInt(workSKU[i]);
       var workIndex = workSKU.indexOf(sku);
       var liquidIndex = liquidSKU.indexOf(sku);
-           
+      
+      Logger.log("Work: " + workValues[i][0] + "\nLiq: " + liquidTitles[liquidIndex] + "\n");
       // Check if title is blank or already up to date.
-      if (workValues[i][0] == "" || workValues[i][0] == liquidTitles[liquidIndex]) {
-        notUpdated++; 
+      if (workValues[i][0] == "" || workValues[i][1] == liquidTitles[liquidIndex]) {
+        notUpdated++;
         continue;
       }
       
@@ -203,6 +217,67 @@ function bulkUpdateLiquid() {
   }
 }
 
+function importPrices() {
+  /**
+  * This script accomplishes the following tasks:
+  *  1. Pull json file from MWS server
+  *  2. Convert json into multidimensional array
+  *  3. Push array into MWS tab.
+  */
+  
+  // Fetch the json array from website and parse into JS object.
+  var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/test.json');
+  var json = response.getContentText();
+  var data = JSON.parse(json);
+  
+  // Convert data object into multidimensional array.
+  // Ordering is same as in MWS tab.
+  var itemCount = data.length;
+  var itemArray = makeArray(11, itemCount, "");
+  for (i = 0; i < itemCount; i++) {
+    var item = data[i];
+    itemArray[i] = ([
+      item.SellerSKU,
+      item.Title,
+      item.UPC,
+      item.ASIN,
+      item.Price,
+      item.Dimensions.Weight,
+      item.Dimensions.Length,
+      item.Dimensions.Width,
+      item.Dimensions.Height,
+      item.Condition,
+      item.Comment
+    ]);
+  }
+
+  // Push array into MWS tab.
+  var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
+  var range = sheetMWS.getRange(2, 1, itemCount, 11).clearContent();
+  range.setValues(itemArray);
+  
+  // Highlight undefined entries that will not be listed.
+  var prices = sheetMWS.getRange(2, 5, itemCount).getValues();
+  for (i = 0; i < itemCount; i++) {
+    if (prices[i][0] == "undefined") {
+      sheetMWS.getRange(2+i, 1, 1, 11).setBackground('red');
+    }
+  }
+}
+
+function postListings() {
+  /**
+  * This script accomplishes the following tasks:
+  *  1. Use XML converter scripts to convert product information
+  *  2. Send product feeds to Amazon
+  *  3. Check for feed status updates from Amazon
+  *  4. Report results.
+  */
+  
+  SpreadsheetApp.getUi().alert('ERROR: Script still in development.');
+}
+
+
 function auditListings() {
   /**
   * This script accomplishes the following tasks:
@@ -214,6 +289,5 @@ function auditListings() {
   *  5. Move audit population to top of sheet.
   */
   
-  SpreadsheetApp.getUi().alert('Script still in progress.');
-  
+  SpreadsheetApp.getUi().alert('ERROR: Script still in development.');
 }
