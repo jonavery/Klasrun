@@ -19,7 +19,10 @@ function getXML() {
     if(products[i][4] == "" || products[i][4] == "undefined") {continue;}
     var Inventory = XmlService.createElement('Inventory')
       .addContent(XmlService.createElement('SKU').setText(products[i][0]))
-      .addContent(XmlService.createElement('Quantity').setText(1));
+      .addContent(XmlService.createElement('Quantity').setText(1))
+      .addContent(XmlService.createElement('FulfillmentCenterID').setText('AMAZON NA'))
+      .addContent(XmlService.createElement('Lookup').setText('FulfillmentNetwork'))
+      .addContent(XmlService.createElement('SwitchFulfillmentTo').setText('AFN'));
     var Message = XmlService.createElement('Message')
       .addContent(XmlService.createElement('MessageID').setText(i))
       .addContent(XmlService.createElement('OperationType').setText('Update'))
