@@ -8,6 +8,8 @@ function onOpen() {
     .addSeparator()
     .addItem('Populate MWS Tab', 'importPrices')
     .addItem('Post Listings', 'postListings')
+    .addItem('Cancel Listings', 'cancelListings')
+    .addItem('Audit Listings', 'auditListings')
     .addToUi()
 }
 
@@ -267,27 +269,58 @@ function importPrices() {
 
 function postListings() {
   /**
-  * This script accomplishes the following tasks:
-  *  1. Use XML converter scripts to convert product information
-  *  2. Send product feeds to Amazon
-  *  3. Check for feed status updates from Amazon
-  *  4. Report results.
+  * This script uses the XML exporter web apps in combination
+  * with klasrun.com PHP scripts to send product listings
+  * to Amazon.
+  *
+  * Use this function in tandem with the auditListings() function
+  * to verify completion of the listings.
   */
   
   SpreadsheetApp.getUi().alert('ERROR: Script still in development.');
+  
+  // Send product feeds to Amazon.
+  
 }
 
+function cancelListings() {
+  /**
+  * Run this script after postListings to cancel the feed submission.
+  *
+  * Only works before the feed has been processed by Amazon. Time is
+  * of the essence here!
+  */
+  
+  SpreadsheetApp.getUi().alert('ERROR: Script still in development.');
+  
+  // Call klasrun.com to cancel feed submission.
+  
+  
+  // Report status of cancellation.
+}
 
 function auditListings() {
   /**
   * This script accomplishes the following tasks:
-  *  1. Search the Listings sheet for missing information
-  *    i.e. measurements, initials, AER designation
-  *  2. Make easy fixes if possible (AER designation)
-  *  3. Highlight problem entries blue.
-  *  4. Make relevant notes in REASON column.
-  *  5. Move audit population to top of sheet.
+  *  1. Query amazon for listing status report.
+  *  2. Report status of three listing feeds.
+  *  3. When all three are complete, highlight items green in Scrap and MWS.
+  *  4. Migrate completed listings from Scrap to Archive.
   */
   
   SpreadsheetApp.getUi().alert('ERROR: Script still in development.');
+  
+  // Grab status report from klasrun.com
+  
+  
+  // Broadcast status report via email.
+  
+  
+  // Initialize Scrap, MWS, and Archive sheets.
+  
+  
+  // Highlight complete items green in Scrap and MWS sheets.
+  
+  
+  // Move completed scrap entries into Archive sheet.
 }
