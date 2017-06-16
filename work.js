@@ -126,6 +126,7 @@ function updateAssorted() {
     
    // Find index of SKU in work and liquidation.
    var workIndex = workSKU.indexOf(sku);
+   var i = workIndex;
    var liquidIndex = liquidSKU.indexOf(sku);
    var title = sheetLiquid.getRange(liquidIndex+1, 3).getValue();
       
