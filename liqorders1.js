@@ -119,24 +119,23 @@ function liqPriceSearch() {
   sheet.getRange(6, 5, itemCount, 3).setValues(vlookupValues);
 }
 
-function liqPriceSearch() {
+function blackPriceSearch() {
   /**
   * This script accomplishes the following:
   *   1. Copy formulas from Subtotal and My Buy Price
   *   2. Set spacing between first and second order to 3 blank rows
-  *   3. Move UPC and Notes information
-  *   4. Find and print sum of Count column
-  *   5. Update VLOOKUP range
-  *   6. Copy A/E/R and Amazon formulas
-  *   7. Cache and paste values to overwrite the formulas
+  *   3. Find and print sum of Count column
+  *   4. Update VLOOKUP range
+  *   5. Copy A/E/R and Amazon formulas
+  *   6. Cache and paste values to overwrite the formulas
   **/
   
   // Initialize sheet.
-  var sheet = SpreadsheetApp.getActiveSheet();
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('sheet6');
   
   // Find last item and cache its row number.
-  var items = sheet.getDataRange.getValues();
-  var lastSheetRow = sheet.getLastRow();
+  var items = sheet6.getDataRange.getValues();
+  var lastSheetRow = sheet6.getLastRow();
   var itemCount = 0;
   for (var i=5; i<lastSheetRow; i++) {
     itemCount++;
@@ -145,10 +144,6 @@ function liqPriceSearch() {
     }
   }
   Logger.log("Item Count: " + itemCount)
-  
-  // Copy formulas from Subtotal and My Buy Price.
-  var subRange = sheet.getRange("A3:H4");
-  subRange.copyTo(sheet.getRange(itemCount+5+1, 1, 2, 8));
   
   // Find and cache the number of blank rows between first and second order.
   var blankCount = 0;
@@ -165,14 +160,14 @@ function liqPriceSearch() {
   switch (true) {
     case (blankCount < 5):
       // Add blank rows.
-      sheet.insertRowsAfter(itemCount+5+2, 5-blankCount);
+      sheet6.insertRowsAfter(itemCount+5+2, 5-blankCount);
       break;
     case (blankCount == 5):
       // Do nothing.
       break;
     case (blankCount > 5):
       // Delete rows.
-      sheet.deleteRows(itemCount+5+3, blankCount-5);
+      sheet6.deleteRows(itemCount+5+3, blankCount-5);
       break;
     default:
       // Print error message.
@@ -180,37 +175,43 @@ function liqPriceSearch() {
       return;
   }
   
-  // Find and print sum of Count and Amazon columns.
-  var countA1 = sheet.getRange(6, 3, itemCount).getA1Notation();
-  var amazonA1 = sheet.getRange(6, 7, itemCount).getA1Notation();
-  var feesA1 = sheet.getRange(6, 8, itemCount).getA1Notation();
-  sheet.getRange(itemCount+5+1, 3).setFormula("=SUM("+countA1+")");
-  sheet.getRange(itemCount+5+1, 7).setFormula("=SUM("+amazonA1+")");
-  sheet.getRange(itemCount+5+1, 8).setFormula("=SUM("+feesA1+")");
+  // Set summation formulas.
+  sheet6.getRange(itemCount+6, 1, 2, 9).setFontStyle('bold');
+  sheet6.getRange(itemCount+6, 1).setValue("SUBTOTAL");
+  sheet6.getRange(itemCount+7, 1).setValue("MY BUY PRICE");  
+  var countA1 = sheet6.getRange(6, 3, itemCount).getA1Notation();
+  var amazonA1 = sheet6.getRange(6, 7, itemCount).getA1Notation();
+  var feesA1 = sheet6.getRange(6, 8, itemCount).getA1Notation();
+  sheet6.getRange(itemCount+6, 3).setFormula("=SUM("+countA1+")");
+  sheet6.getRange(itemCount+6, 7).setFormula("=SUM("+amazonA1+")");
+  var feeSumA1 = sheet6.getRange(itemCount+6, 8).setFormula("=SUM("+feesA1+")").getA1Notation();
+  var buyA1 = sheet6.getRange(itemCount+7, 8).setFormula("=SUM("+feeSumA1+"*0.6)").setBackgroundRGB(217, 234, 211).getA1Notation();
+  sheet6.getRange(itemCount+6, 9, 2).setBackgroundRGB(255, 153, 0);
+  sheet6.getRange(itemCount+7, 9).setFormula("=ROUND("+buyA1+"*0.92,2)");
   
   // Create formula array.
+  var lastRow = sheet6.getLastRow();
+  var rangeA1 = sheet6.getRange(itemCount+11, 4, lastRow-itemCount-10, 5).getA1Notation();
   var formArray = [];
-  for (var i=5; i<itemCount; i++) {
-    var n = String(i+1);
-    var L = String(5+itemCount);
-    var b = String(lastSheetRow);
+  for (var i=6; i<itemCount+6; i++) {
+    var asinA1 = sheet6.getRange(i, 4).getA1Notation();
     formArray.push([
-      '=IF($D'+n+'<>"",VLOOKUP($D'+n+',$D'+L+':$H'+b+',3), VLOOKUP($E'+n+',$E'+L+':$H'+b+',2))',
-      '=IF($D'+n+'<>"",VLOOKUP($D'+n+',$D'+L+':$H'+b+',4), VLOOKUP($E'+n+',$E'+L+':$H'+b+',3))',
-      '=IF($D'+n+'<>"",VLOOKUP($D'+n+',$D'+L+':$H'+b+',5), VLOOKUP($E'+n+',$E'+L+':$H'+b+',4))'
+      "=VLOOKUP("+asinA1+","+rangeA1+"3,FALSE)",
+      "=VLOOKUP("+asinA1+","+rangeA1+"4,FALSE)",
+      "=VLOOKUP("+asinA1+","+rangeA1+"5,FALSE)"
     ]);
   }
   
   // Update VLOOKUP range.
-  sheet.getRange(6, 6, itemCount, 3).setFormulas(formArray);
+  sheet6.getRange(6, 6, itemCount, 3).setFormulas(formArray);
   
   // Make items returns if belonging to certain brands.
   var banned = ['Gourmia', 'Cheftronic', 'Oliso', 'Wondermill', 'SKG', 'KitchenAid'];
-  var items = sheet.getRange(6, 2, itemCount).getValues();
+  var items = sheet6.getRange(6, 2, itemCount).getValues();
   for (i=0; i < itemCount; i++) {
     for (j=0; j < banned.length; j++) {
       if (items[i][0].indexOf(banned[j]) != -1) {
-        sheet.getRange(6+i, 5).setValue('R');
+        sheet6.getRange(6+i, 5).setValue('R');
       }
     }
   }
@@ -234,7 +235,7 @@ function importBlackwrap() {
   }
   
   // Load sheet6 and the values from the blackwrap manifest.
-  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet6');
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TEST');
   var blackwrapValues = blackwrapSheet.getDataRange().getValues().slice(1);
   
   // Sort the new values alphabetically by their titles.
@@ -264,6 +265,45 @@ function importBlackwrap() {
     sheet6.getRange(j, 4).setValue(asins[i]);
     sheet6.getRange(j, 5).setValue(UPCs[i]);
   }
+  
+  // Set summation formulas.
+  sheet6.getRange(itemCount+6, 1, 2, 9).setFontStyle('bold');
+  sheet6.getRange(itemCount+6, 1).setValue("SUBTOTAL");
+  sheet6.getRange(itemCount+7, 1).setValue("MY BUY PRICE");  
+  var countA1 = sheet6.getRange(6, 3, itemCount).getA1Notation();
+  var amazonA1 = sheet6.getRange(6, 7, itemCount).getA1Notation();
+  var feesA1 = sheet6.getRange(6, 8, itemCount).getA1Notation();
+  sheet6.getRange(itemCount+6, 3).setFormula("=SUM("+countA1+")");
+  sheet6.getRange(itemCount+6, 7).setFormula("=SUM("+amazonA1+")");
+  var feeSumA1 = sheet6.getRange(itemCount+6, 8).setFormula("=SUM("+feesA1+")").getA1Notation();
+  var buyA1 = sheet6.getRange(itemCount+7, 8).setFormula("=SUM("+feeSumA1+"*0.6)").setBackgroundRGB(217, 234, 211).getA1Notation();
+  sheet6.getRange(itemCount+6, 9, 2).setBackgroundRGB(255, 153, 0);
+  sheet6.getRange(itemCount+7, 9).setFormula("=ROUND("+buyA1+"*0.92,2)");
+  
+  // Set VLOOKUP formulas.
+  var lastRow = sheet6.getLastRow();
+  var rangeA1 = sheet6.getRange(itemCount+11, 4, lastRow-itemCount-10, 5).getA1Notation();
+  for (var i = 6; i < itemCount+6; i++) {
+    var asinA1 = sheet6.getRange(i, 4).getA1Notation();
+    sheet6.getRange(i, 6).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",3,FALSE)");
+    sheet6.getRange(i, 7).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",4,FALSE)");
+    sheet6.getRange(i, 8).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",5,FALSE)");
+  }
+  
+  // Make items returns if belonging to certain brands.
+  var banned = ['Gourmia', 'Cheftronic', 'Oliso', 'Wondermill', 'SKG', 'KitchenAid'];
+  var items = sheet6.getRange(6, 2, itemCount).getValues();
+  for (i=0; i < itemCount; i++) {
+    for (j=0; j < banned.length; j++) {
+      if (items[i][0].indexOf(banned[j]) != -1) {
+        sheet6.getRange(6+i, 6).setValue('R');
+      }
+    }
+  }
+  
+  // Copy formula output values and paste them as text.
+  var vlookupValues = sheet6.getRange(6, 6, itemCount, 3).getValues();
+  sheet6.getRange(6, 6, itemCount, 3).setValues(vlookupValues);
 }
 
 function importPrices() {
@@ -277,7 +317,7 @@ function importPrices() {
   // Fetch the json array from website and parse into JS object.
   var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/blackwrap.json');
   var json = response.getContentText();
-  // preserve newlines, etc - use valid JSON
+  // Preserve newlines, etc - use valid JSON
   json = json.replace(/\\n/g, "\\n")  
                .replace(/\\'/g, "\\'")
                .replace(/\\"/g, '\\"')
@@ -286,7 +326,7 @@ function importPrices() {
                .replace(/\\t/g, "\\t")
                .replace(/\\b/g, "\\b")
                .replace(/\\f/g, "\\f");
-  // remove non-printable and other non-valid JSON chars
+  // Remove non-printable and other non-valid JSON chars
   json = json.replace(/[\u0000-\u0019]+/g,""); 
   var data = JSON.parse(json);
   
