@@ -221,6 +221,51 @@ function liqPriceSearch() {
   sheet.getRange(6, 5, itemCount, 3).setValues(vlookupValues);
 }
 
+function importBlackwrap() {
+  /**
+  * This script imports a new blackwrap manifest into the Sheet6 tab.
+  **/
+  
+  // Load active sheet and check to be sure it is a new blackwrap manifest.
+  var blackwrapSheet = SpreadsheetApp.getActiveSheet();
+  if (blackwrapSheet.getSheetName().length < 14) {
+    SpreadsheetApp.getUi().alert('Please select the new blackwrap manifest before running script.');
+    return;
+  }
+  
+  // Load sheet6 and the values from the blackwrap manifest.
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet6');
+  var blackwrapValues = blackwrapSheet.getDataRange().getValues().slice(1);
+  
+  // Sort the new values alphabetically by their titles.
+  blackwrapValues.sort(function(a, b) {
+    if (a[13] === b[13]) {
+      return 0;
+    }
+    else {
+      return (a[13] < b[13]) ? -1 : 1;
+    }
+  });
+  
+  // Cache values to be transferred over to Sheet6.
+  var titles = getCol(blackwrapValues, 13);
+  var asins = getCol(blackwrapValues, 0);
+  var UPCs = getCol(blackwrapValues, 8);
+  
+  // Create appropriate number of rows in Sheet6.
+  var itemCount = blackwrapValues.length;
+  sheet6.insertRowsBefore(6, blackwrapValues.length + 5);
+  
+  // Transfer values over to Sheet6.
+  for (var i = 0; i < itemCount; i++) {
+    var j = i + 6;
+    sheet6.getRange(j, 2).setValue(titles[i]);
+    sheet6.getRange(j, 3).setValue("1");
+    sheet6.getRange(j, 4).setValue(asins[i]);
+    sheet6.getRange(j, 5).setValue(UPCs[i]);
+  }
+}
+
 function importPrices() {
   /**
   * This script accomplishes the following tasks:
@@ -267,51 +312,6 @@ function importPrices() {
     var j = i + 406;
     var importValues = [itemArray[i]];
     sheet6.getRange(j, 9, 1, 3).setValues(importValues);
-  }
-}
-
-function importBlackwrap() {
-  /**
-  * This script imports a new blackwrap manifest into the Sheet6 tab.
-  **/
-  
-  // Load active sheet and check to be sure it is a new blackwrap manifest.
-  var blackwrapSheet = SpreadsheetApp.getActiveSheet();
-  if (blackwrapSheet.getSheetName().length < 14) {
-    SpreadsheetApp.getUi().alert('Please select the new blackwrap manifest before running script.');
-    return;
-  }
-  
-  // Load sheet6 and the values from the blackwrap manifest.
-  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet6');
-  var blackwrapValues = blackwrapSheet.getDataRange().getValues().slice(1);
-  
-  // Sort the new values alphabetically by their titles.
-  blackwrapValues.sort(function(a, b) {
-    if (a[13] === b[13]) {
-      return 0;
-    }
-    else {
-      return (a[13] < b[13]) ? -1 : 1;
-    }
-  });
-  
-  // Cache values to be transferred over to Sheet6.
-  var titles = getCol(blackwrapValues, 13);
-  var asins = getCol(blackwrapValues, 0);
-  var UPCs = getCol(blackwrapValues, 8);
-  
-  // Create appropriate number of rows in Sheet6.
-  var itemCount = blackwrapValues.length;
-  sheet6.insertRowsBefore(6, blackwrapValues.length + 5);
-  
-  // Transfer values over to Sheet6.
-  for (var i = 0; i < itemCount; i++) {
-    var j = i + 6;
-    sheet6.getRange(j, 2).setValue(titles[i]);
-    sheet6.getRange(j, 3).setValue("1");
-    sheet6.getRange(j, 4).setValue(asins[i]);
-    sheet6.getRange(j, 5).setValue(UPCs[i]);
   }
 }
 
