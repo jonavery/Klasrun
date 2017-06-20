@@ -3,6 +3,9 @@ function onOpen() {
   ui.createMenu('Automation Menu')
     .addItem('Liquidation Price Lookup', 'liqPriceSearch')
     .addItem('Blackwrap Price Lookup', 'blackPriceSearch')
+    .addSeparator()
+    .addItem('Import New Blackwrap', 'importBlackwrap')
+    .addItem('Import Price Estimates', 'importPrices')
     .addToUi();
 }
 
@@ -229,33 +232,96 @@ function importPrices() {
   // Fetch the json array from website and parse into JS object.
   var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/blackwrap.json');
   var json = response.getContentText();
+  // preserve newlines, etc - use valid JSON
+  json = json.replace(/\\n/g, "\\n")  
+               .replace(/\\'/g, "\\'")
+               .replace(/\\"/g, '\\"')
+               .replace(/\\&/g, "\\&")
+               .replace(/\\r/g, "\\r")
+               .replace(/\\t/g, "\\t")
+               .replace(/\\b/g, "\\b")
+               .replace(/\\f/g, "\\f");
+  // remove non-printable and other non-valid JSON chars
+  json = json.replace(/[\u0000-\u0019]+/g,""); 
   var data = JSON.parse(json);
   
   // Convert data object into multidimensional array.
   // Ordering is same as in MWS tab.
   var itemCount = data.length;
-  var itemArray = makeArray(11, itemCount, "");
-  for (i = 0; i < itemCount; i++) {
+  var itemArray = [];
+  for (var i = 0; i < itemCount; i++) {
     var item = data[i];
-    itemArray[i] = ([
-      // item.Index,
-      item.Title,
-      item.UPC,
-      item.ASIN
-      // item.Price
+    itemArray.push([
+      // item.Title,
+      // item.UPC,
+      // item.ASIN,
+      item.Price,
+      item.Rank,
+      item.Weight
     ]);
   }
 
-  // Push array into MWS tab.
+  // Push array into sheet6 tab.
   var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet6');
-  var range = sheetMWS.getRange(2, 1, itemCount, 11);
-  range.setValues(itemArray);
-  
-  // Highlight undefined entries that will not be listed.
-  var prices = sheetMWS.getRange(2, 5, itemCount).getValues();
-  for (i = 0; i < itemCount; i++) {
-    if (prices[i][0] == "undefined") {
-      sheetMWS.getRange(2+i, 1, 1, 11).setBackground('red');
-    }
+  for (var i = 0; i < 843; i++) {
+    var j = i + 406;
+    var importValues = [itemArray[i]];
+    sheet6.getRange(j, 9, 1, 3).setValues(importValues);
   }
+}
+
+function importBlackwrap() {
+  /**
+  * This script imports a new blackwrap manifest into the Sheet6 tab.
+  **/
+  
+  // Load active sheet and check to be sure it is a new blackwrap manifest.
+  var blackwrapSheet = SpreadsheetApp.getActiveSheet();
+  if (blackwrapSheet.getSheetName().length < 14) {
+    SpreadsheetApp.getUi().alert('Please select the new blackwrap manifest before running script.');
+    return;
+  }
+  
+  // Load sheet6 and the values from the blackwrap manifest.
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet6');
+  var blackwrapValues = blackwrapSheet.getDataRange().getValues().slice(1);
+  
+  // Sort the new values alphabetically by their titles.
+  blackwrapValues.sort(function(a, b) {
+    if (a[13] === b[13]) {
+      return 0;
+    }
+    else {
+      return (a[13] < b[13]) ? -1 : 1;
+    }
+  });
+  
+  // Cache values to be transferred over to Sheet6.
+  var titles = getCol(blackwrapValues, 13);
+  var asins = getCol(blackwrapValues, 0);
+  var UPCs = getCol(blackwrapValues, 8);
+  
+  // Create appropriate number of rows in Sheet6.
+  var itemCount = blackwrapValues.length;
+  sheet6.insertRowsBefore(6, blackwrapValues.length + 5);
+  
+  // Transfer values over to Sheet6.
+  for (var i = 0; i < itemCount; i++) {
+    var j = i + 6;
+    sheet6.getRange(j, 2).setValue(titles[i]);
+    sheet6.getRange(j, 3).setValue("1");
+    sheet6.getRange(j, 4).setValue(asins[i]);
+    sheet6.getRange(j, 5).setValue(UPCs[i]);
+  }
+}
+
+function getCol(matrix, col){
+// Take in a matrix and slice off a column from it.
+// @param Col is 0-indexed.
+  var column = [];
+  var l = matrix.length;
+  for(var i=0; i<l; i++){
+     column.push(matrix[i][col]);
+  }
+  return column;
 }
