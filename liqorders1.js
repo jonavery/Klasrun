@@ -280,6 +280,22 @@ function importBlackwrap() {
   sheet6.getRange(itemCount+6, 9, 2).setBackgroundRGB(255, 153, 0);
   sheet6.getRange(itemCount+7, 9).setFormula("=ROUND("+buyA1+"*0.92,2)");
   
+  // @TODO: blackwrap filter is not finding anything. FIX THIS.
+  // Set order title.
+  var orders = getCol(blackwrapValues, 0);
+  var blackwraps = orders.filter(function(value) {
+    return value.substr(0, 5) == "BLACK";
+  });
+  var blackNum = blackwraps.length;
+  var n = -1;
+  for (var i = 0; i < blackwraps.length; i++) {
+    while (blackwraps[i].substr(n)[0] != "") {n--;}
+    if (parseInt(blackwraps[i].substr(n)) > blackNum) {
+      blackNum = blackwraps[i].substr(n);
+    }
+  }
+  sheet6.getRange(6, 1).setValue("BLACKWRAP "+String(blackNum+1));
+  
   // Set VLOOKUP formulas.
   var lastRow = sheet6.getLastRow();
   var rangeA1 = sheet6.getRange(itemCount+11, 4, lastRow-itemCount-10, 5).getA1Notation();
