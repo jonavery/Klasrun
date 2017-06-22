@@ -61,12 +61,12 @@ function highlightAER() {
   var workColors = rangeWork.getBackgrounds();
   
   // Cache A/E/R column of sheet.
-  var aerValues = getCol(workValues, 4);
+  var aerValues = getCol(workValues, 6);
   
   // Loop through A/E/R column and color cells with a switch statement.
   for (i=1; i<aerValues.length; i++) {
     if (workColors[i][0] == "#ffffff") {
-      var activeRange = sheetWork.getRange(i+1, 2, 1, 5);
+      var activeRange = sheetWork.getRange(i+1, 2, 1, 6);
       switch (aerValues[i]) {
         case 'a':
         case 'A':
@@ -119,7 +119,7 @@ function updateAssorted() {
     var sku = parseInt(response.getResponseText());
     var workLastRow = sheetListings.getLastRow();
     var workSKU = getCol(sheetListings.getRange(1, 2, workLastRow).getValues(), 0);
-    var workValues = sheetListings.getRange(1, 2, workLastRow, 5).getValues();
+    var workValues = sheetListings.getRange(1, 2, workLastRow, 6).getValues();
     var liqLastRow = sheetLiquid.getLastRow();
     var liquidSKU = getCol(sheetLiquid.getRange(1, 1, liqLastRow).getValues(), 0);
     var liquidUPC = getCol(sheetLiquid.getRange(1, 5, liqLastRow).getValues(), 0);
@@ -139,17 +139,17 @@ function updateAssorted() {
      sheetLiquid.getRange(liquidIndex+1, 2).setValue(todayDate());
      sheetLiquid.getRange(liquidIndex+1, 4).setValue("1");
      sheetLiquid.getRange(liquidIndex+1, 6).setValue("LIQUIDATION");
-     sheetLiquid.getRange(liquidIndex+1, 8).setValue(workValues[i][5]);
+     sheetLiquid.getRange(liquidIndex+1, 8).setValue(workValues[i][6]);
    }
       
    // Copy work information into liquidation.
    sheetLiquid.getRange(liquidIndex+1, 3).setValue(workValues[i][2]);
    sheetLiquid.getRange(liquidIndex+1, 5).setValue(workValues[i][3]);
-   sheetLiquid.getRange(liquidIndex+1, 7).setValue(workValues[i][4]);
+   sheetLiquid.getRange(liquidIndex+1, 7).setValue(workValues[i][5]);
       
    // Show changes to user.
    ui.alert(
-   'Item title updated from "' + title + '" to "' + workValues[0][2] + '".');
+   'Item title updated from "' + title + '" to "' + workValues[i][2] + '".');
   }
 }
 
@@ -198,23 +198,21 @@ function bulkUpdateLiquid() {
         continue;
       }
       
-      // Create new liquidation entry if sku does not exist in liquidation sheet.
-      if (liquidIndex == -1) {
-        created++;
-        liquidIndex = liqLastRow;
-        sheetLiquid.getRange(liquidIndex+1, 1).setValue(workValues[i][1]);
-        sheetLiquid.getRange(liquidIndex+1, 2).setValue(todayDate());
-        sheetLiquid.getRange(liquidIndex+1, 4).setValue("1");
-        sheetLiquid.getRange(liquidIndex+1, 6).setValue("LIQUIDATION");
-        sheetLiquid.getRange(liquidIndex+1, 8).setValue(workValues[i][5]);
-      }
+     if (liquidIndex == -1) {
+       liquidIndex = liqLastRow;
+       sheetLiquid.getRange(liquidIndex+1, 1).setValue(workValues[i][1]);
+       sheetLiquid.getRange(liquidIndex+1, 2).setValue(todayDate());
+       sheetLiquid.getRange(liquidIndex+1, 4).setValue("1");
+       sheetLiquid.getRange(liquidIndex+1, 6).setValue("LIQUIDATION");
+       sheetLiquid.getRange(liquidIndex+1, 8).setValue(workValues[i][6]);
+     }
       
-      // Copy work information into liquidation.
-      sheetLiquid.getRange(liquidIndex+1, 3).setValue(workValues[i][2]);
-      sheetLiquid.getRange(liquidIndex+1, 5).setValue(workValues[i][3]);
-      sheetLiquid.getRange(liquidIndex+1, 7).setValue(workValues[i][4]);
-      // Check if SKU is in liquidation sheet.
-      if (liquidIndex == liqLastRow) {liqLastRow++; continue;}
+    // Copy work information into liquidation.
+    sheetLiquid.getRange(liquidIndex+1, 3).setValue(workValues[i][2]);
+    sheetLiquid.getRange(liquidIndex+1, 5).setValue(workValues[i][3]);
+    sheetLiquid.getRange(liquidIndex+1, 7).setValue(workValues[i][5]);
+    // Check if SKU is in liquidation sheet.
+    if (liquidIndex == liqLastRow) {liqLastRow++; continue;}
       updated++;
     }
     // Show changes to user.
