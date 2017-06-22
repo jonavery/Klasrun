@@ -235,7 +235,7 @@ function importBlackwrap() {
   }
   
   // Load sheet6 and the values from the blackwrap manifest.
-  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('TEST');
+  var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet6');
   var blackwrapValues = blackwrapSheet.getDataRange().getValues().slice(1);
   
   // Sort the new values alphabetically by their titles.
@@ -251,7 +251,7 @@ function importBlackwrap() {
   // Cache values to be transferred over to Sheet6.
   var titles = getCol(blackwrapValues, 13);
   var asins = getCol(blackwrapValues, 0);
-  var UPCs = getCol(blackwrapValues, 8);
+  var LPNs = getCol(blackwrapValues, 1);
   
   // Create appropriate number of rows in Sheet6.
   var itemCount = blackwrapValues.length;
@@ -263,7 +263,7 @@ function importBlackwrap() {
     sheet6.getRange(j, 2).setValue(titles[i]);
     sheet6.getRange(j, 3).setValue("1");
     sheet6.getRange(j, 4).setValue(asins[i]);
-    sheet6.getRange(j, 5).setValue(UPCs[i]);
+    sheet6.getRange(j, 5).setValue(LPNs[i]);
   }
   
   // Set summation formulas.
