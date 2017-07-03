@@ -1,15 +1,15 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Automation Menu')
-    .addItem('Update Orders and Auctions', 'updateSheets')
+    .addItem('Import New Auctions', 'importLiqOrders')
     .addItem('Update LIQ FORMAT', 'updateLiqFormat')
     .addSeparator()
-    .addItem('Transfer to LIQ & WORK', 'transferData')
+    .addItem('Export to LIQ & WORK', 'exportData')
     .addToUi();
 }
 
-// Create function that strips specified column from an array.
 function getCol(matrix, col){
+  // Create function that strips specified column from an array.
   var column = [];
   var l = matrix.length;
   for(var i=0; i<l; i++){
@@ -18,8 +18,8 @@ function getCol(matrix, col){
   return column;
 }
 
-// Create function that finds the sum of an array.
 function sumArray(array) {
+  // Create function that finds the sum of an array.
   for (
     var
     i = 0,
@@ -31,13 +31,13 @@ function sumArray(array) {
   return sum;
 }
 
-function updateSheets() {
-  /*
-  This script accomplishes the following:
-    1. Import the new auctions for Liq Orders1.ods
-    2. Clear the LIQ FORMAT, Orders, and Auctions sheets from Manifest.
-    3. Paste the auctions into Orders and Auctions.
-  */
+function importLiqOrders() {
+  /*************************************************************************
+  * This script accomplishes the following:
+  *   1. Import the new auctions for Liq Orders1.ods
+  *   2. Clear the LIQ FORMAT, Orders, and Auctions sheets from Manifest.
+  *   3. Paste the auctions into Orders and Auctions.
+  **************************************************************************/
   
   // Set ID's for the spreadsheet files to be used.
   var maniID = "1aV0bturINsUIgF-X8LcWZaWfehWEkhr6nUIVhbqdAxM";
@@ -101,8 +101,8 @@ function updateSheets() {
   // Loop through all old auctions and compare them to new auctions.
   if (sheetOldAuctions.getLastRow() > 0){
     var oldAuctions = getCol(sheetOldAuctions.getRange(1,1,sheetOldAuctions.getLastRow()).getValues(), 0);
-    for (i=0; i < oldAuctions.length; i++) {
-      for(j=0; j < newAuctions.length; j++) {
+    for (var i=0; i < oldAuctions.length; i++) {
+      for(var j=0; j < newAuctions.length; j++) {
         if (oldAuctions[i] == newAuctions[j][0]) {
           newAuctions.splice(j, 1);
           Logger.log('Old i: ' + i + '    New j: ' + j);
@@ -118,30 +118,31 @@ function updateSheets() {
   }
   
   // Cache new order information.
-  var newOrders = sheetNewOrders.getRange(3, 1, sheetNewOrders.getLastRow()-6, 5).getValues();
+  var newOrders = sheetNewOrders.getRange(6, 1, sheetNewOrders.getLastRow()-6, 6).getValues();
   // Clear the sheets.
   sheetLiq.getRange(3, 2, sheetLiq.getLastRow(), 13).clearContent();
   sheetOrders.getRange(2, 1, sheetOrders.getLastRow(), 12).clear();
-  if (sheetOldAuctions.getLastRow()){sheetOldAuctions.getRange(1, 1, sheetOldAuctions.getLastRow(), 7).clear()};
+  if (sheetOldAuctions.getLastRow()){sheetOldAuctions.getDataRange().clear()};
   // Transfer order information into manifest.
   sheetOldAuctions.getRange(1, 1, newAuctions.length, newAuctions[0].length).setValues(newAuctions);
   sheetOrders.getRange(2, 1, newOrders.length, newOrders[0].length).setValues(newOrders);
+//  var AERrange = sheetOrders.getRange(2, 6, newOrders.length);
+//  AERrange.copyTo(sheetOrders.getRange(2, 5, newOrders.length));
+//  AERrange.clear();
   
   // Print out the number of auctions copied and the total items in those auctions.
   ui.alert('Script finished.\n\nAuctions Copied: ' + sheetOldAuctions.getLastRow()  + '\nItems In Auctions: ' + sumArray(getCol(newAuctions, 3)));
 }  
 
 function updateLiqFormat() {
-  /*
-  
-  This script accomplishes the following tasks:
-  1. Find order in Copy of Liq Orders Scrap from its number in Auctions
-  2. Move order information into LIQ FORMAT with correct formatting
-  3. Fill out all relevant formulas on the right side of LIQ FORMAT
-  4. Adjust per item cost to align with total cost
-  5. Repeat for each order in Auctions
-  
-  */
+  /************************************************************************
+  * This script accomplishes the following tasks:
+  *   1. Find order in Copy of Liq Orders Scrap from its number in Auctions
+  *   2. Move order information into LIQ FORMAT with correct formatting
+  *   3. Fill out all relevant formulas on the right side of LIQ FORMAT
+  *   4. Adjust per item cost to align with total cost
+  *   5. Repeat for each order in Auctions 
+  *************************************************************************/
   
   // Set ID for the spreadsheet file to be used.
   var maniID = "1aV0bturINsUIgF-X8LcWZaWfehWEkhr6nUIVhbqdAxM";
@@ -156,7 +157,7 @@ function updateLiqFormat() {
   var liqOrders = (getCol(orders,0));
   
   var auctions = sheetAuctions.getDataRange().getValues();
-  var auctionCount = sheetAuctions.getDataRange().getNumRows();
+  var auctionCount = sheetAuctions.getLastRow();
   
   // Save today's properly formatted date as a variable.
   var today = new Date();
@@ -178,17 +179,13 @@ function updateLiqFormat() {
   function round(value, exp) {
     if (typeof exp === 'undefined' || +exp === 0)
       return Math.round(value);
-
     value = +value;
     exp = +exp;
-
     if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0))
       return NaN;
-
     // Shift
     value = value.toString().split('e');
     value = Math.round(+(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp)));
-
     // Shift back
     value = value.toString().split('e');
     return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
@@ -216,11 +213,17 @@ function updateLiqFormat() {
     SpreadsheetApp.getUi().alert('LIQ FORMAT is already up to date. Halting script.');
     return;
   }
+  
+  // Clear LIQ FORMAT sheet and remove empty rows.
+  sheetLiq.getRange(3, 1, sheetLiq.getMaxRows()-2, sheetLiq.getLastColumn()).clear();
+  sheetLiq.deleteRows(3, sheetLiq.getMaxRows()-2)
+  
   for (i=0; i < auctionCount; i++) {
     // Update orderID to the next order #.
     var orderID = auctions[i][0];
     // Save item count for that order as a variable
     var itemCount = auctions[i][3];
+    sheetLiq.insertRowsAfter(2, itemCount);
     // Find order in Copy of Liq Orders Scrap
     var orderIndex = liqOrders.indexOf(orderID);
     if (orderIndex == -1) {
@@ -230,34 +233,35 @@ function updateLiqFormat() {
     // Find last row of data.
     var liqLastRow = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("LIQ FORMAT").getLastRow();
     // Save order as range with itemCount number of rows
-    var orderItems = sheetOrders.getRange(orderIndex+1, 2, itemCount, 4);
+    var orderItems = sheetOrders.getRange(orderIndex+1, 2, itemCount, 5);
     // Copy range values over to LIQ FORMAT
-    orderItems.copyValuesToRange(sheetLiq, 3, 6, liqLastRow+1, liqLastRow+itemCount+1)
+    orderItems.copyValuesToRange(sheetLiq, 3, 7, liqLastRow+1, liqLastRow+itemCount+1);
+    sheetLiq.getRange(liqLastRow+1, 1, itemCount, 9).setBackground('white');
       
     // Copy A/E/R from Buy Site to correct column
-    var AER = sheetLiq.getRange(liqLastRow+1, 7, itemCount);
-    sheetLiq.getRange(liqLastRow+1, 6, itemCount).moveTo(AER);
-    var formulaRange = sheetLiq.getRange(2, 9, 1, 5);
+    var AER = sheetLiq.getRange(liqLastRow+1, 8, itemCount);
+    sheetLiq.getRange(liqLastRow+1, 7, itemCount).moveTo(AER);
+    var formulaRange = sheetLiq.getRange(2, 10, 1, 5);
     // Fill in date, buy site, and cost information.
-    for (j=0; j < itemCount; j++) {
-      sheetLiq.getRange(liqLastRow+1+j, 2).setValue(today);
-      sheetLiq.getRange(liqLastRow+1+j, 6).setValue("LIQUIDATION");
-      sheetLiq.getRange(liqLastRow+1+j, 8).setValue(orderID);
-      formulaRange.copyTo(sheetLiq.getRange(liqLastRow+1+j, 9, 1, 5));
+    for (var j=1; j <= itemCount; j++) {
+      sheetLiq.getRange(liqLastRow+j, 2).setValue(today);
+      sheetLiq.getRange(liqLastRow+j, 7).setValue("LIQUIDATION");
+      sheetLiq.getRange(liqLastRow+j, 9).setValue(orderID);
+      formulaRange.copyTo(sheetLiq.getRange(liqLastRow+j, 10, 1, 5));
     }
     // Copy per item cost values.
-    sheetLiq.getRange(liqLastRow+1, 14, itemCount).setValue(sheetLiq.getRange(liqLastRow+1, 13, itemCount).getDisplayValues());
+    sheetLiq.getRange(liqLastRow+1, 15, itemCount).setValue(sheetLiq.getRange(liqLastRow+1, 14, itemCount).getDisplayValues());
     // Have if statement comparing rounded cost to actual cost
-    var prices = sheetLiq.getRange(liqLastRow+1, 14, itemCount).getValues()
-    var orderTotal = sheetLiq.getRange(liqLastRow+1,10).getValue()
+    var prices = sheetLiq.getRange(liqLastRow+1, 15, itemCount).getValues();
+    var orderTotal = sheetLiq.getRange(liqLastRow+1,10).getValue();
     var roundedTotal = Number(round(sumArray(prices), 2));
     if (roundedTotal < orderTotal) {
       // If rounded is lower, compensate top per item cost
-      sheetLiq.getRange(liqLastRow+1, 14).setValue(Number(prices[0]) + orderTotal - roundedTotal);
+      sheetLiq.getRange(liqLastRow+1, 15).setValue(Number(prices[0]) + orderTotal - roundedTotal);
     }
     else if (roundedTotal > orderTotal) {
       // If rounded is higher, compensate bottom per item cost
-      sheetLiq.getRange(liqLastRow+itemCount, 14).setValue(Number(prices[itemCount-1]) + orderTotal - roundedTotal);
+      sheetLiq.getRange(liqLastRow+itemCount, 15).setValue(Number(prices[itemCount-1]) + orderTotal - roundedTotal);
     }
     orderCopy++;
     itemCopy = itemCopy + itemCount;
@@ -266,14 +270,14 @@ function updateLiqFormat() {
   SpreadsheetApp.getUi().alert('Script finished.\n\nOrders Copied: ' +  orderCopy + '\nItems Copied: ' + itemCopy);
 }
 
-function transferData() {
-  /*
-  This function will accomplish the following:
-    1. Load the relevant Liquidation, Work, and Manifest sheets.
-    2. Save the needed ranges from the Manifest sheet.
-    3. Copy over the ranges into the Liquidation and Work sheets with the proper formatting.
-    4. Fill in any constant values in the Liquidation and Work Sheets.
-  */
+function exportData() {
+  /*********************************************************************************************
+  * This function will accomplish the following:
+  *   1. Load the relevant Liquidation, Work, and Manifest sheets.
+  *   2. Save the needed ranges from the Manifest sheet.
+  *   3. Copy over the ranges into the Liquidation and Work sheets with the proper formatting.
+  *   4. Fill in any constant values in the Liquidation and Work Sheets.
+  **********************************************************************************************/
   
   // Set ID's for the spreadsheet file to be used.
   var maniID = "1aV0bturINsUIgF-X8LcWZaWfehWEkhr6nUIVhbqdAxM";
@@ -287,11 +291,49 @@ function transferData() {
   
   // Save last row in each sheet to be used for indexing later.
   var maniLastRow = sheetManifest.getLastRow();
-  var futureLastRow = sheetFuture.getLastRow();
   var liqLastRow = sheetLiquid.getLastRow();
   
   // Load all of the values from manifest sheet.
-  var maniValues = sheetManifest.getDataRange().getValues();  
+  var maniValues = sheetManifest.getDataRange().getValues();
+  
+  // Prepare the future listings sheet for data entry.
+  var futureMaxRows = sheetFuture.getMaxRows();
+  sheetFuture.getRange(2, 1, futureMaxRows-1, sheetFuture.getLastColumn()).clear();
+  var futureNeededRows = maniValues.length + 1 - futureMaxRows;
+  switch(true) {
+    case (futureNeededRows > 0):
+      // Add blank rows.
+      sheetFuture.insertRowsAfter(1, futureNeededRows);
+      break;
+    case (futureNeededRows == 0):
+      // Do nothing.
+      break;
+    case (futureNeededRows < 0):
+      // Delete rows.
+      sheetFuture.deleteRows(2, -futureNeededRows);
+      break;
+    default:
+      // Print error message.
+      SpreadsheetApp.getUi().alert('Something went wrong formatting blank rows.');
+      return;
+  }
+  
+  // Add the proper number of rows to the liquidation sheet if needed.
+  var liqNeededRows = maniValues.length + liqLastRow - sheetLiquid.getMaxRows();
+  switch(true) {
+    case (liqNeededRows > 0):
+      // Add blank rows.
+      sheetLiquid.insertRowsAfter(liqLastRow, liqNeededRows);
+      break;
+    case (liqNeededRows == 0):
+    case (liqNeededRows < 0):
+      // Do nothing.
+      break;
+    default:
+      // Print error message.
+      SpreadsheetApp.getUi().alert('Something went wrong formatting blank rows.');
+      return;
+  }
   
   // Load highest SKU # from liquidation sheet.
   var allSKUs = getCol(sheetLiquid.getRange(2, 1, liqLastRow-1).getValues(), 0);
@@ -304,30 +346,31 @@ function transferData() {
   
   // Cache all order numbers currently in liquidation sheet and check to see if data has already been transferred.
   var allOrderNums = getCol(sheetLiquid.getRange(1, 8, liqLastRow).getValues(), 0);
-  for (i=2; i < maniLastRow; i++) {   
+  for (var i=2; i < maniLastRow; i++) {   
     var k = i-1;
     if (allOrderNums.indexOf(maniValues[i][8]) > -1) {
       Logger.log('Order #' + maniValues[i][8] + ' has already been copied.');
       break;
     }
-    // To Future(column): Title(3), UPC(4), A/E/R(5), and 7-digit Order #(6) from Manifest.
-    sheetFuture.getRange(futureLastRow + k, 2).setValue(highSKU + k);
-    sheetFuture.getRange(futureLastRow + k, 3).setValue(maniValues[i][2]);
-    sheetFuture.getRange(futureLastRow + k, 4).setValue(maniValues[i][4]);
-    sheetFuture.getRange(futureLastRow + k, 5).setValue(maniValues[i][6]);
-    sheetFuture.getRange(futureLastRow + k, 6).setValue(maniValues[i][8]);
-    // To Liquid(column): Date(2), Title(3), Quantity(4), UPC(5), Buy Site(6), A/E/R(7), 7-digit #(8), Buy Price(11), and Card(12) from Manifest.
-    sheetLiquid.getRange(liqLastRow + k, 1).setValue(highSKU + k);
-    sheetLiquid.getRange(liqLastRow + k, 2).setValue(maniValues[i][1]);
-    sheetLiquid.getRange(liqLastRow + k, 3).setValue(maniValues[i][2]);
-    sheetLiquid.getRange(liqLastRow + k, 4).setValue(maniValues[i][3]);
-    sheetLiquid.getRange(liqLastRow + k, 5).setValue(maniValues[i][4]);
-    sheetLiquid.getRange(liqLastRow + k, 6).setValue(maniValues[i][5]);
-    sheetLiquid.getRange(liqLastRow + k, 7).setValue(maniValues[i][6]);
-    sheetLiquid.getRange(liqLastRow + k, 8).setValue(maniValues[i][8]);
-    sheetLiquid.getRange(liqLastRow + k, 9).setValue("FBA");
-    sheetLiquid.getRange(liqLastRow + k, 10).setValue("FBA");
-    sheetLiquid.getRange(liqLastRow + k, 11).setValue(maniValues[i][13]);
-    sheetLiquid.getRange(liqLastRow + k, 12).setValue(maniValues[i][10]);
+    // To Future(column): Title(3), ASIN(4), LPN(5), A/E/R(6), and 7-digit Order #(7) from Manifest.
+    sheetFuture.getRange(i, 2).setValue(highSKU + k);       // SKU
+    sheetFuture.getRange(i, 3).setValue(maniValues[i][2]);  // Title
+    sheetFuture.getRange(i, 4).setValue(maniValues[i][4]);  // ASIN
+    sheetFuture.getRange(i, 5).setValue(maniValues[i][5]);  // LPN
+    sheetFuture.getRange(i, 6).setValue(maniValues[i][7]);  // A/E/R
+    sheetFuture.getRange(i, 7).setValue(maniValues[i][9]);  // Order #
+    // To Liquid(column): Date(2), Title(3), Quantity(4), ASIN(5), Buy Site(6), A/E/R(7), 7-digit #(8), Buy Price(11), and Card(12) from Manifest.
+    sheetLiquid.getRange(liqLastRow + k, 1).setValue(highSKU + k);       // SKU
+    sheetLiquid.getRange(liqLastRow + k, 2).setValue(maniValues[i][1]);  // Date
+    sheetLiquid.getRange(liqLastRow + k, 3).setValue(maniValues[i][2]);  // Title
+    sheetLiquid.getRange(liqLastRow + k, 4).setValue(maniValues[i][3]);  // Quantity
+    sheetLiquid.getRange(liqLastRow + k, 5).setValue(maniValues[i][4]);  // ASIN
+    sheetLiquid.getRange(liqLastRow + k, 6).setValue(maniValues[i][6]);  // Buy Site
+    sheetLiquid.getRange(liqLastRow + k, 7).setValue(maniValues[i][7]);  // A/E/R
+    sheetLiquid.getRange(liqLastRow + k, 8).setValue(maniValues[i][9]);  // Order #
+    sheetLiquid.getRange(liqLastRow + k, 9).setValue("FBA");             // Sell Site
+    sheetLiquid.getRange(liqLastRow + k, 10).setValue("FBA");            // Sell Order
+    sheetLiquid.getRange(liqLastRow + k, 11).setValue(maniValues[i][14]);// Buy Price
+    sheetLiquid.getRange(liqLastRow + k, 12).setValue(maniValues[i][11]);// Card
   }
 }
