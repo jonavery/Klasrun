@@ -113,6 +113,16 @@ function liqPriceSearch() {
     }
   }
   
+  var banASIN = ['B01IBF30M', 'B0MYVCXB0', 'B01I3BYYJK', 'B01LWWUEDR'];
+  var itemASIN = sheet.getRange(6, 4, itemCount).getValues();
+  for (i=0; i < itemCount; i++) {
+    for (j=0; j < banASIN.length; j++) {
+      if (itemASIN[i][0] == banASIN[j]) {
+        sheet.getRange(6+i, 5).setValue('R');
+      }
+    }
+  }
+  
   
   // Cache and paste values to overwrite the formulas.
   var vlookupValues = sheet.getRange(6, 5, itemCount, 3).getValues();
@@ -211,7 +221,17 @@ function blackPriceSearch() {
   for (i=0; i < itemCount; i++) {
     for (j=0; j < banned.length; j++) {
       if (items[i][0].indexOf(banned[j]) != -1) {
-        sheet6.getRange(6+i, 5).setValue('R');
+        sheet.getRange(6+i, 5).setValue('R');
+      }
+    }
+  }
+  
+  var banASIN = ['B01IBF30M', 'B0MYVCXB0', 'B01I3BYYJK', 'B01LWWUEDR'];
+  var itemASIN = sheet6.getRange(6, 4, itemCount).getValues();
+  for (i=0; i < itemCount; i++) {
+    for (j=0; j < banASIN.length; j++) {
+      if (itemASIN[i][0] == banASIN[j]) {
+        sheet.getRange(6+i, 5).setValue('R');
       }
     }
   }
@@ -312,7 +332,17 @@ function importBlackwrap() {
   for (i=0; i < itemCount; i++) {
     for (j=0; j < banned.length; j++) {
       if (items[i][0].indexOf(banned[j]) != -1) {
-        sheet6.getRange(6+i, 6).setValue('R');
+        sheet.getRange(6+i, 5).setValue('R');
+      }
+    }
+  }
+  
+  var banASIN = ['B01IBF30M', 'B0MYVCXB0', 'B01I3BYYJK', 'B01LWWUEDR'];
+  var itemASIN = sheet6.getRange(6, 4, itemCount).getValues();
+  for (i=0; i < itemCount; i++) {
+    for (j=0; j < banASIN.length; j++) {
+      if (itemASIN[i][0] == banASIN[j]) {
+        sheet.getRange(6+i, 5).setValue('R');
       }
     }
   }
@@ -333,17 +363,17 @@ function importPrices() {
   // Fetch the json array from website and parse into JS object.
   var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/blackwrap.json');
   var json = response.getContentText();
-  // Preserve newlines, etc - use valid JSON
-  json = json.replace(/\\n/g, "\\n")  
-               .replace(/\\'/g, "\\'")
-               .replace(/\\"/g, '\\"')
-               .replace(/\\&/g, "\\&")
-               .replace(/\\r/g, "\\r")
-               .replace(/\\t/g, "\\t")
-               .replace(/\\b/g, "\\b")
-               .replace(/\\f/g, "\\f");
-  // Remove non-printable and other non-valid JSON chars
-  json = json.replace(/[\u0000-\u0019]+/g,""); 
+//  // Preserve newlines, etc - use valid JSON
+//  json = json.replace(/\\n/g, "\\n")  
+//               .replace(/\\'/g, "\\'")
+//               .replace(/\\"/g, '\\"')
+//               .replace(/\\&/g, "\\&")
+//               .replace(/\\r/g, "\\r")
+//               .replace(/\\t/g, "\\t")
+//               .replace(/\\b/g, "\\b")
+//               .replace(/\\f/g, "\\f");
+//  // Remove non-printable and other non-valid JSON chars
+//  json = json.replace(/[\u0000-\u0019]+/g,""); 
   var data = JSON.parse(json);
   
   // Convert data object into multidimensional array.
@@ -364,11 +394,7 @@ function importPrices() {
 
   // Push array into sheet6 tab.
   var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet6');
-  for (var i = 0; i < 843; i++) {
-    var j = i + 406;
-    var importValues = [itemArray[i]];
-    sheet6.getRange(j, 9, 1, 3).setValues(importValues);
-  }
+  sheet6.getRange(905, 10, itemCount, 3).setValues(itemArray);
 }
 
 function getCol(matrix, col){
