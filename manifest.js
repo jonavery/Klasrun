@@ -372,5 +372,15 @@ function exportData() {
     sheetLiquid.getRange(liqLastRow + k, 10).setValue("FBA");            // Sell Order
     sheetLiquid.getRange(liqLastRow + k, 11).setValue(maniValues[i][14]);// Buy Price
     sheetLiquid.getRange(liqLastRow + k, 12).setValue(maniValues[i][11]);// Card
+    // Setup liquidation formulas for new entry.
+    var r = String(liqLastRow + k);
+    sheetLiquid.getRange(liqLastRow + k, 14).setFormula("=M"+r+"-K"+r);  // Actual Profit
+    sheetLiquid.getRange(liqLastRow + k, 15).setFormula("=M"+r+"/K"+r);  // Actual % Increase
+    sheetLiquid.getRange(liqLastRow + k, 22).setFormula("=VLOOKUP(A"+r+",Returns!A:A,1,0)");        // RETURNS V
+    sheetLiquid.getRange(liqLastRow + k, 23).setFormula("=VLOOKUP(A"+r+",Salvage!A:A,1,0)");        // SALVAGE V
+    sheetLiquid.getRange(liqLastRow + k, 24).setFormula("=VLOOKUP(A"+r+",Reimbursements!F:F,1,0)"); // REIMBURSE V
+    sheetLiquid.getRange(liqLastRow + k, 25).setFormula("=VLOOKUP(A"+r+",Inventory!B:B,1,0)");      // INVENTORY V
+//    sheetLiquid.getRange(liqLastRow + k, 26).setFormula("=VLOOKUP(A"+r+",Connor!G:H,2,0)");         // FBA SHIPMENT STATUS
+//    sheetLiquid.getRange(liqLastRow + k, 27).setFormula("=VLOOKUP(A"+r+",Connor!K:K,1,0)");         // FBA SHIPMENT ISSUE
   }
 }
