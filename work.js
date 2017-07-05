@@ -1,7 +1,7 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Automation Menu')
-    .addItem('Update Item in Liquidation', 'updateAssorted')
+    .addItem('Update Item in Liquidation By SKU', 'updateBySKU')
     .addItem('Update All Work Items in Liquidation', 'bulkUpdateLiquid')
     .addSeparator()
     .addItem('Highlight Future Listings by A/E/R', 'highlightAER')
@@ -61,7 +61,7 @@ function highlightAER() {
   var workColors = rangeWork.getBackgrounds();
   
   // Cache A/E/R column of sheet.
-  var aerValues = getCol(workValues, 6);
+  var aerValues = getCol(workValues, 5);
   
   // Loop through A/E/R column and color cells with a switch statement.
   for (i=1; i<aerValues.length; i++) {
@@ -88,6 +88,11 @@ function highlightAER() {
           activeRange.setBackground('blue');
           activeRange.setFontColor('white');
           break;
+        case 'c':
+        case 'C':
+          activeRange.setBackground('#cc3300');
+          activeRange.setFontColor('white');
+          break;
         default:
           activeRange.setBackground('gray');
           break;
@@ -96,7 +101,7 @@ function highlightAER() {
   }
 }
 
-function updateAssorted() {
+function updateBySKU() {
   /**
   * This script gets an SKU from the user and updates the item in
   * Liquidation to match it.
@@ -119,7 +124,7 @@ function updateAssorted() {
     var sku = parseInt(response.getResponseText());
     var workLastRow = sheetListings.getLastRow();
     var workSKU = getCol(sheetListings.getRange(1, 2, workLastRow).getValues(), 0);
-    var workValues = sheetListings.getRange(1, 2, workLastRow, 6).getValues();
+    var workValues = sheetListings.getDataRange().getValues();
     var liqLastRow = sheetLiquid.getLastRow();
     var liquidSKU = getCol(sheetLiquid.getRange(1, 1, liqLastRow).getValues(), 0);
     var liquidUPC = getCol(sheetLiquid.getRange(1, 5, liqLastRow).getValues(), 0);
@@ -135,6 +140,7 @@ function updateAssorted() {
       
    if (liquidIndex == -1) {
      liquidIndex = liqLastRow;
+     sheetLiquid.insertRowAfter(liqLastRow);
      sheetLiquid.getRange(liquidIndex+1, 1).setValue(workValues[i][1]);
      sheetLiquid.getRange(liquidIndex+1, 2).setValue(todayDate());
      sheetLiquid.getRange(liquidIndex+1, 4).setValue("1");
@@ -200,6 +206,7 @@ function bulkUpdateLiquid() {
       
      if (liquidIndex == -1) {
        liquidIndex = liqLastRow;
+       sheetLiquid.insertRowAfter(liqLastRow);
        sheetLiquid.getRange(liquidIndex+1, 1).setValue(workValues[i][1]);
        sheetLiquid.getRange(liquidIndex+1, 2).setValue(todayDate());
        sheetLiquid.getRange(liquidIndex+1, 4).setValue("1");
