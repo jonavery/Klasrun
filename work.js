@@ -192,7 +192,7 @@ function bulkUpdateLiquid() {
     var notUpdated = 0;
     var created = 0;
     
-    for (i = 1; i < workSKU.length; i++) {
+    for (var i = 1; i < workSKU.length; i++) {
       // Find index of SKU in work and liquidation.
       var sku = parseInt(workSKU[i]);
       var workIndex = workSKU.indexOf(sku);
@@ -205,13 +205,32 @@ function bulkUpdateLiquid() {
       }
       
      if (liquidIndex == -1) {
+       created++;
        liquidIndex = liqLastRow;
+       var r = String(liquidIndex + 1);
        sheetLiquid.insertRowAfter(liqLastRow);
-       sheetLiquid.getRange(liquidIndex+1, 1).setValue(workValues[i][1]);
-       sheetLiquid.getRange(liquidIndex+1, 2).setValue(todayDate());
-       sheetLiquid.getRange(liquidIndex+1, 4).setValue("1");
-       sheetLiquid.getRange(liquidIndex+1, 6).setValue("LIQUIDATION");
-       sheetLiquid.getRange(liquidIndex+1, 8).setValue(workValues[i][6]);
+       
+       // Enter values from Work sheet.
+       sheetLiquid.getRange(r, 1).setValue(workValues[i][1]);
+       sheetLiquid.getRange(r, 2).setValue(todayDate());
+       sheetLiquid.getRange(r, 4).setValue("1");
+       sheetLiquid.getRange(r, 6).setValue("LIQUIDATION");
+       sheetLiquid.getRange(r, 8).setValue(workValues[i][6]);
+       
+       // Enter FBA information for new entry.
+       sheetLiquid.getRange(r, 9).setValue("FBA");             // Sell Site
+       sheetLiquid.getRange(r, 10).setValue("FBA");            // Sell Order
+       sheetLiquid.getRange(r, 11).setValue("0.01");           // Buy Price
+       
+       // Setup liquidation formulas for new entry.
+       sheetLiquid.getRange(r, 14).setFormula("=M"+r+"-K"+r);  // Actual Profit
+       sheetLiquid.getRange(r, 15).setFormula("=M"+r+"/K"+r);  // Actual % Increase
+       sheetLiquid.getRange(r, 22).setFormula("=VLOOKUP(A"+r+",Returns!A:A,1,0)");        // RETURNS V
+       sheetLiquid.getRange(r, 23).setFormula("=VLOOKUP(A"+r+",Salvage!A:A,1,0)");        // SALVAGE V
+       sheetLiquid.getRange(r, 24).setFormula("=VLOOKUP(A"+r+",Reimbursements!F:F,1,0)"); // REIMBURSE V
+       sheetLiquid.getRange(r, 25).setFormula("=VLOOKUP(A"+r+",Inventory!B:B,1,0)");      // INVENTORY V
+//       sheetLiquid.getRange(liqLastRow + k, 26).setFormula("=VLOOKUP(A"+r+",Connor!G:H,2,0)");         // FBA SHIPMENT STATUS
+//       sheetLiquid.getRange(liqLastRow + k, 27).setFormula("=VLOOKUP(A"+r+",Connor!K:K,1,0)");         // FBA SHIPMENT ISSUE
      }
       
     // Copy work information into liquidation.
@@ -227,54 +246,6 @@ function bulkUpdateLiquid() {
       'Items updated: ' + updated
       + '\nItems already up to date: ' + notUpdated
       + '\nItems created: ' + created);
-  }
-}
-
-function importPrices() {
-  /**
-  * This script accomplishes the following tasks:
-  *  1. Pull json file from MWS server
-  *  2. Convert json into multidimensional array
-  *  3. Push array into MWS tab.
-  */
-  
-  // Fetch the json array from website and parse into JS object.
-  var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/test.json');
-  var json = response.getContentText();
-  var data = JSON.parse(json);
-  
-  // Convert data object into multidimensional array.
-  // Ordering is same as in MWS tab.
-  var itemCount = data.length;
-  var itemArray = makeArray(11, itemCount, "");
-  for (i = 0; i < itemCount; i++) {
-    var item = data[i];
-    itemArray[i] = ([
-      item.SellerSKU,
-      item.Title,
-      item.UPC,
-      item.ASIN,
-      item.Price,
-      item.Dimensions.Weight,
-      item.Dimensions.Length,
-      item.Dimensions.Width,
-      item.Dimensions.Height,
-      item.Condition,
-      item.Comment
-    ]);
-  }
-
-  // Push array into MWS tab.
-  var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
-  var range = sheetMWS.getRange(2, 1, itemCount, 11).clearContent().setBackground('white');
-  range.setValues(itemArray);
-  
-  // Highlight undefined entries that will not be listed.
-  var prices = sheetMWS.getRange(2, 5, itemCount).getValues();
-  for (i = 0; i < itemCount; i++) {
-    if (prices[i][0] == "undefined") {
-      sheetMWS.getRange(2+i, 1, 1, 11).setBackground('red');
-    }
   }
 }
 
