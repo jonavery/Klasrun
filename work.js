@@ -6,7 +6,7 @@ function onOpen() {
     .addSeparator()
     .addItem('Highlight Future Listings by A/E/R', 'highlightAER')
     .addSeparator()
-    .addItem('Populate MWS Tab', 'importPrices')
+    .addItem('Populate MWS Tab', 'populateMWS')
     .addItem('Post Listings', 'postListings')
     .addItem('Cancel Listings', 'cancelListings')
     .addItem('Audit Listings', 'auditListings')
@@ -266,6 +266,54 @@ function bulkUpdateLiquid() {
       + '\nItems created: ' + created);
   }
 }
+
+function populateMWS() {
+   /**
+   * This script accomplishes the following tasks:
+   *  1. Pull json file from MWS server
+   *  2. Convert json into multidimensional array
+   *  3. Push array into MWS tab.
+   */
+   
+   // Fetch the json array from website and parse into JS object.
+   var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/test.json');
+   var json = response.getContentText();
+   var data = JSON.parse(json);
+   
+   // Convert data object into multidimensional array.
+   // Ordering is same as in MWS tab.
+   var itemCount = data.length;
+   var itemArray = makeArray(11, itemCount, "");
+   for (i = 0; i < itemCount; i++) {
+     var item = data[i];
+     itemArray[i] = ([
+       item.SellerSKU,
+       item.Title,
+       item.UPC,
+       item.ASIN,
+       item.Price,
+       item.Dimensions.Weight,
+       item.Dimensions.Length,
+       item.Dimensions.Width,
+       item.Dimensions.Height,
+       item.Condition,
+       item.Comment
+     ]);
+   }
+ 
+   // Push array into MWS tab.
+   var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
+   var range = sheetMWS.getRange(2, 1, itemCount, 11).clearContent().setBackground('white');
+   range.setValues(itemArray);
+   
+   // Highlight undefined entries that will not be listed.
+   var prices = sheetMWS.getRange(2, 5, itemCount).getValues();
+   for (i = 0; i < itemCount; i++) {
+     if (prices[i][0] == "undefined") {
+       sheetMWS.getRange(2+i, 1, 1, 11).setBackground('red');
+     }
+   }
+ }
 
 function postListings() {
   /**
