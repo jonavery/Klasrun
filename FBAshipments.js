@@ -1,4 +1,23 @@
-function populateMWS() {
+function onOpen() {
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('Automation Menu')
+    .addItem('Import FBA Shipment Information', 'importFBA')
+    .addToUi()
+}
+
+function makeArray(w, h, val) {
+// Create array with 'w' columns, 'h' rows, and filled with 'val'
+  var arr = [];
+  for(i = 0; i < h; i++) {
+    arr[i] = [];
+    for(j = 0; j < w; j++) {
+      arr[i][j] = val;
+    }
+  }
+  return arr;
+}
+
+function importFBA() {
   /**
   * This script accomplishes the following tasks:
   *  1. Pull json file from MWS server
