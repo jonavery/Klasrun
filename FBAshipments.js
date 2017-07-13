@@ -1,7 +1,8 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Automation Menu')
-    .addItem('Import FBA Shipment Information', 'importFBA')
+    .addItem('Create FBA Shipment Report', 'createFBA')
+    .addItem('Import FBA Shipment Report', 'importFBA')
     .addToUi()
 }
 
@@ -15,6 +16,21 @@ function makeArray(w, h, val) {
     }
   }
   return arr;
+}
+
+function createFBA() {
+  /**
+  * This script uses the Amazon FBAInboundMWS API in tandem with
+  * klasrun.com PHP scripting to create a JSON file of the past
+  * month's FBA shipment information.
+  *
+  * Use this function in tandem with the importFBA() function
+  * to access and store shipment information in the sheet.
+  */
+  
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://klasrun.com/AmazonMWS/FBAInboundServiceMWS/Functions/ParseInboundShipments.php');
 }
 
 function importFBA() {
