@@ -6,10 +6,9 @@ function onOpen() {
     .addSeparator()
     .addItem('Highlight Future Listings by A/E/R', 'highlightAER')
     .addSeparator()
+    .addItem('Generate MWS from SCRAP', 'createMWS')
     .addItem('Populate MWS Tab', 'populateMWS')
     .addItem('Post Listings', 'postListings')
-    .addItem('Cancel Listings', 'cancelListings')
-    .addItem('Audit Listings', 'auditListings')
     .addToUi()
 }
 
@@ -267,6 +266,21 @@ function bulkUpdateLiquid() {
   }
 }
 
+function createMWS() {
+  /**
+  * This script uses the Amazon Products API in tandem with
+  * klasrun.com PHP scripting to create a JSON file of the 
+  * items in the SCRAP sheet currently waiting to be listed.
+  *
+  * Use this function in tandem with the populateMWS() and
+  * postListings() functions to list products on Amazon.
+  */
+  
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateItemArray.php');
+}
+
 function populateMWS() {
    /**
    * This script accomplishes the following tasks:
@@ -276,7 +290,7 @@ function populateMWS() {
    */
    
    // Fetch the json array from website and parse into JS object.
-   var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/test.json');
+   var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/MWS.json');
    var json = response.getContentText();
    var data = JSON.parse(json);
    
