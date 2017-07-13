@@ -69,25 +69,20 @@ function importFBA() {
       return;
   }
   
-  // Push array into FBA sheet.
-  sheetFBA.getRange(2, lastRow+1, itemCount, 8).setValues(itemArray);
-  
   // Cache month and year.
   var monthNames = ["January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"];
   var d = new Date();
   var month = monthNames[d.getMonth()].toUpperCase();
-  var year = d.getFullYear();
+  var year = String(d.getFullYear());
   var date = month.slice(0,3) + ". '" + year.slice(2);
   
   // Set formulas for all new rows.
   for (var i = 0; i < itemCount; i++) {
     var r = i +lastRow + 1;
-    var rangeFormula = sheetFBA.getRange(r, 9, 1, 2);
-    var formulas = ([
-        "=IFERROR(H" + r + "/G" + r + ",0)",
-        "=IF(ISBLANK(I" + r + "),'',IF(I" + r + "=1,'OK',IF(I" + r + ">1,'OK: EXTRA',E" + r + "+45)))"
-      ]);
+    sheetFBA.getRange(r, 1, 1, 8).setValues([itemArray[i]]);
+    sheetFBA.getRange(r, 9).setFormula('=IFERROR(H' + r + '/G' + r + ',0)');
+    sheetFBA.getRange(r, 10).setFormula('=IF(ISBLANK(I' + r + '),"",IF(I' + r + '=1,"OK",IF(I' + r + '>1,"OK: EXTRA",E' + r + '+45)))');
     sheetFBA.getRange(r, 11).setValue(date);
     sheetFBA.getRange(r, 14).setValue(itemArray[i][1]);
   }
