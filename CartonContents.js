@@ -2,6 +2,18 @@ function doGet() {
   return getXML();
 }
 
+function makeArray(w, h, val) {
+// Create array with 'w' columns, 'h' rows, and filled with 'val'
+  var arr = [];
+  for(i = 0; i < h; i++) {
+    arr[i] = [];
+    for(j = 0; j < w; j++) {
+      arr[i][j] = val;
+    }
+  }
+  return arr;
+}
+
 function getXML() {
   var xsi = XmlService.getNamespace("xsi", "http://www.w3.org/2001/XMLSchema-instance");
   var noNS = XmlService.getNamespace("noNamespaceSchemaLocation", "amzn-envelope.xsd");
@@ -13,9 +25,30 @@ function getXML() {
     .setAttribute("noNamespaceSchemaLocation", "amzn-envelope.xsd", xsi)
     .addContent(Header)
     .addContent(XmlService.createElement('MessageType').setText('CartonContentsRequest'));
-  
-  // Initialize product sheet and count products to be shipped.
+    
+  // Fetch the json array from website and parse into JS object.
+  var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/FBAInboundServiceMWS/Functions/shipID.json');
+  var json = response.getContentText();
+  var data = JSON.parse(json);
+   
+  // Convert data object into multidimensional array.
+  var shipments = Object.keys(data);
+  var itemArray = [[]];
+  var k = 0;
+  for (var i = 0; i < shipments.length; i++) {
+    var id = shipments[i];
+    for (var j = 0; j < shipments[i].length; j++) {
+      itemArray[data[id][j]] = id;
+    }
+  }
+ 
+  // Initialize sheet variables.
   var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
+  var lastRow = sheetMWS.getLastRow();
+  var SKUs = sheetMWS.getRange(1, 1, lastRow);
+//  sheetMWS.getRange(2, 12, lastRow-1, 1).clearContent();
+  
+  // Sort MWS sheet by shipmentId.
   var products = sheetMWS.sort(12).getDataRange().getValues();
   var counts = {};
   for (var i = 1; i < products.length; i++) {
