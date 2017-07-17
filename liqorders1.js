@@ -302,19 +302,19 @@ function importBlackwrap() {
   
   // @TODO: blackwrap filter is not finding anything. FIX THIS.
   // Set order title.
-  var orders = getCol(blackwrapValues, 0);
-  var blackwraps = orders.filter(function(value) {
-    return value.substr(0, 5) == "BLACK";
-  });
-  var blackNum = blackwraps.length;
-  var n = -1;
-  for (var i = 0; i < blackwraps.length; i++) {
-    while (blackwraps[i].substr(n)[0] != "") {n--;}
-    if (parseInt(blackwraps[i].substr(n)) > blackNum) {
-      blackNum = blackwraps[i].substr(n);
-    }
-  }
-  sheet6.getRange(6, 1).setValue("BLACKWRAP "+String(blackNum+1));
+//  var orders = getCol(blackwrapValues, 0);
+//  var blackwraps = orders.filter(function(value) {
+//    return value.substr(0, 5) == "BLACK";
+//  });
+//  var blackNum = blackwraps.length;
+//  var n = -1;
+//  for (var i = 0; i < blackwraps.length; i++) {
+//    while (blackwraps[i].substr(n)[0] != "") {n--;}
+//    if (parseInt(blackwraps[i].substr(n)) > blackNum) {
+//      blackNum = blackwraps[i].substr(n);
+//    }
+//  }
+//  sheet6.getRange(6, 1).setValue("BLACKWRAP "+String(blackNum+1));
   
   // Set VLOOKUP formulas.
   var lastRow = sheet6.getLastRow();
@@ -332,7 +332,7 @@ function importBlackwrap() {
   for (i=0; i < itemCount; i++) {
     for (j=0; j < banned.length; j++) {
       if (items[i][0].indexOf(banned[j]) != -1) {
-        sheet.getRange(6+i, 5).setValue('R');
+        sheet6.getRange(6+i, 5).setValue('R');
       }
     }
   }
@@ -342,7 +342,7 @@ function importBlackwrap() {
   for (i=0; i < itemCount; i++) {
     for (j=0; j < banASIN.length; j++) {
       if (itemASIN[i][0] == banASIN[j]) {
-        sheet.getRange(6+i, 5).setValue('R');
+        sheet6.getRange(6+i, 5).setValue('R');
       }
     }
   }
@@ -359,6 +359,11 @@ function importPrices() {
   *  2. Convert json into multidimensional array
   *  3. Update sheet6 with ASINs/UPCs.
   */
+  
+  // Retrieve next row number from user.
+  var ui = SpreadsheetApp.getUi();
+  var userInput = ui.prompt('First row to enter prices?');
+  var firstRow = parseInt(userInput.getResponseText());
   
   // Fetch the json array from website and parse into JS object.
   var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/blackwrap.json');
@@ -394,7 +399,7 @@ function importPrices() {
 
   // Push array into sheet6 tab.
   var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet6');
-  sheet6.getRange(905, 10, itemCount, 3).setValues(itemArray);
+  sheet6.getRange(firstRow, 10, itemCount, 3).setValues(itemArray);
 }
 
 function getCol(matrix, col){
