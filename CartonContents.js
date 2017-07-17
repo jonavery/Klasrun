@@ -33,11 +33,14 @@ function getXML() {
    
   // Convert data object into multidimensional array.
   var shipments = Object.keys(data);
-  var itemArray = [[]];
+  var shipCount = shipments.length;
+  var itemArray = {};
   var k = 0;
-  for (var i = 0; i < shipments.length; i++) {
+  for (var i = 0; i < shipCount; i++) {
     var id = shipments[i];
-    for (var j = 0; j < shipments[i].length; j++) {
+    var itemCount = data[id].length
+    
+    for (var j = 0; j < itemCount; j++) {
       itemArray[data[id][j]] = id;
     }
   }
@@ -46,7 +49,14 @@ function getXML() {
   var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
   var lastRow = sheetMWS.getLastRow();
   var SKUs = sheetMWS.getRange(1, 1, lastRow);
-//  sheetMWS.getRange(2, 12, lastRow-1, 1).clearContent();
+  
+  sheetMWS.getRange(2, 12, lastRow-1, 1).clearContent();
+  for (var i = 1; i < lastRow; i++) {
+    // Find index of SKU
+    var importSKUs = Object.keys(itemArray);
+    var sku = parseInt(importSKUs[i]);
+    var mwsIndex = SKUs.indexOf(sku);
+  }
   
   // Sort MWS sheet by shipmentId.
   var products = sheetMWS.sort(12).getDataRange().getValues();
