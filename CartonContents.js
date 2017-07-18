@@ -35,12 +35,13 @@ function getXML() {
   var shipments = Object.keys(data);
   var shipCount = shipments.length;
   var itemArray = {};
+  var itemCount = [];
   var k = 0;
   for (var i = 0; i < shipCount; i++) {
     var id = shipments[i];
-    var itemCount = data[id].length
+    itemCount[i] = data[id].length;
     
-    for (var j = 0; j < itemCount; j++) {
+    for (var j = 0; j < itemCount[i]; j++) {
       itemArray[data[id][j]] = id;
     }
   }
@@ -48,39 +49,32 @@ function getXML() {
   // Initialize sheet variables.
   var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
   var lastRow = sheetMWS.getLastRow();
-  var SKUs = sheetMWS.getRange(1, 1, lastRow);
+  var SKUs = sheetMWS.getRange(1, 1, lastRow).getValues();
   
+  // Import shipmentId's into sheet.
   sheetMWS.getRange(2, 12, lastRow-1, 1).clearContent();
   for (var i = 1; i < lastRow; i++) {
-    // Find index of SKU
-    var importSKUs = Object.keys(itemArray);
-    var sku = parseInt(importSKUs[i]);
-    var mwsIndex = SKUs.indexOf(sku);
+    sheetMWS.getRange(i+1, 12).setValue(itemArray[SKUs[i][0]]);
   }
   
   // Sort MWS sheet by shipmentId.
   var products = sheetMWS.sort(12).getDataRange().getValues();
-  var counts = {};
-  for (var i = 1; i < products.length; i++) {
-    counts[products[i][11]] = 1 + (counts[products[i][11]] || 0);
-  }
   
-  // f = index of first item in shipment
+  // l = index of current item within products array
   // k = index of shipment in counts array
   // j = cartonid number
-  // i = index of current item within products array
-  var f = 1;
-  for (var k = 0; k < counts.length; k++) {
-    var ShipmentId = products[f][11];
+  var l = 1;
+  for (var k = 0; k < shipCount; k++) {
+    var ShipmentId = shipments[k];
   
     var CartonContentsRequest = XmlService.createElement('CartonContentsRequest')
       .addContent(XmlService.createElement('ShipmentId').setText(ShipmentId))
-      .addContent(XmlService.createElement('NumCartons').setText(String(counts[k])));
+      .addContent(XmlService.createElement('NumCartons').setText(itemCount[k]));
   
     var j = 0;
-    for (var i=f; i < f+counts[k]; i++) {
+    for (var i = 0; i < itemCount[k]; i++) {
       var Item = XmlService.createElement('Item')
-        .addContent(XmlService.createElement('SKU').setText(products[i][0]))
+        .addContent(XmlService.createElement('SKU').setText(products[l][0]))
         .addContent(XmlService.createElement('QuantityShipped').setText('1'))
         .addContent(XmlService.createElement('QuantityInCase').setText('1'));
       j++;
@@ -88,13 +82,13 @@ function getXML() {
         .addContent(XmlService.createElement('CartonId').setText(String(j)))
         .addContent(Item);
       CartonContentsRequest.addContent(Carton);
+      l++;
     }
 
     var Message = XmlService.createElement('Message')
       .addContent(XmlService.createElement('MessageID').setText(String(k+1)))
       .addContent(CartonContentsRequest);
     Envelope.addContent(Message);
-    f += counts[k];
   }
   
   var document = XmlService.createDocument(Envelope);
