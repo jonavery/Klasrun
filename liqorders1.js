@@ -360,11 +360,6 @@ function importPrices() {
   *  3. Update sheet6 with ASINs/UPCs.
   */
   
-  // Retrieve next row number from user.
-  var ui = SpreadsheetApp.getUi();
-  var userInput = ui.prompt('First row to enter prices?');
-  var firstRow = parseInt(userInput.getResponseText());
-  
   // Fetch the json array from website and parse into JS object.
   var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/blackwrap.json');
   var json = response.getContentText();
@@ -399,7 +394,7 @@ function importPrices() {
 
   // Push array into sheet6 tab.
   var sheet6 = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Sheet6');
-  sheet6.getRange(firstRow, 10, itemCount, 3).setValues(itemArray);
+  sheet6.getRange(6, 10, itemCount, 3).setValues(itemArray);
 }
 
 function getCol(matrix, col){
