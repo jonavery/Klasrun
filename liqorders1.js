@@ -9,6 +9,29 @@ function onOpen() {
     .addToUi();
 }
 
+function nono(sheet, itemCount) {
+  // Make items returns if belonging to certain brands.
+  var banned = ['Gourmia', 'Cheftronic', 'Oliso', 'Wondermill', 'SKG', 'KitchenAid', 'littleadd'];
+  var items = sheet.getRange(6, 2, itemCount).getValues();
+  for (i=0; i < itemCount; i++) {
+    for (j=0; j < banned.length; j++) {
+      if (items[i][0].indexOf(banned[j]) != -1) {
+        sheet.getRange(6+i, 5).setValue('R');
+      }
+    }
+  }
+
+  var banASIN = ['B01IBF30M', 'B0MYVCXB0', 'B01I3BYYJK', 'B01LWWUEDR'];
+  var itemASIN = sheet.getRange(6, 4, itemCount).getValues();
+  for (i=0; i < itemCount; i++) {
+    for (j=0; j < banASIN.length; j++) {
+      if (itemASIN[i][0] == banASIN[j]) {
+        sheet.getRange(6+i, 5).setValue('R');
+      }
+    }
+  }
+}
+
 function liqPriceSearch() {
   /**
   * This script accomplishes the following:
@@ -102,27 +125,8 @@ function liqPriceSearch() {
   // Update VLOOKUP range.
   sheet.getRange(6, 6, itemCount, 3).setFormulas(formArray);
   
-  // Make items returns if belonging to certain brands.
-  var banned = ['Gourmia', 'Cheftronic', 'Oliso', 'Wondermill', 'SKG', 'KitchenAid'];
-  var items = sheet.getRange(6, 2, itemCount).getValues();
-  for (i=0; i < itemCount; i++) {
-    for (j=0; j < banned.length; j++) {
-      if (items[i][0].indexOf(banned[j]) != -1) {
-        sheet.getRange(6+i, 5).setValue('R');
-      }
-    }
-  }
-  
-  var banASIN = ['B01IBF30M', 'B0MYVCXB0', 'B01I3BYYJK', 'B01LWWUEDR'];
-  var itemASIN = sheet.getRange(6, 4, itemCount).getValues();
-  for (i=0; i < itemCount; i++) {
-    for (j=0; j < banASIN.length; j++) {
-      if (itemASIN[i][0] == banASIN[j]) {
-        sheet.getRange(6+i, 5).setValue('R');
-      }
-    }
-  }
-  
+  // Make banned items returns
+  nono(sheet, itemCount);
   
   // Cache and paste values to overwrite the formulas.
   var vlookupValues = sheet.getRange(6, 5, itemCount, 3).getValues();
@@ -215,31 +219,13 @@ function blackPriceSearch() {
   // Update VLOOKUP range.
   sheet6.getRange(6, 6, itemCount, 3).setFormulas(formArray);
   
-  // Make items returns if belonging to certain brands.
-  var banned = ['Gourmia', 'Cheftronic', 'Oliso', 'Wondermill', 'SKG', 'KitchenAid'];
-  var items = sheet6.getRange(6, 2, itemCount).getValues();
-  for (i=0; i < itemCount; i++) {
-    for (j=0; j < banned.length; j++) {
-      if (items[i][0].indexOf(banned[j]) != -1) {
-        sheet.getRange(6+i, 5).setValue('R');
-      }
-    }
-  }
-  
-  var banASIN = ['B01IBF30M', 'B0MYVCXB0', 'B01I3BYYJK', 'B01LWWUEDR'];
-  var itemASIN = sheet6.getRange(6, 4, itemCount).getValues();
-  for (i=0; i < itemCount; i++) {
-    for (j=0; j < banASIN.length; j++) {
-      if (itemASIN[i][0] == banASIN[j]) {
-        sheet.getRange(6+i, 5).setValue('R');
-      }
-    }
-  }
+  // Make banned items returns
+  nono(sheet6, itemCount);
   
   
   // Cache and paste values to overwrite the formulas.
-  var vlookupValues = sheet.getRange(6, 5, itemCount, 3).getValues();
-  sheet.getRange(6, 5, itemCount, 3).setValues(vlookupValues);
+  var vlookupValues = sheet6.getRange(6, 5, itemCount, 3).getValues();
+  sheet6.getRange(6, 5, itemCount, 3).setValues(vlookupValues);
 }
 
 function importBlackwrap() {
@@ -326,26 +312,8 @@ function importBlackwrap() {
     sheet6.getRange(i, 8).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",5,FALSE)");
   }
   
-  // Make items returns if belonging to certain brands.
-  var banned = ['Gourmia', 'Cheftronic', 'Oliso', 'Wondermill', 'SKG', 'KitchenAid'];
-  var items = sheet6.getRange(6, 2, itemCount).getValues();
-  for (i=0; i < itemCount; i++) {
-    for (j=0; j < banned.length; j++) {
-      if (items[i][0].indexOf(banned[j]) != -1) {
-        sheet6.getRange(6+i, 5).setValue('R');
-      }
-    }
-  }
-  
-  var banASIN = ['B01IBF30M', 'B0MYVCXB0', 'B01I3BYYJK', 'B01LWWUEDR'];
-  var itemASIN = sheet6.getRange(6, 4, itemCount).getValues();
-  for (i=0; i < itemCount; i++) {
-    for (j=0; j < banASIN.length; j++) {
-      if (itemASIN[i][0] == banASIN[j]) {
-        sheet6.getRange(6+i, 5).setValue('R');
-      }
-    }
-  }
+  // Make banned items returns
+  nono(sheet6, itemCount);
   
   // Copy formula output values and paste them as text.
   var vlookupValues = sheet6.getRange(6, 6, itemCount, 3).getValues();
