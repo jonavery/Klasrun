@@ -71,15 +71,13 @@ function getXML() {
       .addContent(XmlService.createElement('ShipmentId').setText(ShipmentId))
       .addContent(XmlService.createElement('NumCartons').setText(itemCount[k]));
   
-    var j = 0;
     for (var i = 0; i < itemCount[k]; i++) {
       var Item = XmlService.createElement('Item')
         .addContent(XmlService.createElement('SKU').setText(products[l][0]))
         .addContent(XmlService.createElement('QuantityShipped').setText('1'))
         .addContent(XmlService.createElement('QuantityInCase').setText('1'));
-      j++;
       var Carton = XmlService.createElement('Carton')
-        .addContent(XmlService.createElement('CartonId').setText(String(j)))
+        .addContent(XmlService.createElement('CartonId').setText(products[l][0]))
         .addContent(Item);
       CartonContentsRequest.addContent(Carton);
       l++;
