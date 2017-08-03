@@ -5,6 +5,7 @@ function onOpen() {
     .addItem('Blackwrap Price Lookup', 'blackPriceSearch')
     .addSeparator()
     .addItem('Import New Blackwrap', 'importBlackwrap')
+    .addItem('Generate Price Estimates', 'generatePrices')
     .addItem('Import Price Estimates', 'importPrices')
     .addToUi();
 }
@@ -336,6 +337,19 @@ function importBlackwrap() {
   // Copy formula output values and paste them as text.
   var vlookupValues = sheet6.getRange(6, 6, itemCount, 3).getValues();
   sheet6.getRange(6, 6, itemCount, 3).setValues(vlookupValues);
+}
+
+function generatePrices() {
+  /**
+  * This script uses the Amazon Products API in tandem with
+  * klasrun.com PHP scripting to create a JSON file of the
+  * products in Sheet6 with their price, weight, and sales
+  * rank on Amazon.
+  */
+  
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/BlackwrapPricing.php');
 }
 
 function importPrices() {
