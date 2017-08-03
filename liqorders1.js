@@ -10,21 +10,39 @@ function onOpen() {
 }
 
 function nono(sheet, itemCount) {
-  // Make items returns if belonging to certain brands.
-  var banned = ['Gourmia', 'Cheftronic', 'Oliso', 'Wondermill', 'SKG', 'KitchenAid', 'littleadd'];
+  /**
+  * This function pulls information from the 'Ban List' sheet
+  * and makes items returns if they are on said ban list.
+  **/
+
+  // Initialize Ban List sheet and get its size and values.
+  var banSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Ban List');
+  var banList = banSheet.getDataRange().getValues();
+  var banCount = banSheet.getLastRow();
+  
+  // Store banned brands and ASINs in seperate arrays.
+  var banBrand = [];
+  var banASIN = [];
+  for (var i = 1; i < banCount; i++) {
+    if (banList[i][0] != "") {banBrand.push(banList[i][0]);}
+    if (banList[i][1] != "") {banASIN.push(banList[i][1]);}
+  }
+  
+  // Make items returns if they are on banned brands list.
   var items = sheet.getRange(6, 2, itemCount).getValues();
-  for (i=0; i < itemCount; i++) {
-    for (j=0; j < banned.length; j++) {
-      if (items[i][0].indexOf(banned[j]) != -1) {
+  for (var i = 0; i < itemCount; i++) {
+    for (var j = 0; j < banBrand.length; j++) {
+      if (items[i][0].indexOf(banBrand[j]) != -1) {
         sheet.getRange(6+i, 5).setValue('R');
       }
     }
   }
 
+  // Make items returns if they are on banned ASIN list.
   var banASIN = ['B01IBF30M', 'B0MYVCXB0', 'B01I3BYYJK', 'B01LWWUEDR'];
   var itemASIN = sheet.getRange(6, 4, itemCount).getValues();
-  for (i=0; i < itemCount; i++) {
-    for (j=0; j < banASIN.length; j++) {
+  for (var i = 0; i < itemCount; i++) {
+    for (var j = 0; j < banASIN.length; j++) {
       if (itemASIN[i][0] == banASIN[j]) {
         sheet.getRange(6+i, 5).setValue('R');
       }
