@@ -13,3 +13,7 @@ Importing Blackwrap Manifest
     3. In liq orders1 sheet Automation Menu: Import Blackwrap, Generate Prices, Import Prices
     4. Name blackwrap in ‘Sheet6’ and fill out information in ‘AUCTION’
 
+# Future Improvements
+- Create names (e.g. ‘BLACKWRAP 9’) in liq order Sheet6 during the ‘Import New Blackwrap’ script.
+- Remove MANIFEST LOAD sheet and move its scripts into the liq order sheet. Probably rename liq orders1.ods to Manifest Load in this scenario.
+- When generating shipments, add ability for user to select Electronics (all items in one box), Pallet (LTL instead of SmallParcel), or Regular.
