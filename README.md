@@ -13,6 +13,9 @@ Importing Blackwrap Manifest
     3. In liq orders1 sheet Automation Menu: Import Blackwrap, Generate Prices, Import Prices
     4. Name blackwrap in ‘Sheet6’ and fill out information in ‘AUCTION’
 
+# Inventory Processing
+All inventory processing occurs within the various tabs of the WORK sheet. First, new inventory arrives in the Future Listings tab. There, it is highlighted according to its pre-designation. After that, it is moved into the Listings tab. Inventory is tested, graded, and evaluated. Completed inventory is moved either to the EBAY sheet, SCRAP tab, or New Archived tab depending on its designation. Inventory destined for shipment to Amazon is packed, weighed, and measured. Completed packages are copied into the MWS tab, where they are priced and sent to Amazon. The packages are then archived from the Scrap tab into the New Archived tab.
+
 # Future Improvements
 - Create names (e.g. ‘BLACKWRAP 9’) in liq order Sheet6 during the ‘Import New Blackwrap’ script.
 - Remove MANIFEST LOAD sheet and move its scripts into the liq order sheet. Probably rename liq orders1.ods to Manifest Load in this scenario.
