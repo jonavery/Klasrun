@@ -67,12 +67,14 @@ function importLiqOrders() {
     }
   }
   
-  // Prompt user for SKU and total number of auctions.
-  var ui = SpreadsheetApp.getUi();
-  var response1 = ui.prompt('Auctions on right(R) or left(L)?');
-  var side = response1.getResponseText();
-  var response2 = ui.prompt('Total number of auctions?');
-  var numAuctions = response2.getResponseText();
+// Prompt user for SKU and total number of auctions.
+//  var ui = SpreadsheetApp.getUi();
+//  var response1 = ui.prompt('Auctions on right(R) or left(L)?');
+//  var side = response1.getResponseText();
+//  var response2 = ui.prompt('Total number of auctions?');
+//  var numAuctions = response2.getResponseText();
+  var side = 'right';
+  var numAuctions = 1;
   switch (side) {
     case 'r':
     case 'R':
@@ -141,7 +143,7 @@ function updateLiqFormat() {
   *   2. Move order information into LIQ FORMAT with correct formatting
   *   3. Fill out all relevant formulas on the right side of LIQ FORMAT
   *   4. Adjust per item cost to align with total cost
-  *   5. Repeat for each order in Auctions 
+  *   5. Repeat for each order in Auctions
   *************************************************************************/
   
   // Set ID for the spreadsheet file to be used.

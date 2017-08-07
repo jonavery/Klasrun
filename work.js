@@ -1,6 +1,7 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Automation Menu')
+    .addItem('Get Next SKU From Liquidation', 'newSKU')
     .addItem('Update Item in Liquidation By SKU', 'updateBySKU')
     .addItem('Update All Work Items in Liquidation', 'bulkUpdateLiquid')
     .addSeparator()
@@ -9,6 +10,9 @@ function onOpen() {
     .addItem('Generate MWS from SCRAP', 'createMWS')
     .addItem('Populate MWS Tab', 'populateMWS')
     .addItem('Post Listings', 'postListings')
+    .addSeparator()
+    .addItem('Create Shipments', 'createShipments')
+    .addItem('Import ShipmentIds', 'importShipments')
     .addToUi()
 }
 
@@ -45,6 +49,30 @@ function getCol(matrix, col){
      column.push(matrix[i][col]);
   }
   return column;
+}
+
+function newSKU() {
+  /**
+  * This script posts the next new SKU number by checking the Liquidation sheet
+  * for the current maximum SKU and incrementing it by one.
+  */
+  
+  // Initialize sheets.
+  var sheetLiquid = SpreadsheetApp.openById("1Xqsc6Qe_hxrWN8wRd_vgdBdrCtJXVlvVC9w53XJ0BUM").getSheetByName("Liquidation Orders");
+  var liqLastRow = sheetLiquid.getLastRow();
+  
+  // Load highest SKU # from liquidation sheet.
+  var allSKUs = getCol(sheetLiquid.getRange(2, 1, liqLastRow-1).getValues(), 0);
+  var highSKU = 1;
+  for (i=0; i < allSKUs.length; i++) {
+    if (allSKUs[i] > highSKU) {
+      var highSKU = allSKUs[i];
+    }
+  }
+  
+  // Show SKU to user.
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert('Use this SKU for new item: ' + String(highSKU + 1));
 }
 
 function highlightAER() {
@@ -341,6 +369,51 @@ function postListings() {
   
   // Send product feeds to Amazon.
   var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebService/Functions/CreateNewListings.php');
+}
+
+function createShipments() {
+  /**
+  * This script uses the Amazon FBAInboundMWS API in tandem with
+  * klasrun.com PHP scripting to create a shipment with all items
+  * in the MWS sheet.
+  */
+  
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://klasrun.com/AmazonMWS/FBAInboundServiceMWS/Functions/MasterShipment.php');
+}
+
+function importShipments() {
+// Fetch the json array from website and parse into JS object.
+  var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/FBAInboundServiceMWS/Functions/shipID.json');
+  var json = response.getContentText();
+  var data = JSON.parse(json);
+   
+  // Convert data object into multidimensional array.
+  var shipments = Object.keys(data);
+  var shipCount = shipments.length;
+  var itemArray = {};
+  var itemCount = [];
+  var k = 0;
+  for (var i = 0; i < shipCount; i++) {
+    var id = shipments[i];
+    itemCount[i] = data[id].length;
+    
+    for (var j = 0; j < itemCount[i]; j++) {
+      itemArray[data[id][j]] = id;
+    }
+  }
+ 
+  // Initialize sheet variables.
+  var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
+  var lastRow = sheetMWS.getLastRow();
+  var SKUs = sheetMWS.getRange(1, 1, lastRow).getValues();
+  
+  // Import shipmentId's into sheet.
+  sheetMWS.getRange(2, 12, lastRow-1, 1).clearContent();
+  for (var i = 1; i < lastRow; i++) {
+    sheetMWS.getRange(i+1, 12).setValue(itemArray[SKUs[i][0]]);
+  }
 }
 
 function cancelListings() {
