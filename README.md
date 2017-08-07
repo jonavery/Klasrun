@@ -17,3 +17,4 @@ Importing Blackwrap Manifest
 - Create names (e.g. ‘BLACKWRAP 9’) in liq order Sheet6 during the ‘Import New Blackwrap’ script.
 - Remove MANIFEST LOAD sheet and move its scripts into the liq order sheet. Probably rename liq orders1.ods to Manifest Load in this scenario.
 - When generating shipments, add ability for user to select Electronics (all items in one box), Pallet (LTL instead of SmallParcel), or Regular.
+- Audit WORK Listings sheet. Highlight incomplete inventory cyan and move completed inventory to the SCRAP and New Archived tabs as appropriate.
