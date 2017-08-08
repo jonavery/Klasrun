@@ -27,6 +27,8 @@ Add Extra Items
 2. Type in new SKU, Item Title, ASIN, A/E/R, & ORDER # on next line of Listings
 3. Run either ‘Update Item in Liquidation by SKU’ or ‘Update All Work Items in Liquidation’
 
+# Listing Inventory on Amazon
+For items to be sold on Amazon, they must first be listed. Klasrun has scripts that enable listing to be done straight from the Google Sheets inventory database. The Klasrun administrator moves inventory from the Listings tab to the SCRAP tab after testing is complete. Once inventory has been packaged and dimensions are entered, it is ready to be listed on Amazon. The script is set-up so that only items with non-blank weights will be listed. To list electronic or palleted items (which do not have dimensions), put an ‘x’ in the item’s weight column. It is usually best practice to list each type of item and then create shipments for it before listing the next type.
 
 # Future Improvements
 - [ ] Create names (e.g. ‘BLACKWRAP 9’) in liq order Sheet6 during the ‘Import New Blackwrap’ script.
