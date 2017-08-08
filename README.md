@@ -39,6 +39,15 @@ List Inventory
 5. Complete all red entries
 6. Post Listings
 
+# Shipping to Amazon
+
+Creating Shipments
+1. Post listings as described in the previous sections
+2. Navigate to MWS Tab
+3. Run ‘Create Shipments’ in automation menu
+4. Print out labels
+5. Write SKU’s on labels
+
 
 # Future Improvements
 - [ ] Create names (e.g. ‘BLACKWRAP 9’) in liq order Sheet6 during the ‘Import New Blackwrap’ script.
