@@ -30,6 +30,16 @@ Add Extra Items
 # Listing Inventory on Amazon
 For items to be sold on Amazon, they must first be listed. Klasrun has scripts that enable listing to be done straight from the Google Sheets inventory database. The Klasrun administrator moves inventory from the Listings tab to the SCRAP tab after testing is complete. Once inventory has been packaged and dimensions are entered, it is ready to be listed on Amazon. The script is set-up so that only items with non-blank weights will be listed. To list electronic or palleted items (which do not have dimensions), put an ‘x’ in the item’s weight column. It is usually best practice to list each type of item and then create shipments for it before listing the next type.
 
+List Inventory
+1. Open ‘SCRAP’ tab
+2. Audit sheet to make sure weights and condition #’s are entered
+   In Automation Menu:
+3. Generate MWS from SCRAP
+4. Populate MWS Tab
+5. Complete all red entries
+6. Post Listings
+
+
 # Future Improvements
 - [ ] Create names (e.g. ‘BLACKWRAP 9’) in liq order Sheet6 during the ‘Import New Blackwrap’ script.
 - [ ] Remove MANIFEST LOAD sheet and move its scripts into the liq order sheet. Probably rename liq orders1.ods to Manifest Load in this scenario.
