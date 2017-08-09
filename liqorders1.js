@@ -254,7 +254,7 @@ function importBlackwrap() {
   
   // Load active sheet and check to be sure it is a new blackwrap manifest.
   var blackwrapSheet = SpreadsheetApp.getActiveSheet();
-  if (blackwrapSheet.getSheetName().length < 14) {
+  if (blackwrapSheet.getSheetName().length < 9) {
     SpreadsheetApp.getUi().alert('Please select the new blackwrap manifest before running script.');
     return;
   }
