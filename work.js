@@ -139,7 +139,7 @@ function updateBySKU() {
   var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
   
   // Initialize Work and Liquidation sheets.
-  var sheetListings = SpreadsheetApp.getActiveSheet();
+  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName("Listings");
   var sheetLiquid = SpreadsheetApp.openById(liquidID).getSheetByName("Liquidation Orders");
   
   // Prompt user for SKU.
@@ -215,7 +215,7 @@ function bulkUpdateLiquid() {
   var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
   
   // Initialize Work and Liquidation sheets.
-  var sheetListings = SpreadsheetApp.getActiveSheet();
+  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName("Listings");
   var sheetLiquid = SpreadsheetApp.openById(liquidID).getSheetByName("Liquidation Orders");
   
   // Prompt user for SKU.

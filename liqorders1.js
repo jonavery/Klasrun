@@ -265,16 +265,16 @@ function importBlackwrap() {
   
   // Sort the new values alphabetically by their titles.
   blackwrapValues.sort(function(a, b) {
-    if (a[13] === b[13]) {
+    if (a[12] === b[12]) {
       return 0;
     }
     else {
-      return (a[13] < b[13]) ? -1 : 1;
+      return (a[12] < b[12]) ? -1 : 1;
     }
   });
   
   // Cache values to be transferred over to Sheet6.
-  var titles = getCol(blackwrapValues, 13);
+  var titles = getCol(blackwrapValues, 12);
   var asins = getCol(blackwrapValues, 0);
   var LPNs = getCol(blackwrapValues, 1);
   
