@@ -237,7 +237,7 @@ function bulkUpdateLiquid() {
     var notUpdated = 0;
     var created = 0;
     
-    for (var i = 1; i < workSKU.length; i++) {
+    for (var i = 4; i < workSKU.length; i++) {
       // Find index of SKU in work and liquidation.
       var sku = parseInt(workSKU[i]);
       var workIndex = workSKU.indexOf(sku);
