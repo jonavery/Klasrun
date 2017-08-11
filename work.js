@@ -325,7 +325,7 @@ function populateMWS() {
    // Convert data object into multidimensional array.
    // Ordering is same as in MWS tab.
    var itemCount = data.length;
-   var itemArray = makeArray(11, itemCount, "");
+   var itemArray = makeArray(12, itemCount, "");
    for (i = 0; i < itemCount; i++) {
      var item = data[i];
      itemArray[i] = ([
@@ -339,20 +339,21 @@ function populateMWS() {
        item.Dimensions.Width,
        item.Dimensions.Height,
        item.Condition,
-       item.Comment
+       item.Comment,
+       ""
      ]);
    }
  
    // Push array into MWS tab.
    var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
-   var range = sheetMWS.getRange(2, 1, itemCount, 11).clearContent().setBackground('white');
+   var range = sheetMWS.getRange(2, 1, itemCount, 12).clearContent().setBackground('white');
    range.setValues(itemArray);
    
    // Highlight undefined entries that will not be listed.
    var prices = sheetMWS.getRange(2, 5, itemCount).getValues();
    for (i = 0; i < itemCount; i++) {
      if (prices[i][0] == "undefined") {
-       sheetMWS.getRange(2+i, 1, 1, 11).setBackground('red');
+       sheetMWS.getRange(2+i, 1, 1, 12).setBackground('red');
      }
    }
  }
