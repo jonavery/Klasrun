@@ -4,6 +4,7 @@ function doGet() {
 
 function getCondition(number) {
   switch (number) {
+    case 0:
     case 1:
       return "UsedAcceptable";
     case 2:
