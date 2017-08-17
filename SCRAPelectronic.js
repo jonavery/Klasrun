@@ -25,7 +25,7 @@ function getXML() {
   var items = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('SCRAP').getDataRange().getValues();
   for (i=1; i<items.length; i++) {
     if(!(items[i][7] == "Y" || items[i][7] == "y") || items[i][11] == "") {continue;}
-    if(!(items[i][7] == "E" || items[i][7] == "e")) {continue;}
+    if(!(items[i][17] == "E" || items[i][17] == "e")) {continue;}
     var child = XmlService.createElement('item')
       .addContent(XmlService.createElement('SKU').setText(items[i][1]))
       .addContent(XmlService.createElement('Title').setText(items[i][2]))
