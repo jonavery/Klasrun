@@ -2,7 +2,7 @@ function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Automation Menu')
     .addItem('Get Next SKU From Liquidation', 'newSKU')
-    .addItem('Update Item in Liquidation By SKU', 'updateBySKU')
+    .addItem('Update Item in Liquidation by SKU', 'updateBySKU')
     .addItem('Update All Work Items in Liquidation', 'bulkUpdateLiquid')
     .addSeparator()
     .addItem('Highlight Future Listings by A/E/R', 'highlightAER')
@@ -11,8 +11,10 @@ function onOpen() {
     .addItem('Populate MWS Tab', 'populateMWS')
     .addItem('Post Listings', 'postListings')
     .addSeparator()
-    .addItem('Create Shipments', 'createShipments')
-    .addItem('Import ShipmentIds', 'importShipments')
+    .addSubMenu(ui.createMenu('Create Shipments')
+      .addItem('Small Parcel', 'createShipments'))
+      .addItem('LTL (Palleted)', 'shipLTL')
+      .addItem('Electronics', 'shipElectronics')
     .addToUi()
 }
 
@@ -139,7 +141,7 @@ function updateBySKU() {
   var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
   
   // Initialize Work and Liquidation sheets.
-  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName("Listings");
+  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName('Listings');
   var sheetLiquid = SpreadsheetApp.openById(liquidID).getSheetByName("Liquidation Orders");
   
   // Prompt user for SKU.
@@ -215,7 +217,7 @@ function bulkUpdateLiquid() {
   var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
   
   // Initialize Work and Liquidation sheets.
-  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName("Listings");
+  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName('Listings');
   var sheetLiquid = SpreadsheetApp.openById(liquidID).getSheetByName("Liquidation Orders");
   
   // Prompt user for SKU.
@@ -382,6 +384,32 @@ function createShipments() {
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
     + 'http://klasrun.com/AmazonMWS/FBAInboundServiceMWS/Functions/MasterShipment.php');
+}
+
+function shipLTL() {
+  /**
+  * This script uses the Amazon FBAInboundMWS API in tandem with
+  * klasrun.com PHP scripting to create a shipment with all items
+  * in the MWS sheet.
+  */
+  
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://klasrun.com/AmazonMWS/FBAInboundServiceMWS/Functions/PalletShip.php');
+}
+
+function shipElectronics() {
+  /**
+  * This script uses the Amazon FBAInboundMWS API in tandem with
+  * klasrun.com PHP scripting to create a shipment with all items
+  * in the MWS sheet.
+  */
+  
+  SpreadsheetApp.getUi().alert('ERROR: Script still in development.');
+  
+//  SpreadsheetApp.getUi().alert(
+//    'Go to the following URL and wait for a success message:\n\n'
+//    + 'http://klasrun.com/AmazonMWS/FBAInboundServiceMWS/Functions/ElectronicShip.php');
 }
 
 function importShipments() {
