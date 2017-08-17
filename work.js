@@ -7,7 +7,10 @@ function onOpen() {
     .addSeparator()
     .addItem('Highlight Future Listings by A/E/R', 'highlightAER')
     .addSeparator()
-    .addItem('Generate MWS from SCRAP', 'createMWS')
+    .addSubMenu(ui.createMenu('Generate MWS item array')
+      .addItem('Standard Small Parcel', 'createMWS')
+      .addItem('Oversize (Palleted)', 'palletMWS')
+      .addItem('Electronics', 'electronicsMWS'))
     .addItem('Populate MWS Tab', 'populateMWS')
     .addItem('Post Listings', 'postListings')
     .addSeparator()
@@ -301,6 +304,40 @@ function createMWS() {
   * This script uses the Amazon Products API in tandem with
   * klasrun.com PHP scripting to create a JSON file of the 
   * items in the SCRAP sheet currently waiting to be listed.
+  *
+  * Use this function in tandem with the populateMWS() and
+  * postListings() functions to list products on Amazon.
+  */
+  
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateItemArray.php');
+}
+
+function palletMWS() {
+  /**
+  * This script uses the Amazon Products API in tandem with
+  * klasrun.com PHP scripting to create a JSON file of the 
+  * items in the SCRAP sheet currently waiting to be listed.
+  *
+  * Only oversize items marked with a 'P' will be included.
+  *
+  * Use this function in tandem with the populateMWS() and
+  * postListings() functions to list products on Amazon.
+  */
+  
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateItemArray.php');
+}
+
+function electronicsMWS() {
+  /**
+  * This script uses the Amazon Products API in tandem with
+  * klasrun.com PHP scripting to create a JSON file of the 
+  * items in the SCRAP sheet currently waiting to be listed.
+  *
+  * Only oversize items marked with an 'E' will be included.
   *
   * Use this function in tandem with the populateMWS() and
   * postListings() functions to list products on Amazon.
