@@ -15,9 +15,9 @@ function onOpen() {
     .addItem('Post Listings', 'postListings')
     .addSeparator()
     .addSubMenu(ui.createMenu('Create Shipments')
-      .addItem('Small Parcel', 'createShipments'))
-      .addItem('LTL (Palleted)', 'shipLTL')
-      .addItem('Electronics', 'shipElectronics')
+      .addItem('Standard Small Parcel', 'createShipments')
+      .addItem('Oversize (Palleted)', 'shipLTL')
+      .addItem('Electronics', 'shipElectronics'))
     .addToUi()
 }
 
