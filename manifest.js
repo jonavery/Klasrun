@@ -58,11 +58,12 @@ function importLiqOrders() {
   var maniValues = sheetLiq.getDataRange().getValues();
   
   // Check to see if data has already been transferred.
+  var ui = SpreadsheetApp.getUi();
   if (sheetLiq.getLastRow() > 2) {
     // Cache all order numbers currently in liquidation sheet.
     var currentOrderNums = getCol(sheetLiquid.getRange(1, 8, sheetLiquid.getLastRow()).getValues(), 0);
     if (currentOrderNums.indexOf(maniValues[2][8]) < 0 && maniValues[2][8] != "#N/A") {
-      SpreadsheetApp.getUi().alert('LIQ FORMAT has not been transferred to LIQ and WORK yet. Transfer data before updating auctions.');
+      ui.alert('LIQ FORMAT has not been transferred to LIQ and WORK yet. Transfer data before updating auctions.');
       return;
     }
   }
