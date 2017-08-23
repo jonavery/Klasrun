@@ -50,7 +50,9 @@ Creating Shipments
 
 
 # Future Improvements
+- [ ] Price by condition, rather than matching the lowest price. Automatically markdown items with condition '0' by 15% from the would-be 'Acceptable' price. This will probably all be done in the MWS/PHP side of the code.
 - [ ] Create names (e.g. ‘BLACKWRAP 9’) in liq order Sheet6 during the ‘Import New Blackwrap’ script.
 - [ ] Remove MANIFEST LOAD sheet and move its scripts into the liq order sheet. Probably rename liq orders1.ods to Manifest Load in this scenario.
-- [ ] When generating shipments, add ability for user to select Electronics (all items in one box), Pallet (LTL instead of SmallParcel), or Regular.
+- [x] When generating shipments, add ability for user to select Electronics (all items in one box), Pallet (LTL instead of SmallParcel), or Regular.
 - [ ] Audit WORK Listings sheet. Highlight incomplete inventory cyan and move completed inventory to the SCRAP and New Archived tabs as appropriate.
+- [ ] Create a tab in the liq order sheet that catalogs all of the unique items we receive. Use this for vlookups and purge elements of Sheet6 that have been moved into the WORK and LIQUIDATION sheets.
