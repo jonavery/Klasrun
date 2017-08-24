@@ -20,6 +20,20 @@ function getCondition(number) {
   }
 }
 
+function setMarkdown(number) {
+  switch (number) {
+    case 0:
+      return "yes";
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    default:
+      return "no";
+  }
+}
+
 function getXML() {
   var root = XmlService.createElement('items');
   var items = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('SCRAP').getDataRange().getValues();
@@ -32,6 +46,7 @@ function getXML() {
       .addContent(XmlService.createElement('ASIN').setText(items[i][3]))
       .addContent(XmlService.createElement('Condition').setText(getCondition(parseInt(items[i][16]))))
       .addContent(XmlService.createElement('Comment').setText(items[i][18]));
+      .addContent(XmlService.createElement('Defect').setText(setMarkdown(parseInt(items[i][16]))));
     var grandchild = XmlService.createElement('Dimensions')
       .addContent(XmlService.createElement('Weight').setText(items[i][11]))
       .addContent(XmlService.createElement('Length').setText(items[i][12]))
