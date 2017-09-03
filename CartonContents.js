@@ -50,15 +50,19 @@ function getXML() {
   var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
   var lastRow = sheetMWS.getLastRow();
   var SKUs = sheetMWS.getRange(1, 1, lastRow).getValues();
-  
+   
   // Import shipmentId's into sheet.
   sheetMWS.getRange(2, 12, lastRow-1, 1).clearContent();
   for (var i = 1; i < lastRow; i++) {
     sheetMWS.getRange(i+1, 12).setValue(itemArray[SKUs[i][0]]);
   }
   
+  // Create array of colors for highlighting
+  var colors = array('white', 'brown', 'orange', 'red', 'blue', 'green', 'gray', 'indigo', 'pink', 'yellow', 'turquoise');
+  
   // Sort MWS sheet by shipmentId.
   var products = sheetMWS.sort(12).getDataRange().getValues();
+
   
   // l = index of current item within products array
   // k = index of shipment in counts array
