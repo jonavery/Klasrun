@@ -58,7 +58,8 @@ function getXML() {
   }
   
   // Create array of colors for highlighting
-  var colors = array('white', 'brown', 'orange', 'red', 'blue', 'green', 'gray', 'indigo', 'pink', 'yellow', 'turquoise');
+  var colors = array('white', 'brown', 'orange', 'red', 'blue', 'green', 'gray', 'indigo', 'pink', 'yellow', 'turquoise',
+    'charcoal', 'chestnut', 'lime', 'plum', 'mustard', 'purple', 'olive', 'red-orange', 'sea blue', 'teal');
   
   // Sort MWS sheet by shipmentId.
   var products = sheetMWS.sort(12).getDataRange().getValues();
@@ -76,6 +77,9 @@ function getXML() {
       .addContent(XmlService.createElement('NumCartons').setText(itemCount[k]));
   
     for (var i = 0; i < itemCount[k]; i++) {
+      // Highlight item based on its shipment.
+      sheetMWS.getRange(l+1, 1, 1, 12).setBackground(colors[k]);
+
       var Item = XmlService.createElement('Item')
         .addContent(XmlService.createElement('SKU').setText(products[l][0]))
         .addContent(XmlService.createElement('QuantityShipped').setText('1'))
