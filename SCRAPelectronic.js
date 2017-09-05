@@ -38,7 +38,7 @@ function getXML() {
   var root = XmlService.createElement('items');
   var items = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('SCRAP').getDataRange().getValues();
   for (i=1; i<items.length; i++) {
-    if(!(items[i][7] == "Y" || items[i][7] == "y") || items[i][11] == "") {continue;}
+    if(!(items[i][7] == "Y" || items[i][7] == "y")) {continue;}
     if(!(items[i][17] == "E" || items[i][17] == "e")) {continue;}
     var child = XmlService.createElement('item')
       .addContent(XmlService.createElement('SKU').setText(items[i][1]))
