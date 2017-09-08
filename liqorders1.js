@@ -274,9 +274,15 @@ function importBlackwrap() {
   });
   
   // Cache values to be transferred over to Sheet6.
-  var titles = getCol(blackwrapValues, 12);
-  var asins = getCol(blackwrapValues, 0);
-  var LPNs = getCol(blackwrapValues, 1);
+  for (var i = 0; i < blackwrapSheet.getLastColumn(); i++) {
+    var header = blackwrapSheet.getRange(1, i+1).getValue();
+    if (header == "Item Description") {var titleCol = i;}
+    if (header == "B00 ASIN") {var asinCol = i;}
+    if (header == "X-Z ASIN") {var lpnCol = i;}
+  }
+  var titles = getCol(blackwrapValues, titleCol);
+  var asins = getCol(blackwrapValues, asinCol);
+  var LPNs = getCol(blackwrapValues, lpnCol);
   
   // Create appropriate number of rows in Sheet6.
   var itemCount = blackwrapValues.length;
