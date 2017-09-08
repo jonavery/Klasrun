@@ -32,7 +32,7 @@ function getXML() {
   var data = JSON.parse(json);
    
   // Convert data object into multidimensional array.
-  var shipments = Object.keys(data);
+  var shipments = Object.keys(data).sort();
   var shipCount = shipments.length;
   var itemArray = {};
   var itemCount = [];
@@ -58,8 +58,8 @@ function getXML() {
   }
   
   // Create array of colors for highlighting
-  var colors = array('white', 'brown', 'orange', 'red', 'blue', 'green', 'gray', 'indigo', 'pink', 'yellow', 'turquoise',
-    'charcoal', 'chestnut', 'lime', 'plum', 'mustard', 'purple', 'olive', 'red-orange', 'sea blue', 'teal');
+  var colors = ['white', 'brown', 'orange', 'red', 'blue', 'green', 'gray', 'indigo', 'pink', 'yellow', 'turquoise',
+    'charcoal', 'chestnut', 'lime', 'plum', 'mustard', 'purple', 'olive', 'red-orange', 'sea blue', 'teal'];
   
   // Sort MWS sheet by shipmentId.
   var products = sheetMWS.sort(12).getDataRange().getValues();
