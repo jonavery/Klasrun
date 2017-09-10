@@ -8,6 +8,13 @@ function onOpen() {
     .addToUi();
 }
 
+function rep(obj, n) {
+  // Create function that makes an array of n length and obj identical inputs.
+  var arr = [[]];
+  for (i=0; i < n; i++) {arr[i][0].push(obj);}
+  return arr;
+}
+
 function getCol(matrix, col){
   // Create function that strips specified column from an array.
   var column = [];
@@ -29,6 +36,31 @@ function sumArray(array) {
     sum += Number(array[i++])   // Add number on each iteration
   );
   return sum;
+}
+
+function containedIn(needles, haystack) {
+  // Create function that checks to see if objects from one array are contained in a second array.
+  var check = [];
+  for (i=0; i < needles.length; i++) {
+    check[i] = haystack.indexOf(needles[i][0]) > -1;
+  }
+  return check.indexOf(true) > -1;
+}
+
+function round(value, exp) {
+  // Create function that rounds a value to exp decimal places
+  if (typeof exp === 'undefined' || +exp === 0)
+    return Math.round(value);
+  value = +value;
+  exp = +exp;
+  if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0))
+    return NaN;
+  // Shift
+  value = value.toString().split('e');
+  value = Math.round(+(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp)));
+  // Shift back
+  value = value.toString().split('e');
+  return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
 }
 
 function importLiqOrders() {
@@ -68,7 +100,7 @@ function importLiqOrders() {
     }
   }
   
-// Prompt user for SKU and total number of auctions.
+// Prompt user for side and total number of auctions.
 //  var ui = SpreadsheetApp.getUi();
 //  var response1 = ui.prompt('Auctions on right(R) or left(L)?');
 //  var side = response1.getResponseText();
@@ -171,29 +203,6 @@ function updateLiqFormat() {
   if(mm<10) { mm = '0' + mm;}
   var today = mm + '/' + dd + '/' + yyyy;
   
-  // Create function that makes an array of n length and obj identical inputs.
-  function rep(obj, n) {
-    var arr = [[]];
-    for (i=0; i < n; i++) {arr[i][0].push(obj);}
-    return arr;
-  }
-  
-  // Create function that rounds a value to exp decimal places
-  function round(value, exp) {
-    if (typeof exp === 'undefined' || +exp === 0)
-      return Math.round(value);
-    value = +value;
-    exp = +exp;
-    if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0))
-      return NaN;
-    // Shift
-    value = value.toString().split('e');
-    value = Math.round(+(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp)));
-    // Shift back
-    value = value.toString().split('e');
-    return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
-  }
-  
   // Cache the order #'s already in the sheet and the first order # to be copied.
   var liq8Digit = (getCol(sheetLiq.getDataRange().getValues(),7));
   var orderID = auctions[0][0];
@@ -202,15 +211,6 @@ function updateLiqFormat() {
   var orderCopy = 0;
   var itemCopy = 0;
   
-  // Create function that checks to see if objects from one array are contained in a second array.
-  function containedIn(needles, haystack) {
-    var check = [];
-    for (i=0; i < needles.length; i++) {
-      check[i] = haystack.indexOf(needles[i][0]) > -1;
-    }
-    return check.indexOf(true) > -1;
-  }
-         
   // If data has already been copied, output error message.
   if (containedIn(auctions, liq8Digit)) {
     SpreadsheetApp.getUi().alert('LIQ FORMAT is already up to date. Halting script.');
@@ -254,9 +254,9 @@ function updateLiqFormat() {
     }
     // Copy per item cost values.
     sheetLiq.getRange(liqLastRow+1, 15, itemCount).setValue(sheetLiq.getRange(liqLastRow+1, 14, itemCount).getDisplayValues());
-    // Have if statement comparing rounded cost to actual cost
+    // Compare rounded cost to actual cost
     var prices = sheetLiq.getRange(liqLastRow+1, 15, itemCount).getValues();
-    var orderTotal = sheetLiq.getRange(liqLastRow+1,10).getValue();
+    var orderTotal = sheetLiq.getRange(liqLastRow+1,11).getValue();
     var roundedTotal = Number(round(sumArray(prices), 2));
     if (roundedTotal < orderTotal) {
       // If rounded is lower, compensate top per item cost
@@ -387,3 +387,4 @@ function exportData() {
 //    sheetLiquid.getRange(liqLastRow + k, 27).setFormula("=VLOOKUP(A"+r+",Connor!K:K,1,0)");         // FBA SHIPMENT ISSUE
   }
 }
+
