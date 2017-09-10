@@ -349,53 +349,65 @@ function electronicsMWS() {
 }
 
 function populateMWS() {
-   /**
-   * This script accomplishes the following tasks:
-   *  1. Pull json file from MWS server
-   *  2. Convert json into multidimensional array
-   *  3. Push array into MWS tab.
-   */
+  /**
+  * This script accomplishes the following tasks:
+  *  1. Pull json file from MWS server
+  *  2. Convert json into multidimensional array
+  *  3. Push array into MWS tab.
+  */
+  
+  // Fetch the json array from website and parse into JS object.
+  var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/MWS.json');
+  var json = response.getContentText();
+  var data = JSON.parse(json);
+  
+  // Convert data object into multidimensional array.
+  // Ordering is same as in MWS tab.
+  var itemCount = data.length;
+  var itemArray = makeArray(12, itemCount, "");
+  for (i = 0; i < itemCount; i++) {
+    var item = data[i];
+    itemArray[i] = ([
+      item.SellerSKU,
+      item.Title,
+      item.UPC,
+      item.ASIN,
+      item.Price,
+      item.Dimensions.Weight,
+      item.Dimensions.Length,
+      item.Dimensions.Width,
+      item.Dimensions.Height,
+      item.Condition,
+      item.Comment,
+      ""
+    ]);
+  }
+
+  // Push array into MWS tab.
+  var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
+  var range = sheetMWS.getRange(2, 1, itemCount, 12).clearContent().setBackground('white');
+  range.setValues(itemArray);
    
-   // Fetch the json array from website and parse into JS object.
-   var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/MWS.json');
-   var json = response.getContentText();
-   var data = JSON.parse(json);
-   
-   // Convert data object into multidimensional array.
-   // Ordering is same as in MWS tab.
-   var itemCount = data.length;
-   var itemArray = makeArray(12, itemCount, "");
-   for (i = 0; i < itemCount; i++) {
-     var item = data[i];
-     itemArray[i] = ([
-       item.SellerSKU,
-       item.Title,
-       item.UPC,
-       item.ASIN,
-       item.Price,
-       item.Dimensions.Weight,
-       item.Dimensions.Length,
-       item.Dimensions.Width,
-       item.Dimensions.Height,
-       item.Condition,
-       item.Comment,
-       ""
-     ]);
-   }
- 
-   // Push array into MWS tab.
-   var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
-   var range = sheetMWS.getRange(2, 1, itemCount, 12).clearContent().setBackground('white');
-   range.setValues(itemArray);
-   
-   // Highlight undefined entries that will not be listed.
-   var prices = sheetMWS.getRange(2, 5, itemCount).getValues();
-   for (i = 0; i < itemCount; i++) {
-     if (prices[i][0] == "undefined") {
-       sheetMWS.getRange(2+i, 1, 1, 12).setBackground('red');
-     }
-   }
- }
+  // Highlight undefined prices and wonky dimensions.
+  var prices = sheetMWS.getRange(2, 5, itemCount, 6).getValues();
+  for (i = 0; i < itemCount; i++) {
+    if (prices[i][0] == "undefined") {
+      sheetMWS.getRange(2+i, 5).setBackground('red');
+    }
+    if (Number(prices[i][1]) < 1 || Number(prices[i][1]) > 100) {
+      sheetMWS.getRange(2+i, 6).setBackground('red');
+    }
+    if (Number(prices[i][2]) < 1 || Number(prices[i][2]) > 75) {
+      sheetMWS.getRange(2+i, 7).setBackground('red');
+    }
+    if (Number(prices[i][3]) < 1 || Number(prices[i][3]) > 75) {
+      sheetMWS.getRange(2+i, 8).setBackground('red');
+    }
+    if (Number(prices[i][4]) < 1 || Number(prices[i][4]) > 75) {
+      sheetMWS.getRange(2+i, 9).setBackground('red');
+    }
+  }
+}
 
 function postListings() {
   /**
