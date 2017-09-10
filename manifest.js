@@ -82,8 +82,8 @@ function importLiqOrders() {
   var sheetOldAuctions = SpreadsheetApp.openById(maniID).getSheetByName("Auctions");
   
   // Initialize liq orders1.ods sheets.
-  var sheetNewAuctions = SpreadsheetApp.openById(liqOrdersID).getSheetByName("AUCTION");
-  var sheetNewOrders = SpreadsheetApp.openById(liqOrdersID).getSheetByName("Sheet6")
+  var sheetNewAuctions = SpreadsheetApp.openById(liqOrdersID).getSheetByName("Cycles");
+  var sheetNewOrders = SpreadsheetApp.openById(liqOrdersID).getSheetByName("Research")
   
   // Initialize liquidation sheet and cache current manifest sheet values.
   var sheetLiquid = SpreadsheetApp.openById(liquidID).getSheetByName("Liquidation Orders");
