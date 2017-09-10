@@ -385,7 +385,7 @@ function populateMWS() {
 
   // Push array into MWS tab.
   var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
-  var range = sheetMWS.getRange(2, 1, itemCount, 12).clearContent().setBackground('white');
+  var range = sheetMWS.getRange(2, 1, sheetMWS.getLastRow()-1, 12).clearContent().setBackground('white');
   range.setValues(itemArray);
    
   // Highlight undefined prices and wonky dimensions.
