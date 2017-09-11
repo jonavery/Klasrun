@@ -37,6 +37,7 @@ function nono(sheet, itemCount) {
     for (var j = 0; j < banBrand.length; j++) {
       if (items[i][0].indexOf(banBrand[j]) != -1) {
         sheet.getRange(6+i, 6).setValue('R');
+        sheet.getRange(6+i, 1).setValue('BAN');
       }
     }
   }
@@ -48,6 +49,7 @@ function nono(sheet, itemCount) {
     for (var j = 0; j < banASIN.length; j++) {
       if (itemASIN[i][0] == banASIN[j]) {
         sheet.getRange(6+i, 6).setValue('R');
+        sheet.getRange(6+i, 1).setValue('BAN');
       }
     }
   }
