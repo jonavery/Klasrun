@@ -5,8 +5,10 @@ function onOpen() {
     .addItem('Generate Price Estimates', 'generatePrices')
     .addItem('Import Price Estimates', 'importPrices')
     .addSeparator()
-    .addItem('Update LIQ FORMAT', 'updateLiqFormat')
+    .addItem('Update Export', 'updateLiqFormat')
     .addItem('Export to LIQ & WORK', 'exportData')
+    .addSeparator()
+    .addItem('Update ASINs', 'updateASINs')
     .addToUi();
 }
 
@@ -602,6 +604,29 @@ function exportData() {
 //    sheetLiquid.getRange(liqLastRow + k, 26).setFormula("=VLOOKUP(A"+r+",Connor!G:H,2,0)");         // FBA SHIPMENT STATUS
 //    sheetLiquid.getRange(liqLastRow + k, 27).setFormula("=VLOOKUP(A"+r+",Connor!K:K,1,0)");         // FBA SHIPMENT ISSUE
   }
+}
+
+function updateASINs() {
+  /************************************************************************
+  * This script accomplishes the following tasks:
+  *   1. Find unique items in Research
+  *   2. Filter out duplicate items and unresearched items
+  *   3. Move remaining items into ASINs
+  *************************************************************************/
+  
+  // Set ID for the spreadsheet file to be used.
+  var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
+  
+  // Initialize the sheets to be accessed.
+  var sheetASINs = SpreadsheetApp.openById(maniID).getSheetByName("ASINs");
+  var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");
+
+  // Cache and count ASINs from Research and ASINs.
+  var researchValues = sheetResearch.getDataRange().getValues();
+  var asinsValues = sheetASINs.getDataRange().getValues();
+  
+  // Compare Research items to Database items.
+    // Move item into Database if new, non-empty, and researched.
 }
 
 function getCol(matrix, col){
