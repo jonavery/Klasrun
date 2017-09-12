@@ -285,6 +285,7 @@ function bulkUpdateLiquid() {
       updated++;
     }
     // Show changes to user.
+    var ui = SpreadsheetApp.getUi();
     ui.alert(
       'Items updated: ' + updated
       + '\nItems already up to date: ' + notUpdated
