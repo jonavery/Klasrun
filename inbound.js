@@ -143,6 +143,9 @@ function importBlackwrap() {
     sheet.getRange(i, 6).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",3,FALSE)");
     sheet.getRange(i, 7).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",4,FALSE)");
     sheet.getRange(i, 8).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",5,FALSE)");
+    sheet.getRange(i, 10).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",7,FALSE)");
+    sheet.getRange(i, 11).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",8,FALSE)");
+    sheet.getRange(i, 12).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",9,FALSE)");
   }
   
   // Make banned items returns
