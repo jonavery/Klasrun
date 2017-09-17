@@ -365,7 +365,7 @@ function populateMWS() {
        item.Title,
        item.UPC,
        item.ASIN,
-       item.Price,
+       item.Price.toFixed(2),
        item.Dimensions.Weight,
        item.Dimensions.Length,
        item.Dimensions.Width,
