@@ -8,7 +8,7 @@ function getXML() {
   
   var Header = XmlService.createElement('Header')
     .addContent(XmlService.createElement('DocumentVersion').setText("1.01"))
-    .addContent(XmlService.createElement('MerchantIdentifier').setText('MERCHANT_IDENTIFIER'));
+    .addContent(XmlService.createElement('MerchantIdentifier').setText('A3FA9W3CDIWR8F'));
   var Envelope = XmlService.createElement('AmazonEnvelope')
     .setAttribute("noNamespaceSchemaLocation", "amzn-envelope.xsd", xsi)
     .addContent(Header)
