@@ -360,20 +360,37 @@ function populateMWS() {
    var itemArray = makeArray(12, itemCount, "");
    for (i = 0; i < itemCount; i++) {
      var item = data[i];
-     itemArray[i] = ([
-       item.SellerSKU,
-       item.Title,
-       item.UPC,
-       item.ASIN,
-       item.Price.toFixed(2),
-       item.Dimensions.Weight,
-       item.Dimensions.Length,
-       item.Dimensions.Width,
-       item.Dimensions.Height,
-       item.Condition,
-       item.Comment,
-       ""
-     ]);
+     try {
+       itemArray[i] = ([
+         item.SellerSKU,
+         item.Title,
+         item.UPC,
+         item.ASIN,
+         item.Price.toFixed(2),
+         item.Dimensions.Weight,
+         item.Dimensions.Length,
+         item.Dimensions.Width,
+         item.Dimensions.Height,
+         item.Condition,
+         item.Comment,
+         ""
+       ]);
+     } catch(err) {
+       itemArray[i] = ([
+         item.SellerSKU,
+         item.Title,
+         item.UPC,
+         item.ASIN,
+         item.Price,
+         item.Dimensions.Weight,
+         item.Dimensions.Length,
+         item.Dimensions.Width,
+         item.Dimensions.Height,
+         item.Condition,
+         item.Comment,
+         ""
+       ]);
+     }
    }
  
    // Push array into MWS tab.
