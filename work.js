@@ -237,7 +237,7 @@ function bulkUpdateLiquid() {
     
   for (var i = 4; i < workSKU.length; i++) {
     // Find index of SKU in work and liquidation.
-    var sku = parseInt(workSKU[i]);
+    var sku = Number(workSKU[i]);
     if (sku == "NaN") {continue;}
     var workIndex = workSKU.indexOf(sku);
     var liquidIndex = liquidSKU.indexOf(sku);
@@ -293,6 +293,87 @@ function bulkUpdateLiquid() {
       + '\nItems created: ' + created);
 }
 
+function autoUpdateLiquid() {
+  /**
+  * This script synchronizes values in the Liquidation sheet
+  * to match those in the Work sheet.
+  *
+  * It runs automatically once every hour.
+  */
+  
+  // Cache spreadsheet ID's
+  var liquidID = "1Xqsc6Qe_hxrWN8wRd_vgdBdrCtJXVlvVC9w53XJ0BUM";
+  var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
+  
+  // Initialize Work and Liquidation sheets.
+  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName('Listings');
+  var sheetLiquid = SpreadsheetApp.openById(liquidID).getSheetByName("Liquidation Orders");
+  
+  // Cache user-given SKU and initialize work and liquidation SKU's.
+  var workLastRow = sheetListings.getLastRow();
+  var workSKU = getCol(sheetListings.getRange(1, 2, workLastRow).getValues(), 0);
+  var workValues = sheetListings.getDataRange().getValues();
+  var liqLastRow = sheetLiquid.getLastRow();
+  var liquidSKU = getCol(sheetLiquid.getRange(1, 1, liqLastRow).getValues(), 0);
+  var liquidUPC = getCol(sheetLiquid.getRange(1, 5, liqLastRow).getValues(), 0);
+    
+  // Initialize counting variables.
+  var updated = 0;
+  var notUpdated = 0;
+  var created = 0;
+    
+  for (var i = 4; i < workSKU.length; i++) {
+    // Find index of SKU in work and liquidation.
+    var sku = Number(workSKU[i]);
+    if (sku == "NaN") {continue;}
+    var workIndex = workSKU.indexOf(sku);
+    var liquidIndex = liquidSKU.indexOf(sku);
+      
+    // Check if title is blank or already up to date.
+    if (workValues[i][2] == "" || workValues[i][3] == liquidUPC[liquidIndex]) {
+      notUpdated++;
+      continue;
+    }
+      
+    if (liquidIndex == -1) {
+      created++;
+      liquidIndex = liqLastRow;
+      var r = String(liquidIndex + 1);
+      sheetLiquid.insertRowAfter(liqLastRow);
+       
+      // Enter values from Work sheet.
+      sheetLiquid.getRange(r, 1).setValue(workValues[i][1]);
+      sheetLiquid.getRange(r, 2).setValue(todayDate());
+      sheetLiquid.getRange(r, 4).setValue("1");
+      sheetLiquid.getRange(r, 6).setValue("LIQUIDATION");
+      sheetLiquid.getRange(r, 8).setValue(workValues[i][6]);
+       
+      // Enter FBA information for new entry.
+      sheetLiquid.getRange(r, 9).setValue("FBA");             // Sell Site
+      sheetLiquid.getRange(r, 10).setValue("FBA");            // Sell Order
+      sheetLiquid.getRange(r, 11).setValue("0.01");           // Buy Price
+       
+      // Setup liquidation formulas for new entry.
+      sheetLiquid.getRange(r, 14).setFormula("=M"+r+"-K"+r);  // Actual Profit
+      sheetLiquid.getRange(r, 15).setFormula("=M"+r+"/K"+r);  // Actual % Increase
+      sheetLiquid.getRange(r, 22).setFormula("=VLOOKUP(A"+r+",Returns!A:A,1,0)");        // RETURNS V
+      sheetLiquid.getRange(r, 23).setFormula("=VLOOKUP(A"+r+",Salvage!A:A,1,0)");        // SALVAGE V
+      sheetLiquid.getRange(r, 24).setFormula("=VLOOKUP(A"+r+",Reimbursements!F:F,1,0)"); // REIMBURSE V
+      sheetLiquid.getRange(r, 25).setFormula("=VLOOKUP(A"+r+",Inventory!B:B,1,0)");      // INVENTORY V
+//       sheetLiquid.getRange(liqLastRow + k, 26).setFormula("=VLOOKUP(A"+r+",Connor!G:H,2,0)");         // FBA SHIPMENT STATUS
+//       sheetLiquid.getRange(liqLastRow + k, 27).setFormula("=VLOOKUP(A"+r+",Connor!K:K,1,0)");         // FBA SHIPMENT ISSUE
+   }
+      
+    // Copy work information into liquidation.
+    sheetLiquid.getRange(liquidIndex+1, 3).setValue(workValues[i][2]);
+    sheetLiquid.getRange(liquidIndex+1, 5).setValue(workValues[i][3]);
+    sheetLiquid.getRange(liquidIndex+1, 7).setValue(workValues[i][5]);
+    // Check if SKU is in liquidation sheet.
+    if (liquidIndex == liqLastRow) {liqLastRow++; continue;}
+      updated++;
+    }
+}
+
 function createMWS() {
   /**
   * This script uses the Amazon Products API in tandem with
@@ -331,7 +412,7 @@ function electronicsMWS() {
   * klasrun.com PHP scripting to create a JSON file of the 
   * items in the SCRAP sheet currently waiting to be listed.
   *
-  * Only oversize items marked with an 'E' will be included.
+  * Only small items marked with an 'E' will be included.
   *
   * Use this function in tandem with the populateMWS() and
   * postListings() functions to list products on Amazon.
@@ -361,42 +442,43 @@ function populateMWS() {
    var itemArray = makeArray(12, itemCount, "");
    for (i = 0; i < itemCount; i++) {
      var item = data[i];
-     try {
-       itemArray[i] = ([
-         item.SellerSKU,
-         item.Title,
-         item.UPC,
-         item.ASIN,
-         item.Price.toFixed(2),
-         item.Dimensions.Weight,
-         item.Dimensions.Length,
-         item.Dimensions.Width,
-         item.Dimensions.Height,
-         item.Condition,
-         item.Comment,
-         ""
-       ]);
-     } catch(err) {
-       itemArray[i] = ([
-         item.SellerSKU,
-         item.Title,
-         item.UPC,
-         item.ASIN,
-         item.Price,
-         item.Dimensions.Weight,
-         item.Dimensions.Length,
-         item.Dimensions.Width,
-         item.Dimensions.Height,
-         item.Condition,
-         item.Comment,
-         ""
-       ]);
+     try {                                                                                                                                    
+       itemArray[i] = ([                                                                                                                      
+         item.SellerSKU,                                                                                                                      
+         item.Title,                                                                                                                          
+         item.UPC,                                                                                                                            
+         item.ASIN,                                                                                                                           
+         item.Price.toFixed(2),                                                                                                               
+         item.Dimensions.Weight,                                                                                                              
+         item.Dimensions.Length,                                                                                                              
+         item.Dimensions.Width,                                                                                                               
+         item.Dimensions.Height,                                                                                                              
+         item.Condition,                                                                                                                      
+         item.Comment,                                                                                                                        
+         ""                                                                                                                                   
+       ]);                                                                                                                                    
+     } catch(err) {                                                                                                                              
+       itemArray[i] = ([                                                                                                                      
+         item.SellerSKU,                                                                                                                      
+         item.Title,                                                                                                                          
+         item.UPC,                                                                                                                            
+         item.ASIN,                                                                                                                           
+         item.Price,                                                                                                                          
+         item.Dimensions.Weight,                                                                                                              
+         item.Dimensions.Length,                                                                                                              
+         item.Dimensions.Width,                                                                                                               
+         item.Dimensions.Height,                                                                                                              
+         item.Condition,                                                                                                                      
+         item.Comment,                                                                                                                        
+         ""                                                                                                                                   
+       ]);                                                                                                                                    
      }
    }
  
    // Push array into MWS tab.
    var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
-   var range = sheetMWS.getRange(2, 1, sheetMWS.getLastRow()-1, 12).clearContent().setBackground('white');
+   sheetMWS.getRange(2, 1, sheetMWS.getMaxRows()-1, 12).clearContent().setBackground('white');
+   var range = sheetMWS.getRange(2, 1, itemCount, 12);
    range.setValues(itemArray);
    
    // Highlight undefined prices and wonky dimensions.
@@ -449,8 +531,8 @@ function createShipments() {
 function shipLTL() {
   /**
   * This script uses the Amazon FBAInboundMWS API in tandem with
-  * klasrun.com PHP scripting to create a shipment with all items
-  * in the MWS sheet.
+  * klasrun.com PHP scripting to create a palleted shipment with
+  * all items in the MWS sheet.
   */
   
   SpreadsheetApp.getUi().alert(
@@ -461,15 +543,13 @@ function shipLTL() {
 function shipElectronics() {
   /**
   * This script uses the Amazon FBAInboundMWS API in tandem with
-  * klasrun.com PHP scripting to create a shipment with all items
-  * in the MWS sheet.
+  * klasrun.com PHP scripting to create a small item, all-in-one-box
+  * shipment with all items in the MWS sheet.
   */
-  
-  SpreadsheetApp.getUi().alert('ERROR: Script still in development.');
-  
-//  SpreadsheetApp.getUi().alert(
-//    'Go to the following URL and wait for a success message:\n\n'
-//    + 'http://klasrun.com/AmazonMWS/FBAInboundServiceMWS/Functions/ElectronicShip.php');
+    
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://klasrun.com/AmazonMWS/FBAInboundServiceMWS/Functions/ElectronicShip.php');
 }
 
 function importShipments() {
