@@ -484,7 +484,7 @@ function populateMWS() {
    // Highlight undefined prices and wonky dimensions.
    var prices = sheetMWS.getRange(2, 5, itemCount, 6).getValues();
    for (i = 0; i < itemCount; i++) {
-     if (prices[i][0] == "undefined") {
+     if (prices[i][0] == "undefined" || prices[i][0] == "") {
        sheetMWS.getRange(2+i, 5).setBackground('red');
      }
      if (Number(prices[i][1]) < 1 || Number(prices[i][1]) > 100) {
