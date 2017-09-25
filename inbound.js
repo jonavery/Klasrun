@@ -315,7 +315,7 @@ function exportData() {
   var liqID = "1Xqsc6Qe_hxrWN8wRd_vgdBdrCtJXVlvVC9w53XJ0BUM";
   
   // Load the sheets between which data will be transferred.
-  var sheetExport = SpreadsheetApp.openById(maniID).getSheetByName("LIQ FORMAT");
+  var sheetExport = SpreadsheetApp.openById(maniID).getSheetByName("Export");
   var sheetFuture = SpreadsheetApp.openById(workID).getSheetByName("Future Listing");
   var sheetLiquid = SpreadsheetApp.openById(liqID).getSheetByName("Liquidation Orders");
   
