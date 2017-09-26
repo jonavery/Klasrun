@@ -203,7 +203,7 @@ function importPrices() {
       // item.Title,
       // item.UPC,
       // item.ASIN,
-      item.Price,
+      item.ItemPrice,
       item.Rank,
       item.Weight
     ]);

@@ -448,7 +448,7 @@ function populateMWS() {
          item.Title,                                                                                                                          
          item.UPC,                                                                                                                            
          item.ASIN,                                                                                                                           
-         item.Price.toFixed(2),                                                                                                               
+         item.ItemPrice.toFixed(2),                                                                                                               
          item.Dimensions.Weight,                                                                                                              
          item.Dimensions.Length,                                                                                                              
          item.Dimensions.Width,                                                                                                               
@@ -463,7 +463,7 @@ function populateMWS() {
          item.Title,                                                                                                                          
          item.UPC,                                                                                                                            
          item.ASIN,                                                                                                                           
-         item.Price,                                                                                                                          
+         item.ItemPrice,                                                                                                                          
          item.Dimensions.Weight,                                                                                                              
          item.Dimensions.Length,                                                                                                              
          item.Dimensions.Width,                                                                                                               
@@ -484,7 +484,7 @@ function populateMWS() {
    // Highlight undefined prices and wonky dimensions.
    var prices = sheetMWS.getRange(2, 5, itemCount, 6).getValues();
    for (i = 0; i < itemCount; i++) {
-     if (prices[i][0] == "MANUAL" || prices[i][0] == "NO_CONDITION") {
+     if (prices[i][0] == "MANUAL" || prices[i][0] == "") {
        sheetMWS.getRange(2+i, 5).setBackground('red');
      }
      if (Number(prices[i][1]) < 1 || Number(prices[i][1]) > 100) {
