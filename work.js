@@ -79,59 +79,6 @@ function newSKU() {
   var response = ui.alert('Use this SKU for new item: ' + String(highSKU + 1));
 }
 
-function highlightAER() {
-  /**
-  * This script highlights each A/E/R cell according to its designation.
-  * The script is coded to leave highlighted cells/rows alone.
-  */
-  
-  // Initialize sheet and save values.
-  var sheetWork = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Future Listing');
-  var rangeWork = sheetWork.getDataRange();
-  var workValues = rangeWork.getValues();
-  var workColors = rangeWork.getBackgrounds();
-  
-  // Cache A/E/R column of sheet.
-  var aerValues = getCol(workValues, 5);
-  
-  // Loop through A/E/R column and color cells with a switch statement.
-  for (i=1; i<aerValues.length; i++) {
-    if (workColors[i][0] == "#ffffff") {
-      var activeRange = sheetWork.getRange(i+1, 2, 1, 6);
-      switch (aerValues[i]) {
-        case 'a':
-        case 'A':
-          activeRange.setBackground('white');
-          break;
-        case 'e':
-        case 'E':
-          activeRange.setBackground('#ff00ff');
-          break;
-        case 'r':
-        case 'R':
-          activeRange.setBackground('orange');
-          break;
-        case 'd':
-        case 'D':
-          activeRange.setBackground('red');
-          break;
-        case 'RHD':
-          activeRange.setBackground('blue');
-          activeRange.setFontColor('white');
-          break;
-        case 'c':
-        case 'C':
-          activeRange.setBackground('#cc3300');
-          activeRange.setFontColor('white');
-          break;
-        default:
-          activeRange.setBackground('gray');
-          break;
-      }
-    }
-  }
-}
-
 function updateBySKU() {
   /**
   * This script gets an SKU from the user and updates the item in
