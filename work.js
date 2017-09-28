@@ -432,16 +432,16 @@ function populateMWS() {
      if (prices[i][0] == "MANUAL" || prices[i][0] == "") {
        sheetMWS.getRange(2+i, 5).setBackground('red');
      }
-     if (Number(prices[i][1]) < 1 || Number(prices[i][1]) > 100) {
+     if (Number(prices[i][1]) < 1 || Number(prices[i][1]) > 100 || Number(prices[i][1]) == "NaN") {
        sheetMWS.getRange(2+i, 6).setBackground('red');
      }
-     if (Number(prices[i][2]) < 1 || Number(prices[i][2]) > 75) {
+     if (Number(prices[i][2]) < 1 || Number(prices[i][2]) > 75 || Number(prices[i][2]) == "NaN") {
        sheetMWS.getRange(2+i, 7).setBackground('red');
      }
-     if (Number(prices[i][3]) < 1 || Number(prices[i][3]) > 75) {
+     if (Number(prices[i][3]) < 1 || Number(prices[i][3]) > 75 || Number(prices[i][3]) == "NaN") {
        sheetMWS.getRange(2+i, 8).setBackground('red');
      }
-     if (Number(prices[i][4]) < 1 || Number(prices[i][4]) > 75) {
+     if (Number(prices[i][4]) < 1 || Number(prices[i][4]) > 75 || Number(prices[i][4]) == "NaN") {
        sheetMWS.getRange(2+i, 9).setBackground('red');
      }
    }
