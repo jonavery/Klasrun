@@ -4,8 +4,6 @@ function onOpen() {
     .addItem('Get Next SKU From Liquidation', 'newSKU')
     .addItem('Update All Work Items in Liquidation', 'bulkUpdateLiquid')
     .addSeparator()
-    .addItem('Highlight Future Listings by A/E/R', 'highlightAER')
-    .addSeparator()
     .addSubMenu(ui.createMenu('Generate MWS item array')                                                                                      
       .addItem('Standard Small Parcel', 'createMWS')                                                                                          
       .addItem('Oversize (Palleted)', 'palletMWS')                                                                                            
