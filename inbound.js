@@ -273,18 +273,20 @@ function updateLiqFormat() {
   // Copy A/E/R from Buy Site to correct column
   var AER = sheetExp.getRange(3, 8, itemCount);
   sheetExp.getRange(3, 7, itemCount).moveTo(AER);
-  var formulaRange = sheetExp.getRange(2, 10, 1, 5);
+  sheetExp.getRange(2, 15).setFormula('=IF(N2=0.01,0.01,ROUND(N2*Cycles!$M$4/SUM(N$3:N$1500),2))');
+  var formulaRange = sheetExp.getRange(2, 10, 1, 6);
   // Fill in date, buy site, and cost information.
   for (var j=1; j <= itemCount; j++) {
     sheetExp.getRange(2+j, 2).setValue(today);
     sheetExp.getRange(2+j, 7).setValue("LIQUIDATION");
     sheetExp.getRange(2+j, 9).setValue(orderID);
-    formulaRange.copyTo(sheetExp.getRange(2+j, 10, 1, 5));
+    formulaRange.copyTo(sheetExp.getRange(2+j, 10, 1, 6));
   }
   // Copy per item cost values.
-  sheetExp.getRange(3, 15, itemCount).setValue(sheetExp.getRange(3, 14, itemCount).getDisplayValues());
+  var priceRange = sheetExp.getRange(3, 15, itemCount);
+  // priceRange.setValue(priceRange.getDisplayValues());
   // Compare rounded cost to actual cost
-  var prices = sheetExp.getRange(3, 15, itemCount).getValues();
+  var prices = priceRange.getValues();
   var orderTotal = sheetExp.getRange(3,11).getValue();
   var roundedTotal = Number(round(sumArray(prices), 2));
   if (roundedTotal < orderTotal) {
