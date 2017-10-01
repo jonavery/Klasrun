@@ -8,7 +8,7 @@ function onOpen() {
     .addItem('Update Export', 'updateLiqFormat')
     .addItem('Export to LIQ & WORK', 'exportData')
     .addSeparator()
-    .addItem('Update ASINs', 'updateASINs')
+    .addItem('Update ASIN DB', 'updateASINs')
     .addToUi();
 }
 
@@ -235,7 +235,11 @@ function updateLiqFormat() {
   var orders = sheetResearch.getDataRange().getValues();
   var orderCol = (getCol(orders,0));
   
+  // Cache order ID, item count, and buy total.
   var auctions = sheetCycles.getDataRange().getValues();
+  var orderID = auctions[3][10];
+  var itemCount = auctions[3][13];
+  var orderTotal = auctions[3][12];
   
   // Save today's properly formatted date as a variable.
   var today = new Date();
@@ -246,22 +250,17 @@ function updateLiqFormat() {
   if(mm<10) { mm = '0' + mm;}
   var today = mm + '/' + dd + '/' + yyyy;
   
-  
-  // Initialize counting variable for reporting number of items copied.
-  var itemCopy = 0;
-  
   // Clear Export sheet and remove empty rows.
   sheetExp.getRange(3, 1, sheetExp.getMaxRows()-2, sheetExp.getLastColumn()).clear();
   sheetExp.deleteRows(3, sheetExp.getMaxRows()-2);
   
-  // Cache order ID and item count, then insert appropriate number of rows into Export sheet.
-  var orderID = auctions[3][10];
-  var itemCount = auctions[3][13];
+  // Insert appropriate number of rows into Export sheet.
   sheetExp.insertRowsAfter(2, itemCount);
+  
   // Find order in Research sheet
   var orderIndex = orderCol.indexOf(orderID);
   if (orderIndex == -1) {
-    SpreadsheetApp.getUi().alert('Could not find order #' + orderID + '. Aborting...');
+    SpreadsheetApp.getUi().alert('Could not find order #:' + orderID + '. Aborting...');
     return;
   }
   // Save order as range with itemCount number of rows
@@ -270,9 +269,10 @@ function updateLiqFormat() {
   orderItems.copyValuesToRange(sheetExp, 3, 7, 3, 3+itemCount);
   sheetExp.getRange(3, 1, itemCount, 9).setBackground('white');
     
-  // Copy A/E/R from Buy Site to correct column
+  // Copy A/E/R from Buy Site to correct column.
   var AER = sheetExp.getRange(3, 8, itemCount);
   sheetExp.getRange(3, 7, itemCount).moveTo(AER);
+  // Hard-code in the formula for weighted average pricing.
   sheetExp.getRange(2, 15).setFormula('=IF(N2=0.01,0.01,ROUND(N2*Cycles!$M$4/SUM(N$3:N$1500),2))');
   var formulaRange = sheetExp.getRange(2, 10, 1, 6);
   // Fill in date, buy site, and cost information.
@@ -287,7 +287,6 @@ function updateLiqFormat() {
   // priceRange.setValue(priceRange.getDisplayValues());
   // Compare rounded cost to actual cost
   var prices = priceRange.getValues();
-  var orderTotal = sheetExp.getRange(3,11).getValue();
   var roundedTotal = Number(round(sumArray(prices), 2));
   if (roundedTotal < orderTotal) {
     // If rounded is lower, compensate top per item cost
@@ -297,9 +296,8 @@ function updateLiqFormat() {
     // If rounded is higher, compensate bottom per item cost
     sheetExp.getRange(2+itemCount, 15).setValue(Number(prices[itemCount-1]) + orderTotal - roundedTotal);
   }
-  itemCopy = itemCopy + itemCount;
   // Post dialogue box showing # of orders and items copied to LIQ FORMAT.
-  SpreadsheetApp.getUi().alert('Script finished.\n\nItems Copied: ' + itemCopy);
+  SpreadsheetApp.getUi().alert('Script finished.\n\nItems Copied: ' + itemCount);
 }
 
 function exportData() {
@@ -485,20 +483,33 @@ function updateASINs() {
   var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
   
   // Initialize the sheets to be accessed.
-  var sheetASINs = SpreadsheetApp.openById(maniID).getSheetByName("ASINs");
+  var sheetDB = SpreadsheetApp.openById(maniID).getSheetByName("asinDB");
   var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");
 
-  // Cache and count ASINs from Research and ASINs.
+  // Cache ASIN column from Research.
   var researchValues = sheetResearch.getDataRange().getValues();
-  var asinsValues = sheetASINs.getDataRange().getValues();
+  var researchASINs = getCol(researchValues,3);
+  
+  // Create array of unique ASINs.
+  const found = {};
+  const uniqueASINs = [];
+  for (var i=5; i<researchASINs.length; i++) {
+    var item = researchASINs[i];
+    if (item && !found[item]) {
+      uniqueASINs.push(item);
+      found[item] = true;
+    }
+  }
+  Logger.log(uniqueASINs.length);
+  Logger.log(uniqueASINs);
   
   // Compare Research items to Database items.
-    // Move item into Database if new, non-empty, and researched.
+  // Move item into Database if new, non-empty, and researched.
 }
 
 function getCol(matrix, col){
 // Take in a matrix and slice off a column from it.
-// @param Col is 0-indexed.
+  // @param {int} Col 0-indexed number of column to be outputted.
   var column = [];
   var l = matrix.length;
   for(var i=0; i<l; i++){
