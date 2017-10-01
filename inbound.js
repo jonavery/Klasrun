@@ -486,20 +486,21 @@ function updateASINs() {
   var sheetDB = SpreadsheetApp.openById(maniID).getSheetByName("asinDB");
   var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");
 
-  // Cache ASIN column from Research.
+  // Cache values from Research.
   var researchValues = sheetResearch.getDataRange().getValues();
   // Remove duplicate and blank ASINs from array.
   var researchUnique = cleanArray(researchValues.slice(5),3);
   
-  Logger.log(researchUnique);
-  
-  // Cache ASIN column from Database.
-  var dbValues = sheetDB.getDataRange().getValues();
+  // Cache values from Database.
+  var dbLastRow = sheetDB.getLastRow();
+  sheetDB.getRange(2,1,dbLastRow-1,7).clear;
+  var dbValues = sheetResearch.getDataRange().getValues().slice(1);
   
   // Compare Research items to Database items.
   
   
-  // Move item into Database if new, non-empty, and researched.
+  // Move item into Database if new.
+  
 }
 
 function cleanArray(dirty, key) {  
@@ -519,7 +520,7 @@ function cleanArray(dirty, key) {
 }
 
 function getCol(matrix, col){
-  // Take in a matrix and slice off a column from it.
+  // Take in a matrix and extract a column from it.
   // @param {int} Col - 0-indexed number of column to be outputted.
   var column = [];
   var l = matrix.length;
@@ -530,14 +531,17 @@ function getCol(matrix, col){
 }
 
 function rep(obj, n) {
-  // Create function that makes an array of n length and obj identical inputs.
+  // Make an array of n length and obj identical inputs.
+  // @param {*} obj - value to be repeated inside array.
+  // @param {int} n - number of times to repeat value.
   var arr = [[]];
   for (i=0; i < n; i++) {arr[i][0].push(obj);}
   return arr;
 }
 
 function sumArray(array) {
-  // Create function that finds the sum of an array.
+  // Find the sum of an array.
+  // @param {Array} array - array of numerical values.
   for (
     var
     i = 0,
@@ -550,7 +554,9 @@ function sumArray(array) {
 }
 
 function containedIn(needles, haystack) {
-  // Create function that checks to see if objects from one array are contained in a second array.
+  // Check to see if objects from one array are contained in a second array.
+  // @param {Array} needles - array of objects to be looked for.
+  // @param {Array} haystack - array to look in.
   var check = [];
   for (i=0; i < needles.length; i++) {
     check[i] = haystack.indexOf(needles[i][0]) > -1;
@@ -559,7 +565,9 @@ function containedIn(needles, haystack) {
 }
 
 function round(value, exp) {
-  // Create function that rounds a value to exp decimal places
+  // Rounds a value to exp decimal places
+  // @param {float} value - number to be rounded.
+  // @param {int} exp - number of decimal places to round number. 0 will output an integer.
   if (typeof exp === 'undefined' || +exp === 0)
     return Math.round(value);
   value = +value;
