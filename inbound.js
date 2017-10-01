@@ -488,28 +488,39 @@ function updateASINs() {
 
   // Cache ASIN column from Research.
   var researchValues = sheetResearch.getDataRange().getValues();
-  var researchASINs = getCol(researchValues,3);
+  // Remove duplicate and blank ASINs from array.
+  var researchUnique = cleanArray(researchValues.slice(5),3);
   
-  // Create array of unique ASINs.
-  const found = {};
-  const uniqueASINs = [];
-  for (var i=5; i<researchASINs.length; i++) {
-    var item = researchASINs[i];
-    if (item && !found[item]) {
-      uniqueASINs.push(item);
-      found[item] = true;
-    }
-  }
-  Logger.log(uniqueASINs.length);
-  Logger.log(uniqueASINs);
+  Logger.log(researchUnique);
+  
+  // Cache ASIN column from Database.
+  var dbValues = sheetDB.getDataRange().getValues();
   
   // Compare Research items to Database items.
+  
+  
   // Move item into Database if new, non-empty, and researched.
 }
 
+function cleanArray(dirty, key) {  
+  // Clean rows from a two-dimensional array that have duplicate or blank keys.
+  // @param {Array} dirty - Array containing duplicate and blank values.
+  // @param {int} key - 0-indexed column of the primary key used to check for duplicates.
+  const found = {};
+  const clean = [];
+  for (var i=0; i<dirty.length; i++) {
+    var item = dirty[i];
+    if (item[key] && !found[item[key]]) {
+      clean.push(item);
+      found[item[key]] = true;
+    }
+  }
+  return clean;
+}
+
 function getCol(matrix, col){
-// Take in a matrix and slice off a column from it.
-  // @param {int} Col 0-indexed number of column to be outputted.
+  // Take in a matrix and slice off a column from it.
+  // @param {int} Col - 0-indexed number of column to be outputted.
   var column = [];
   var l = matrix.length;
   for(var i=0; i<l; i++){
