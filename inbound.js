@@ -22,7 +22,7 @@ function nono(sheet, itemCount) {
   var banSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Ban List');
   var banList = banSheet.getDataRange().getValues();
   var banCount = banSheet.getLastRow();
-
+  
   // Store banned brands and ASINs in seperate arrays.
   var banBrand = [];
   var banASIN = [];
@@ -30,7 +30,7 @@ function nono(sheet, itemCount) {
     if (banList[i][0] != "") {banBrand.push(banList[i][0]);}
     if (banList[i][1] != "") {banASIN.push(banList[i][1]);}
   }
-
+  
   // Make items returns if they are on banned brands list.
   var items = sheet.getRange(6, 2, itemCount).getValues();
   for (var i = 0; i < itemCount; i++) {
@@ -59,18 +59,18 @@ function importBlackwrap() {
   /**
   * This script imports a new blackwrap manifest into the sheet tab.
   **/
-
+  
   // Load active sheet and check to be sure it is a new blackwrap manifest.
   var blackwrapSheet = SpreadsheetApp.getActiveSheet();
   if (blackwrapSheet.getSheetName().length < 9) {
     SpreadsheetApp.getUi().alert('Please select the new blackwrap manifest before running script.');
     return;
   }
-
+  
   // Load sheet and the values from the blackwrap manifest.
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Research');
   var blackwrapValues = blackwrapSheet.getDataRange().getValues().slice(1);
-
+  
   // Sort the new values alphabetically by their titles.
   blackwrapValues.sort(function(a, b) {
     if (a[12] === b[12]) {
@@ -80,22 +80,22 @@ function importBlackwrap() {
       return (a[12] < b[12]) ? -1 : 1;
     }
   });
-
+  
   // Cache values to be transferred over to sheet.
-  for (var i = 0; i < blackwrapSheet.getLastColumn(); i++) {
-    var header = blackwrapSheet.getRange(1, i+1).getValue();
-    if (header == "Item Description") {var titleCol = i;}
-    if (header == "B00 ASIN") {var asinCol = i;}
-    if (header == "X-Z ASIN") {var lpnCol = i;}
-  }
-  var titles = getCol(blackwrapValues, titleCol);
-  var asins = getCol(blackwrapValues, asinCol);
-  var LPNs = getCol(blackwrapValues, lpnCol);
-
+  for (var i = 0; i < blackwrapSheet.getLastColumn(); i++) {                                                                                                  
+    var header = blackwrapSheet.getRange(1, i+1).getValue();                                                                                                  
+    if (header == "Item Description") {var titleCol = i;}                                                                                                     
+    if (header == "B00 ASIN") {var asinCol = i;}                                                                                                              
+    if (header == "X-Z ASIN") {var lpnCol = i;}                                                                                                               
+  }                                                                                                                                                           
+  var titles = getCol(blackwrapValues, titleCol);                                                                                                             
+  var asins = getCol(blackwrapValues, asinCol);                                                                                                               
+  var LPNs = getCol(blackwrapValues, lpnCol); 
+  
   // Create appropriate number of rows in sheet.
   var itemCount = blackwrapValues.length;
   sheet.insertRowsBefore(6, blackwrapValues.length + 5);
-
+  
   // Transfer values over to sheet.
   for (var i = 0; i < itemCount; i++) {
     var j = i + 6;
@@ -104,11 +104,11 @@ function importBlackwrap() {
     sheet.getRange(j, 4).setValue(asins[i]);
     sheet.getRange(j, 5).setValue(LPNs[i]);
   }
-
+  
   // Set summation formulas.
   sheet.getRange(itemCount+6, 1, 2, 9).setFontStyle('bold');
   sheet.getRange(itemCount+6, 1).setValue("SUBTOTAL");
-  sheet.getRange(itemCount+7, 1).setValue("MY BUY PRICE");
+  sheet.getRange(itemCount+7, 1).setValue("MY BUY PRICE");  
   var countA1 = sheet.getRange(6, 3, itemCount).getA1Notation();
   var amazonA1 = sheet.getRange(6, 7, itemCount).getA1Notation();
   var feesA1 = sheet.getRange(6, 8, itemCount).getA1Notation();
@@ -118,7 +118,7 @@ function importBlackwrap() {
   var buyA1 = sheet.getRange(itemCount+7, 8).setFormula("=SUM("+feeSumA1+"*0.6)").setBackgroundRGB(217, 234, 211).getA1Notation();
   sheet.getRange(itemCount+6, 9, 2).setBackgroundRGB(255, 153, 0);
   sheet.getRange(itemCount+7, 9).setFormula("=ROUND("+buyA1+"*0.92,2)");
-
+  
   // @TODO: blackwrap filter is not finding anything. FIX THIS.
   // Set order title.
 //  var orders = getCol(blackwrapValues, 0);
@@ -134,7 +134,7 @@ function importBlackwrap() {
 //    }
 //  }
 //  sheet.getRange(6, 1).setValue("BLACKWRAP "+String(blackNum+1));
-
+  
   // Set VLOOKUP formulas.
   var lastRow = sheet.getLastRow();
   var rangeA1 = sheet.getRange(itemCount+11, 4, lastRow-itemCount-10, 5).getA1Notation();
@@ -147,10 +147,10 @@ function importBlackwrap() {
     sheet.getRange(i, 11).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",8,FALSE)");
     sheet.getRange(i, 12).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",9,FALSE)");
   }
-
+  
   // Make banned items returns
   nono(sheet, itemCount);
-
+  
   // Copy formula output values and paste them as text.
   var vlookupValues = sheet.getRange(6, 6, itemCount, 3).getValues();
   sheet.getRange(6, 6, itemCount, 3).setValues(vlookupValues);
@@ -163,7 +163,7 @@ function generatePrices() {
   * products in sheet with their price, weight, and sales
   * rank on Amazon.
   */
-
+  
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
     + 'http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/BlackwrapPricing.php');
@@ -176,12 +176,12 @@ function importPrices() {
   *  2. Convert json into multidimensional array
   *  3. Update sheet with ASINs/UPCs.
   */
-
+  
   // Fetch the json array from website and parse into JS object.
   var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/blackwrap.json');
   var json = response.getContentText();
 //  // Preserve newlines, etc - use valid JSON
-//  json = json.replace(/\\n/g, "\\n")
+//  json = json.replace(/\\n/g, "\\n")  
 //               .replace(/\\'/g, "\\'")
 //               .replace(/\\"/g, '\\"')
 //               .replace(/\\&/g, "\\&")
@@ -190,9 +190,9 @@ function importPrices() {
 //               .replace(/\\b/g, "\\b")
 //               .replace(/\\f/g, "\\f");
 //  // Remove non-printable and other non-valid JSON chars
-//  json = json.replace(/[\u0000-\u0019]+/g,"");
+//  json = json.replace(/[\u0000-\u0019]+/g,""); 
   var data = JSON.parse(json);
-
+  
   // Convert data object into multidimensional array.
   // Ordering is same as in MWS tab.
   var itemCount = data.length;
@@ -222,25 +222,25 @@ function updateLiqFormat() {
   *   3. Fill out all relevant formulas on the right side of Export
   *   4. Adjust per item cost to align with total cost
   *************************************************************************/
-
+  
   // Set ID for the spreadsheet file to be used.
   var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
-
+  
   // Initialize the sheets to be accessed.
   var sheetExp = SpreadsheetApp.openById(maniID).getSheetByName("Export");
   var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");
   var sheetCycles = SpreadsheetApp.openById(maniID).getSheetByName("Cycles");
-
+  
   // Extract first column from Research sheet.
   var orders = sheetResearch.getDataRange().getValues();
   var orderCol = (getCol(orders,0));
-
+  
   // Cache order ID, item count, and buy total.
   var auctions = sheetCycles.getDataRange().getValues();
   var orderID = auctions[3][10];
   var itemCount = auctions[3][13];
   var orderTotal = auctions[3][12];
-
+  
   // Save today's properly formatted date as a variable.
   var today = new Date();
   var dd = today.getDate();
@@ -249,14 +249,14 @@ function updateLiqFormat() {
   if(dd<10) { dd = '0' + dd;}
   if(mm<10) { mm = '0' + mm;}
   var today = mm + '/' + dd + '/' + yyyy;
-
+  
   // Clear Export sheet and remove empty rows.
   sheetExp.getRange(3, 1, sheetExp.getMaxRows()-2, sheetExp.getLastColumn()).clear();
   sheetExp.deleteRows(3, sheetExp.getMaxRows()-2);
-
+  
   // Insert appropriate number of rows into Export sheet.
   sheetExp.insertRowsAfter(2, itemCount);
-
+  
   // Find order in Research sheet
   var orderIndex = orderCol.indexOf(orderID);
   if (orderIndex == -1) {
@@ -268,7 +268,7 @@ function updateLiqFormat() {
   // Copy range values over to Export
   orderItems.copyValuesToRange(sheetExp, 3, 7, 3, 3+itemCount);
   sheetExp.getRange(3, 1, itemCount, 9).setBackground('white');
-
+    
   // Copy A/E/R from Buy Site to correct column.
   var AER = sheetExp.getRange(3, 8, itemCount);
   sheetExp.getRange(3, 7, itemCount).moveTo(AER);
@@ -308,24 +308,24 @@ function exportData() {
   *   3. Copy over the ranges into the Liquidation and Work sheets with the proper formatting.
   *   4. Fill in any constant values in the Liquidation and Work Sheets.
   **********************************************************************************************/
-
+  
   // Set ID's for the spreadsheet file to be used.
   var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
   var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
   var liqID = "1Xqsc6Qe_hxrWN8wRd_vgdBdrCtJXVlvVC9w53XJ0BUM";
-
+  
   // Load the sheets between which data will be transferred.
   var sheetExport = SpreadsheetApp.openById(maniID).getSheetByName("Export");
   var sheetFuture = SpreadsheetApp.openById(workID).getSheetByName("Future Listing");
   var sheetLiquid = SpreadsheetApp.openById(liqID).getSheetByName("Liquidation Orders");
-
+  
   // Save last row in each sheet to be used for indexing later.
   var maniLastRow = sheetExport.getLastRow();
   var liqLastRow = sheetLiquid.getLastRow();
-
+  
   // Load all of the values from manifest sheet.
   var maniValues = sheetExport.getDataRange().getValues();
-
+  
   // Prepare the future listings sheet for data entry.
   var futureMaxRows = sheetFuture.getMaxRows();
   sheetFuture.getRange(2, 1, futureMaxRows-1, sheetFuture.getLastColumn()).clear();
@@ -347,7 +347,7 @@ function exportData() {
       SpreadsheetApp.getUi().alert('Something went wrong formatting blank rows.');
       return;
   }
-
+  
   // Add the proper number of rows to the liquidation sheet if needed.
   var liqNeededRows = maniValues.length + liqLastRow - sheetLiquid.getMaxRows();
   switch(true) {
@@ -364,7 +364,7 @@ function exportData() {
       SpreadsheetApp.getUi().alert('Something went wrong formatting blank rows.');
       return;
   }
-
+  
   // Load highest SKU # from liquidation sheet.
   var allSKUs = getCol(sheetLiquid.getRange(2, 1, liqLastRow-1).getValues(), 0);
   var highSKU = 1;
@@ -373,10 +373,10 @@ function exportData() {
       var highSKU = allSKUs[i];
     }
   }
-
+  
   // Cache all order numbers currently in liquidation sheet and check to see if data has already been transferred.
   var allOrderNums = getCol(sheetLiquid.getRange(1, 8, liqLastRow).getValues(), 0);
-  for (var i=2; i < maniLastRow; i++) {
+  for (var i=2; i < maniLastRow; i++) {   
     var k = i-1;
     if (allOrderNums.indexOf(maniValues[i][8]) > -1) {
       Logger.log('Order #' + maniValues[i][8] + ' has already been copied.');
@@ -421,17 +421,17 @@ function highlightAER() {
   * This script highlights each A/E/R cell according to its designation.
   * The script is coded to leave highlighted cells/rows alone.
   */
-
+  
   // Initialize sheet and save values.
   var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
   var sheetWork = SpreadsheetApp.openById(workID).getSheetByName("Future Listing");
   var rangeWork = sheetWork.getDataRange();
   var workValues = rangeWork.getValues();
   var workColors = rangeWork.getBackgrounds();
-
+  
   // Cache A/E/R column of sheet.
   var aerValues = getCol(workValues, 5);
-
+  
   // Loop through A/E/R column and color cells with a switch statement.
   for (i=1; i<aerValues.length; i++) {
     if (workColors[i][0] == "#ffffff") {
@@ -478,10 +478,10 @@ function updateASINs() {
   *   2. Filter out duplicate items and unresearched items
   *   3. Move remaining items into asinDB
   *************************************************************************/
-
+  
   // Set ID for the spreadsheet file to be used.
   var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
-
+  
   // Initialize the sheets to be accessed.
   var sheetDB = SpreadsheetApp.openById(maniID).getSheetByName("AsinDB");
   var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");
@@ -490,15 +490,26 @@ function updateASINs() {
   var researchValues = sheetResearch.getDataRange().getValues();
   // Remove rows with duplicate and blank ASINs from array.
   var researchUnique = cleanArray(researchValues.slice(5),3);
-
+  
   // Cache values and ASINs from database.
   var dbValues = sheetDB.getDataRange().getValues().slice(1);
   var dbASINs = getCol(dbValues, 1);
-
+  
   for (var i=0; i<researchUnique.length; i++) {
     // Compare Research items to database items.
     var res = researchUnique[i];
     if (dbASINs.indexOf(res[3]) == -1) {
+      // Make sure AERdesignation conforms to DB enumeration rules.
+      const enum = ['A','E','R','KEEP','CL','RHD'];
+      const letter = [];
+      for (var j=0; j<enum.length; j++) {letter.push(enum[j][0]);}
+      if (!containedIn(enum,res)) {
+        for (var j=0; j<letter.length; j++) {
+          if (res[5][0] == letter[j]) {res[5] = enum[j];}
+          else {res[5] = enum[2];}
+        }
+      }
+      // Add new Research items to database array.
       dbValues.push([
         res[1],
         res[3],
@@ -517,7 +528,7 @@ function updateASINs() {
   sheetDB.getRange(2,1,newLength,7).setValues(dbValues).sort(1);
 }
 
-function cleanArray(dirty, key) {
+function cleanArray(dirty, key) {  
   // Clean rows from a two-dimensional array that have duplicate or blank keys.
   // @param {Array} dirty - Array containing duplicate and blank values.
   // @param {int} key - 0-indexed column of the primary key used to check for duplicates.
