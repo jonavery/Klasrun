@@ -5,9 +5,10 @@ function onOpen() {
     .addItem('Generate Price Estimates', 'generatePrices')
     .addItem('Import Price Estimates', 'importPrices')
     .addSeparator()
-    .addItem('Update Export', 'updateLiqFormat')
+    .addItem('Update Export', 'updateExport')
     .addItem('Export to LIQ & WORK', 'exportData')
     .addSeparator()
+    .addItem('Lookup ASINs', 'lookupASINs')
     .addItem('Update ASIN DB', 'updateASINs')
     .addToUi();
 }
@@ -57,7 +58,7 @@ function nono(sheet, itemCount) {
 
 function importBlackwrap() {
   /**
-  * This script imports a new blackwrap manifest into the sheet tab.
+  * This script imports a new blackwrap manifest into the research tab.
   **/
   
   // Load active sheet and check to be sure it is a new blackwrap manifest.
@@ -159,14 +160,24 @@ function importBlackwrap() {
 function generatePrices() {
   /**
   * This script uses the Amazon Products API in tandem with
-  * klasrun.com PHP scripting to create a JSON file of the
+  * klas1000.com PHP scripting to create a JSON file of the
   * products in sheet with their price, weight, and sales
   * rank on Amazon.
   */
   
-  SpreadsheetApp.getUi().alert(
-    'Go to the following URL and wait for a success message:\n\n'
-    + 'http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/BlackwrapPricing.php');
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.prompt('Enter first line of order:');
+  
+  if (response.getSelectedButton() == ui.Button.OK) {
+    ui.alert(
+      'Go to the following URL and wait for a success message:\n\n'
+      + 'http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/BlackwrapPricing.php'
+      + '?line=' + response.getResponseText());
+  } else {
+    ui.alert(
+      'Go to the following URL and wait for a success message:\n\n'
+      + 'http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/BlackwrapPricing.php');
+  }
 }
 
 function importPrices() {
@@ -177,129 +188,130 @@ function importPrices() {
   *  3. Update sheet with ASINs/UPCs.
   */
   
+  var ui = SpreadsheetApp.getUi();
+  var line = ui.prompt('Enter first line of order:');
+  
   // Fetch the json array from website and parse into JS object.
-  var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/blackwrap.json');
+  var response = UrlFetchApp.fetch('http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/blackwrap.json');
   var json = response.getContentText();
-//  // Preserve newlines, etc - use valid JSON
-//  json = json.replace(/\\n/g, "\\n")  
-//               .replace(/\\'/g, "\\'")
-//               .replace(/\\"/g, '\\"')
-//               .replace(/\\&/g, "\\&")
-//               .replace(/\\r/g, "\\r")
-//               .replace(/\\t/g, "\\t")
-//               .replace(/\\b/g, "\\b")
-//               .replace(/\\f/g, "\\f");
-//  // Remove non-printable and other non-valid JSON chars
-//  json = json.replace(/[\u0000-\u0019]+/g,""); 
   var data = JSON.parse(json);
   
   // Convert data object into multidimensional array.
-  // Ordering is same as in MWS tab.
   var itemCount = data.length;
   var itemArray = [];
   for (var i = 0; i < itemCount; i++) {
     var item = data[i];
     itemArray.push([
-      // item.Title,
-      // item.UPC,
-      // item.ASIN,
-      item.ItemPrice,
+      item.Price,
       item.Rank,
       item.Weight
     ]);
   }
 
-  // Push array into sheet tab.
+  // Push array into research tab.
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Research');
-  sheet.getRange(6, 10, itemCount, 3).setValues(itemArray);
+  sheet.getRange(line, 10, itemCount, 3).setValues(itemArray);
 }
 
-function updateLiqFormat() {
-  /************************************************************************
-  * This script accomplishes the following tasks:
-  *   1. Find order in Research from its number in Cycles
-  *   2. Move order information into Export with correct formatting
-  *   3. Fill out all relevant formulas on the right side of Export
-  *   4. Adjust per item cost to align with total cost
-  *************************************************************************/
+function updateExport() {                                                                                                                     
+  /************************************************************************                                                                   
+  * This script accomplishes the following tasks:                                                                                             
+  *   1. Find order in Research from its number in Cycles                                                                                     
+  *   2. Move order information into Export with correct formatting                                                                           
+  *   3. Fill out all relevant formulas on the right side of Export                                                                           
+  *   4. Adjust per item cost as weighted average of net profit                                                                               
+  *************************************************************************/                                                                  
+                                                                                                                                              
+  // Prompt user for number of orders.                                                                                                        
+  var ui = SpreadsheetApp.getUi();                                                                                                            
+  var orderCount = Number(ui.prompt('Enter number of orders to be transferred:').getResponseText());                                                          
   
-  // Set ID for the spreadsheet file to be used.
-  var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
-  
-  // Initialize the sheets to be accessed.
-  var sheetExp = SpreadsheetApp.openById(maniID).getSheetByName("Export");
-  var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");
+  // Set ID for the spreadsheet file to be used.                                                                                              
+  var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";                                                                                
+                                                                                                                                              
+  // Initialize the sheets to be accessed.                                                                                                    
+  var sheetExp = SpreadsheetApp.openById(maniID).getSheetByName("Export");                                                                    
+  var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");                                                             
   var sheetCycles = SpreadsheetApp.openById(maniID).getSheetByName("Cycles");
   
-  // Extract first column from Research sheet.
-  var orders = sheetResearch.getDataRange().getValues();
-  var orderCol = (getCol(orders,0));
+                                                                                                                                              
+  // Save today's properly formatted date as a variable.                                                                                      
+  var today = new Date();                                                                                                                     
+  var dd = today.getDate();                                                                                                                   
+  var mm = today.getMonth()+1; // .getMonth() is 0-indexed.                                                                                   
+  var yyyy = today.getFullYear();                                                                                                             
+  if(dd<10) { dd = '0' + dd;}                                                                                                                 
+  if(mm<10) { mm = '0' + mm;}                                                                                                                 
+  var today = mm + '/' + dd + '/' + yyyy;                                                                                                     
   
-  // Cache order ID, item count, and buy total.
-  var auctions = sheetCycles.getDataRange().getValues();
-  var orderID = auctions[3][10];
-  var itemCount = auctions[3][13];
-  var orderTotal = auctions[3][12];
+  // Extract first column from Research sheet and initialize order information.                                                               
+  var orders = sheetResearch.getDataRange().getValues();                                                                                      
+  var orderCol = getCol(orders,0);                                                                                                            
+  var auctions = sheetCycles.getDataRange().getValues(); 
   
-  // Save today's properly formatted date as a variable.
-  var today = new Date();
-  var dd = today.getDate();
-  var mm = today.getMonth()+1; // .getMonth is 0-indexed.
-  var yyyy = today.getFullYear();
-  if(dd<10) { dd = '0' + dd;}
-  if(mm<10) { mm = '0' + mm;}
-  var today = mm + '/' + dd + '/' + yyyy;
-  
-  // Clear Export sheet and remove empty rows.
-  sheetExp.getRange(3, 1, sheetExp.getMaxRows()-2, sheetExp.getLastColumn()).clear();
-  sheetExp.deleteRows(3, sheetExp.getMaxRows()-2);
-  
-  // Insert appropriate number of rows into Export sheet.
-  sheetExp.insertRowsAfter(2, itemCount);
-  
-  // Find order in Research sheet
-  var orderIndex = orderCol.indexOf(orderID);
-  if (orderIndex == -1) {
-    SpreadsheetApp.getUi().alert('Could not find order #:' + orderID + '. Aborting...');
-    return;
-  }
-  // Save order as range with itemCount number of rows
-  var orderItems = sheetResearch.getRange(orderIndex+1, 2, itemCount, 5);
-  // Copy range values over to Export
-  orderItems.copyValuesToRange(sheetExp, 3, 7, 3, 3+itemCount);
-  sheetExp.getRange(3, 1, itemCount, 9).setBackground('white');
+  // Clear Export sheet and remove empty rows.                                                                                                
+  sheetExp.getRange(3, 1, sheetExp.getMaxRows()-2, sheetExp.getLastColumn()).clear();                                                                                                                                                   
+  var lastRow = sheetExp.getLastRow();
+  var copyCount = 0;
+  var itemCount = getCol(auctions.slice(3),13);                                                                          
+  var itemTotal = sumArray(itemCount);
+  var rowDiff = itemTotal - sheetExp.getMaxRows() + 2;
+  if (rowDiff > 0) {sheetExp.insertRowsAfter(lastRow, rowDiff);}                                                  
+                                                                                                                                              
+  for (var i=0; i<orderCount; i++) {                                                                                                          
+    // Cache order ID, item count, and buy total.                                                                                             
+    var orderID = auctions[3+i][10];                                                                                                          
+    var itemCount = auctions[3+i][13];                                                                                                        
+    var orderTotal = auctions[3+i][12];
     
-  // Copy A/E/R from Buy Site to correct column.
-  var AER = sheetExp.getRange(3, 8, itemCount);
-  sheetExp.getRange(3, 7, itemCount).moveTo(AER);
-  // Hard-code in the formula for weighted average pricing.
-  sheetExp.getRange(2, 15).setFormula('=IF(N2=0.01,0.01,ROUND(N2*Cycles!$M$4/SUM(N$3:N$1500),2))');
-  var formulaRange = sheetExp.getRange(2, 10, 1, 6);
-  // Fill in date, buy site, and cost information.
-  for (var j=1; j <= itemCount; j++) {
-    sheetExp.getRange(2+j, 2).setValue(today);
-    sheetExp.getRange(2+j, 7).setValue("LIQUIDATION");
-    sheetExp.getRange(2+j, 9).setValue(orderID);
-    formulaRange.copyTo(sheetExp.getRange(2+j, 10, 1, 6));
-  }
-  // Copy per item cost values.
-  var priceRange = sheetExp.getRange(3, 15, itemCount);
-  // priceRange.setValue(priceRange.getDisplayValues());
-  // Compare rounded cost to actual cost
-  var prices = priceRange.getValues();
-  var roundedTotal = Number(round(sumArray(prices), 2));
-  if (roundedTotal < orderTotal) {
-    // If rounded is lower, compensate top per item cost
-    sheetExp.getRange(3, 15).setValue(Number(prices[0]) + orderTotal - roundedTotal);
-  }
-  else if (roundedTotal > orderTotal) {
-    // If rounded is higher, compensate bottom per item cost
-    sheetExp.getRange(2+itemCount, 15).setValue(Number(prices[itemCount-1]) + orderTotal - roundedTotal);
-  }
-  // Post dialogue box showing # of orders and items copied to LIQ FORMAT.
-  SpreadsheetApp.getUi().alert('Script finished.\n\nItems Copied: ' + itemCount);
+    // Cache row positions.
+    var r = lastRow + 1;
+    var e = lastRow + itemCount;
+                                                                                                                                                                                                                                                                               
+    // Find order in Research sheet                                                                                                           
+    var orderIndex = orderCol.indexOf(orderID);                                                                                               
+    if (orderIndex == -1) {                                                                                                                   
+      SpreadsheetApp.getUi().alert('Could not find order #:' + orderID + '. Aborting...');                                                    
+      return;                                                                                                                                 
+    }                                                                                                                                         
+    // Save order as range with itemCount number of rows                                                                                      
+    var orderItems = sheetResearch.getRange(orderIndex+1, 2, itemCount, 5);                                                                   
+    // Copy range values over to Export                                                                                                       
+    orderItems.copyValuesToRange(sheetExp, 3, 7, r, e);
+    sheetExp.getRange(r, 1, itemCount, 9).setBackground('white');
+                                                                                                                                                  
+    // Copy A/E/R from Buy Site to correct column.                                                                                            
+    var AER = sheetExp.getRange(r, 8, itemCount);                                                                                     
+    sheetExp.getRange(r, 7, itemCount).moveTo(AER);                                                                                   
+    // Hard-code in the formula for weighted average pricing.                                                                                 
+    sheetExp.getRange(2, 15).setFormula("=IF(N2=0.01,0.01,ROUND(N2*K2/SUM(N$"+r+":N$"+e+"),2))");
+    var formulaRange = sheetExp.getRange(2, 10, 1, 6);                                                                                        
+    // Fill in date, buy site, and cost information.                                                                                          
+    for (var j=0; j < itemCount; j++) {                                                                                                      
+      sheetExp.getRange(r+j, 2).setValue(today);                                                                                        
+      sheetExp.getRange(r+j, 7).setValue("LIQUIDATION");                                                                                
+      sheetExp.getRange(r+j, 9).setValue(orderID);                                                                                      
+      formulaRange.copyTo(sheetExp.getRange(r+j, 10, 1, 6));                                                                            
+    }
+    
+    // Compare rounded cost to actual cost                                                                                                    
+    var prices = sheetExp.getRange(r, 15, itemCount).getDisplayValues();                                                                       
+    var roundedTotal = Number(round(sumArray(prices)), 2);
+    if (roundedTotal < orderTotal) {                                                                                                          
+      // If rounded is lower, compensate top per item cost                                                                                    
+      sheetExp.getRange(r, 15).setValue(Number(prices[0]) + orderTotal - roundedTotal);                                               
+    }                                                                                                                                         
+    else if (roundedTotal > orderTotal) {                                                                                                     
+      // If rounded is higher, compensate bottom per item cost                                                                                
+      sheetExp.getRange(e, 15).setValue(Number(prices[itemCount-1]) + orderTotal - roundedTotal);                             
+    }
+    var lastRow = lastRow + itemCount;
+    var copyCount = copyCount + itemCount;
+  }                                                                                                                                           
+  // Post dialogue box showing # of orders and items copied to LIQ FORMAT.                                                                    
+  SpreadsheetApp.getUi().alert('Script finished.\n\nItems Copied: ' + copyCount);                                                             
 }
-
+  
 function exportData() {
   /*********************************************************************************************
   * This function will accomplish the following:
@@ -470,6 +482,23 @@ function highlightAER() {
   }
 }
 
+function lookupASINs() {
+  /**
+  * This script uses the Amazon Products API in tandem with
+  * klas1000.com PHP scripting to create a JSON file of the
+  * products in sheet with their price, weight, and sales
+  * rank on Amazon.
+  */
+  
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.prompt('Enter first line of order:')
+  
+  if (response.getSelectedButton() == ui.Button.OK) {
+    UrlFetchApp.fetch('http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/LookupASIN.php?line='+response.getResponseText());
+  } else {
+    UrlFetchApp.fetch('http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/LookupASIN.php');
+  }
+}
 
 function updateASINs() {
   /************************************************************************
@@ -505,7 +534,7 @@ function updateASINs() {
       for (var j=0; j<enum.length; j++) {letter.push(enum[j][0]);}
       if (!containedIn(enum,res)) {
         for (var j=0; j<letter.length; j++) {
-          if (res[5][0] == letter[j]) {res[5] = enum[j];}
+          if (res[5][0] == letter[j]) {res[5] = enum[j]; break;}
           else {res[5] = enum[2];}
         }
       }
@@ -567,14 +596,10 @@ function rep(obj, n) {
 function sumArray(array) {
   // Find the sum of an array.
   // @param {Array} array - array of numerical values.
-  for (
-    var
-    i = 0,
-    length = array.length,      // Cache the array length
-    sum = 0;                    // The total amount
-    i < length;                 // The "for"-loop condition
-    sum += Number(array[i++])   // Add number on each iteration
-  );
+  var sum = 0;
+  for (var i = 0; i < array.length; i++) {
+    var sum = sum + Number(array[i]);
+  }
   return sum;
 }
 
@@ -607,4 +632,3 @@ function round(value, exp) {
   value = value.toString().split('e');
   return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
 }
-
