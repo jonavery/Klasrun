@@ -185,7 +185,7 @@ function bulkUpdateLiquid() {
   for (var i = 4; i < workSKU.length; i++) {
     // Find index of SKU in work and liquidation.
     var sku = Number(workSKU[i]);
-    if (isNaN(sku)) {continue;}
+    if (isNaN(sku) || sku == "") {continue;}
     var workIndex = workSKU.indexOf(sku);
     var liquidIndex = liquidSKU.indexOf(sku);
 
