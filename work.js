@@ -241,7 +241,7 @@ function bulkUpdateLiquid() {
 function createMWS() {
   /**
   * This script uses the Amazon Products API in tandem with
-  * klas1000.com PHP scripting to create a JSON file of the
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a JSON file of the
   * items in the SCRAP sheet currently waiting to be listed.
   *
   * Use this function in tandem with the populateMWS() and
@@ -250,13 +250,13 @@ function createMWS() {
 
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
-    + 'http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateItemArray.php');
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateItemArray.php');
 }
 
 function palletMWS() {
   /**
   * This script uses the Amazon Products API in tandem with
-  * klas1000.com PHP scripting to create a JSON file of the
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a JSON file of the
   * items in the SCRAP sheet currently waiting to be listed.
   *
   * Only oversize items marked with a 'P' will be included.
@@ -267,13 +267,13 @@ function palletMWS() {
 
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
-    + 'http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreatePalletArray.php');
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreatePalletArray.php');
 }
 
 function electronicsMWS() {
   /**
   * This script uses the Amazon Products API in tandem with
-  * klas1000.com PHP scripting to create a JSON file of the
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a JSON file of the
   * items in the SCRAP sheet currently waiting to be listed.
   *
   * Only small items marked with an 'E' will be included.
@@ -284,7 +284,7 @@ function electronicsMWS() {
 
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
-    + 'http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateElectronicArray.php');
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateElectronicArray.php');
 }
 
 function populateMWS() {
@@ -296,7 +296,7 @@ function populateMWS() {
    */
 
    // Fetch the json array from website and parse into JS object.
-   var response = UrlFetchApp.fetch('http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/MWS.json');
+   var response = UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/MWS.json');
    var json = response.getContentText();
    var data = JSON.parse(json);
 
@@ -369,7 +369,7 @@ function populateMWS() {
 function postListings() {
   /**
   * This script uses the XML exporter web apps in combination
-  * with klas1000.com PHP scripts to send product listings
+  * with http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripts to send product listings
   * to Amazon.
   *
   * Use this function in tandem with the auditListings() function
@@ -377,48 +377,48 @@ function postListings() {
   */
 
   // Send product feeds to Amazon.
-  var response = UrlFetchApp.fetch('http://klas1000.com/AmazonMWS/MarketplaceWebService/Functions/CreateNewListings.php');
+  var response = UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebService/Functions/CreateNewListings.php?pass=K1@$run');
 }
 
 function createShipments() {
   /**
   * This script uses the Amazon FBAInboundMWS API in tandem with
-  * klas1000.com PHP scripting to create a shipment with all items
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a shipment with all items
   * in the MWS sheet.
   */
 
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
-    + 'http://klas1000.com/AmazonMWS/FBAInboundServiceMWS/Functions/MasterShipment.php');
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/MasterShipment.php');
 }
 
 function shipLTL() {
   /**
   * This script uses the Amazon FBAInboundMWS API in tandem with
-  * klas1000.com PHP scripting to create a palleted shipment with
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a palleted shipment with
   * all items in the MWS sheet.
   */
 
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
-    + 'http://klas1000.com/AmazonMWS/FBAInboundServiceMWS/Functions/PalletShip.php');
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/PalletShip.php');
 }
 
 function shipElectronics() {
   /**
   * This script uses the Amazon FBAInboundMWS API in tandem with
-  * klas1000.com PHP scripting to create a small item, all-in-one-box
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a small item, all-in-one-box
   * shipment with all items in the MWS sheet.
   */
 
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
-    + 'http://klas1000.com/AmazonMWS/FBAInboundServiceMWS/Functions/ElectronicShip.php');
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/ElectronicShip.php');
 }
 
 function importShipments() {
 // Fetch the json array from website and parse into JS object.
-  var response = UrlFetchApp.fetch('http://klas1000.com/AmazonMWS/FBAInboundServiceMWS/Functions/shipID.json');
+  var response = UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/shipID.json');
   var json = response.getContentText();
   var data = JSON.parse(json);
 

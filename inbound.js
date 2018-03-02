@@ -182,7 +182,7 @@ function importBlackwrap() {
 function generatePrices() {
   /**
   * This script uses the Amazon Products API in tandem with
-  * klas1000.com PHP scripting to create a JSON file of the
+  * ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a JSON file of the
   * products in sheet with their price, weight, and sales
   * rank on Amazon.
   */
@@ -193,12 +193,12 @@ function generatePrices() {
   if (response.getSelectedButton() == ui.Button.OK) {
     ui.alert(
       'Go to the following URL and wait for a success message:\n\n'
-      + 'http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/BlackwrapPricing.php'
+      + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/BlackwrapPricing.php'
       + '?line=' + response.getResponseText());
   } else {
     ui.alert(
       'Go to the following URL and wait for a success message:\n\n'
-      + 'http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/BlackwrapPricing.php');
+      + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/BlackwrapPricing.php');
   }
 }
 
@@ -214,7 +214,7 @@ function importPrices() {
   var line = ui.prompt('Enter first line of order:').getResponseText();
 
   // Fetch the json array from website and parse into JS object.
-  var response = UrlFetchApp.fetch('http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/blackwrap.json');
+  var response = UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/blackwrap.json');
   var json = response.getContentText();
   var data = JSON.parse(json);
 
@@ -507,7 +507,7 @@ function highlightAER() {
 function lookupASINs() {
   /**
   * This script uses the Amazon Products API in tandem with
-  * klas1000.com PHP scripting to create a JSON file of the
+  * ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a JSON file of the
   * products in sheet with their price, weight, and sales
   * rank on Amazon.
   */
@@ -516,9 +516,9 @@ function lookupASINs() {
   var response = ui.prompt('Enter first line of order:')
 
   if (response.getSelectedButton() == ui.Button.OK) {
-    UrlFetchApp.fetch('http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/LookupASIN.php?line='+response.getResponseText());
+    UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/LookupASIN.php?line='+response.getResponseText());
   } else {
-    UrlFetchApp.fetch('http://klas1000.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/LookupASIN.php');
+    UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/LookupASIN.php');
   }
 
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Research");
@@ -603,7 +603,7 @@ function updateASINs() {
   }
   sheetDB.getRange(2,1,newLength,8).setValues(dbValues).sort(1);
   // Update MySQL database with new database values.
-  var response = UrlFetchApp.fetch('http://klasrun.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/UpdateAsinDB.php');
+  var response = UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/UpdateAsinDB.php');
 }
 
 function cleanArray(dirty, key) {
