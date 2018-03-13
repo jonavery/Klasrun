@@ -43,24 +43,21 @@ function importListings() {
         for (var j = 1; j < vaItemNums.length; j++) {
             Logger.log('Checking item ' + j + '...');
             var itemID = Number(vaItemNums[j]);
-            // Skip entry if no item number.
-            if (isNaN(itemID) || itemID == "") {continue;}
+            // Skip entry if no item number or title is blank.
+            if (isNaN(itemID) || itemID == "" || vaValues[j][6] == "") {continue;}
             // Find index of SKU in work and liquidation.
             var masterIndex = masterItemNums.indexOf(itemID);
             // Skip entry if already in master sheet.
             if (masterIndex != -1) {Logger.log(j+' already exists.\n'); continue;}
-
-            // Skip entry if title is blank or already up to date.
-            if (vaValues[j][6] == "") {
-                continue;
-            }
 
             // Create row to import new entry and log its position.
             var r = String(masterLastRow + 1);
             sheetMaster.insertRowAfter(masterLastRow);
 
             // Import values from VA sheet.
-            sheetMaster.getRange(r, 1, 1, 11).setValue(vaValues[j]);
+            for (var k = 0; k < vaValues[j].length; k++) {
+              sheetMaster.getRange(r, k+1).setValue(vaValues[j][k]);
+            }
 
             // Setup liquidation formulas for new entry.
             sheetMaster.getRange(r, 4).setFormula('=IF(ISNA(VLOOKUP(C'+r+',BanList!A:A,1,0)),IF(ISNA(VLOOKUP(C'+r+',BanList!B:B,1,0)),"UNSURE","OK"),"BAN")');
