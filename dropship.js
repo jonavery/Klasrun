@@ -12,7 +12,7 @@ function importListings() {
     *
     * It runs automatically once every hour.
     */
-    
+
     // Cache spreadsheet ID's
     var masterID = "16HHFAByXMihdMPc6unV53zUKHMBeB-K59BGhoMEs4pM";
     var vaIDs = [
@@ -20,44 +20,48 @@ function importListings() {
       "1KoFhl9HwvEbL7SgajKg1dRV7yDLmfQtZGTQWotBsGHA", // Javed
       "1CeASzstJ__tEa-RBrGz2wDgLRIWCUUYW7zwLq7Z3TAw"  // Mary
     ];
-    
+
     // Initialize data values from master sheet.
     var sheetMaster = SpreadsheetApp.openById(masterID).getSheetByName("Listings");
     var masterValues = sheetMaster.getDataRange().getValues();
     var masterLastRow = sheetMaster.getLastRow();
     var masterItemNums = getCol(masterValues, 0);
+    Logger.log(masterLastRow -1 + ' master entries loaded.\n');
 
     // Initialize counting variable.
     var created = 0;
-  
-    for (var i = 0; i < vaIDs; i++) { 
+
+    for (var i = 0; i < vaIDs.length; i++) {
+        Logger.log('Loading sheet ' + i + 1 + '...\n');
         // Initialize data values from VA sheet.
         var sheetVA = SpreadsheetApp.openById(vaIDs[i]).getSheetByName("Listings");
         var vaValues = sheetVA.getDataRange().getValues();
         var vaLastRow = sheetVA.getLastRow();
         var vaItemNums = getCol(vaValues, 0);
-          
+        Logger.log(vaLastRow - 1 + ' VA entries loaded.\n');
+
         for (var j = 1; j < vaItemNums.length; j++) {
+            Logger.log('Checking item ' + j + '...');
             var itemID = Number(vaItemNums[j]);
             // Skip entry if no item number.
             if (isNaN(itemID) || itemID == "") {continue;}
             // Find index of SKU in work and liquidation.
             var masterIndex = masterItemNums.indexOf(itemID);
             // Skip entry if already in master sheet.
-            if (masterIndex != -1) {continue;}
-              
+            if (masterIndex != -1) {Logger.log(j+' already exists.\n'); continue;}
+
             // Skip entry if title is blank or already up to date.
             if (vaValues[j][6] == "") {
                 continue;
             }
-              
+
             // Create row to import new entry and log its position.
             var r = String(masterLastRow + 1);
             sheetMaster.insertRowAfter(masterLastRow);
-             
+
             // Import values from VA sheet.
             sheetMaster.getRange(r, 1, 1, 11).setValue(vaValues[j]);
-             
+
             // Setup liquidation formulas for new entry.
             sheetMaster.getRange(r, 4).setFormula('=IF(ISNA(VLOOKUP(C'+r+',BanList!A:A,1,0)),IF(ISNA(VLOOKUP(C'+r+',BanList!B:B,1,0)),"UNSURE","OK"),"BAN")');
 
@@ -68,6 +72,7 @@ function importListings() {
     }
     Logger.log('Listings imported: ' + created);
 }
+
 
 function todayDate() {
 // Return today's properly formatted date.
@@ -103,3 +108,4 @@ function getCol(matrix, col){
   }
   return column;
 }
+
