@@ -18,7 +18,6 @@ function importListings() {
     var vaIDs = [
       "11DOJOXsEOo6de1HE3WwvJl4ROaz2nbGhTBLBEhEkdAs", // Ali
       "1KoFhl9HwvEbL7SgajKg1dRV7yDLmfQtZGTQWotBsGHA", // Javed
-      "15DEuoHLYu8foxqSPNDc2HsOxfTeHzm-neKaeKqJOPno", // Moses
       "1CeASzstJ__tEa-RBrGz2wDgLRIWCUUYW7zwLq7Z3TAw", // Mary
       "1hPB-YKM7lKzZIpigpr3EkhWbbMN7FKJHBIiUA4uHLHQ", // Bhawna
       "1-I7XWM52Fg43YK6CLa91AkWTuQOT8kodCSnPCV-5mZQ"  // Akshay
