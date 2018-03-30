@@ -53,6 +53,54 @@ function getCol(matrix, col){
   return column;
 }
 
+function dailyGoal() {
+  /**
+  * This script updates the daily end-of-day goal in the Work sheet.
+  * It runs automatically once every day at 5am.
+  */
+
+  // Cache spreadsheet ID's.
+  var inboundID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
+  var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
+
+  // Initialize Work and Liquidation sheets.
+  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName('Listings');
+  var sheetGoals = SpreadsheetApp.openById(inboundID).getSheetByName('DailyGoals');
+
+  // Format dates in Goals sheet.
+  var goalValues = sheetGoals.getDataRange().getValues();
+  var goalDates = getCol(goalValues, 0);
+  var goalDatesFormatted = [String(goalDates[0])];
+  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  for (var i=1; i < goalDates.length; i++) {
+    goalDates[i] = String(goalDates[i]);
+    var month = months.indexOf(goalDates[i].substr(4,3))+1;
+    if(month<10) {month = '0' + month;}
+    var day = goalDates[i].substr(8,2);
+    var year = goalDates[i].substr(11,4);
+    var dateFormatted = month + '/' + day + '/' + year;
+    goalDatesFormatted.push(dateFormatted);
+  }
+
+  // Cache today's date and find it in the Daily Goals sheet.
+  var date = todayDate();
+  var goalLastRow = sheetGoals.getLastRow();
+  var goalIndex = goalDatesFormatted.indexOf(date);
+  if (goalIndex == -1) {
+    Logger.log(date + " not found in Daily Goals sheet.");
+    return;
+  }
+
+  // Update yesterday's remaining items.
+  var remaining = sheetListings.getRange(1, 1).getValue();
+  sheetGoals.getRange(goalIndex, 4).setValue(remaining);
+
+
+  // Cache today's goal and update it in the Work sheet.
+  var goals = getCol(goalValues, 3);
+  sheetListings.getRange(2, 1).setValue(goals[goalIndex]);
+}
+
 function newSKU() {
   /**
   * This script posts the next new SKU number by checking the Liquidation sheet
