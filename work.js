@@ -157,9 +157,9 @@ function liqTransfer() {
     // Move Listing row to Archive.
     sheetArchive.insertRowAfter(lastRowArchive);
     lastRowArchive++;
-    sheetListings.getRange(i+1, 1, 1, 18).copyFormatToRange(sheetArchive, 1, 18, lastRowArchive, lastRowArchive);
-    sheetListings.getRange(i+1, 1, 1, 18).copyValuesToRange(sheetArchive, 1, 18, lastRowArchive, lastRowArchive);
-    sheetListings.deleteRow(i+1);
+//    sheetListings.getRange(i+1, 1, 1, 18).copyFormatToRange(sheetArchive, 1, 18, lastRowArchive, lastRowArchive);
+//    sheetListings.getRange(i+1, 1, 1, 18).copyValuesToRange(sheetArchive, 1, 18, lastRowArchive, lastRowArchive);
+//    sheetListings.deleteRow(i+1);
 
     if (returnSKUs.indexOf(SKU) > -1 || salvageSKUs.indexOf(SKU) > -1) {continue;}
 //    Logger.log(SKU+"\n");
@@ -182,6 +182,7 @@ function liqTransfer() {
       sheetReturns.insertRowAfter(lastRowReturns);
       lastRowReturns++;
       var r = lastRowReturns;
+      var rUP = r-1;
       sheetReturns.getRange(r, 1).setValue(SKU);
 
       // Set formulae
@@ -189,7 +190,7 @@ function liqTransfer() {
       var rangeASIN = sheetReturns.getRange(r,5);
       sheetReturns.getRange(r, 2).setFormula("=VLOOKUP(A"+r+",'Liquidation Orders'!A:C,3,0)");
       sheetReturns.getRange(r, 3).setValue(1);
-      rangeMSRP.setFormula("=INDEX($D$2:$D"+r-1+",MATCH(E"+r+",$E$2:$E"+r-1+",0))");
+      rangeMSRP.setFormula("=INDEX($D$2:$D"+rUP+",MATCH(E"+r+",$E$2:$E"+rUP+",0))");
       rangeASIN.setFormula("=VLOOKUP(A"+r+",'Liquidation Orders'!A:E,5,0)");
       sheetReturns.getRange(r, 6).setFormula("=COUNTIF(A:A,A"+r+")");
       sheetReturns.getRange(r, 7).setFormula("=VLOOKUP(A"+r+",'Liquidation Orders'!A:L,11,0)");
@@ -362,6 +363,7 @@ function bulkUpdateLiquid() {
       liquidIndex = liqLastRow;
       var r = String(liquidIndex + 1);
       sheetLiquid.insertRowAfter(liqLastRow);
+      sheetLiquid.getRange(r, 1, 1, 27).clearFormat();
 
       // Enter values from Work sheet.
       sheetLiquid.getRange(r, 1).setValue(workValues[i][1]);
