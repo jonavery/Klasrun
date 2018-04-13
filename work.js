@@ -5,6 +5,8 @@ function onOpen() {
     .addItem('Update All Work Items in Liquidation', 'bulkUpdateLiquid')
     .addSeparator()
     .addItem('Transfer Returns and Salvages to Liquidation', 'liqTransfer')
+    .addSeparator()
+    .addItem('Highlight AS IS Items', 'highlightAsIs')
 //    .addSubMenu(ui.createMenu('Generate MWS item array')
 //      // .addItem('Standard Small Parcel', 'createMWS')
 //      .addItem('Palleted', 'palletMWS')
@@ -213,8 +215,36 @@ function liqTransfer() {
   }
   // Sort Returns sheet by Cutoff Group (Column I/9).
   sheetReturns.sort(9);
-
 }
+
+function highlightAsIs() {
+  /**
+  * This script highlights all AS IS items.
+  */
+
+  // Cache spreadsheet ID's
+  var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
+
+  // Initialize the sheets to be used.
+  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName('Listings');
+
+  // Cache comments from listings sheet.
+  var valuesListings = sheetListings.getDataRange().getValues();
+  var lastRowListings = sheetListings.getLastRow();
+  var comments = getCol(valuesListings, 18);
+
+
+  // Iterate through each comment in Listings and highlight salmon if AS IS.
+  for (var i=5; i < lastRowListings; i++) {
+    if (comments[i] == "") {continue;}
+    var comment = String(comments[i]);
+    var firstFiveLetters = comment.substr(0,5);
+    if (firstFiveLetters == "AS IS")  {
+      sheetListings.getRange(i+1, 1, 1, 19).setBackgroundRGB(253, 171, 179);
+    }
+  }
+}
+
 
 function newSKU() {
   /**
