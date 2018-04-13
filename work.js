@@ -69,7 +69,7 @@ function dailyGoal() {
   var sheetGoals = SpreadsheetApp.openById(inboundID).getSheetByName('DailyGoals');
 
   // Format dates in Goals sheet.
-  var goalValues = sheetGoals.getDataRange().getValues();
+  var goalValues = sheetGoals.getDataRange().getDisplayValues();
   var goalDates = getCol(goalValues, 0);
   var goalDatesFormatted = [String(goalDates[0])];
   var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
