@@ -20,7 +20,8 @@ function importListings() {
       "1KoFhl9HwvEbL7SgajKg1dRV7yDLmfQtZGTQWotBsGHA", // Javed
       "1CeASzstJ__tEa-RBrGz2wDgLRIWCUUYW7zwLq7Z3TAw", // Mary
       "1hPB-YKM7lKzZIpigpr3EkhWbbMN7FKJHBIiUA4uHLHQ", // Bhawna
-      "1-I7XWM52Fg43YK6CLa91AkWTuQOT8kodCSnPCV-5mZQ"  // Akshay
+      "1-I7XWM52Fg43YK6CLa91AkWTuQOT8kodCSnPCV-5mZQ", // Akshay
+      "1AK_z5CFQ65EaN8s7Cv8bTfr-t64wF73qYqvY__E4nv4"  // Parvin
     ];
 
     // Initialize data values from master sheet.
