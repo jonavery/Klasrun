@@ -341,6 +341,7 @@ function bulkUpdateLiquid() {
       sheetLiquid.getRange(r, 25).setFormula("=VLOOKUP(A"+r+",Inventory!B:B,1,0)");      // INVENTORY V
 //       sheetLiquid.getRange(liqLastRow + k, 26).setFormula("=VLOOKUP(A"+r+",Connor!G:H,2,0)");         // FBA SHIPMENT STATUS
 //       sheetLiquid.getRange(liqLastRow + k, 27).setFormula("=VLOOKUP(A"+r+",Connor!K:K,1,0)");         // FBA SHIPMENT ISSUE
+      sheetLiquid.getRange(r, 27).setFormula("=IF(OR(ISBLANK($E"+r+"),LEFT($E"+r+",2)<>\"B0\",ISNA(VLOOKUP($E"+r+",Categories!A:E,5,0))),\"0000 Misc/Not Listed\",VLOOKUP($E"+r+",Categories!A:E,5,0))");// CATEGORY V
    }
 
     // Copy work information into liquidation.
