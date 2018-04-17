@@ -436,6 +436,7 @@ function exportData() {
     sheetLiquid.getRange(liqLastRow + k, 10).setValue("FBA");            // Sell Order
     sheetLiquid.getRange(liqLastRow + k, 11).setValue(maniValues[i][14]);// Buy Price
     sheetLiquid.getRange(liqLastRow + k, 12).setValue(maniValues[i][11]);// Card
+    sheetLiquid.getRange(liqLastRow + k, 18).setValue("IN HOUSE");       // Set Month to IN HOUSE
     // Setup liquidation formulas for new entry.
     var r = String(liqLastRow + k);
     sheetLiquid.getRange(liqLastRow + k, 14).setFormula("=M"+r+"-K"+r);  // Actual Profit
