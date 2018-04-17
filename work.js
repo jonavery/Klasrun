@@ -330,6 +330,7 @@ function bulkUpdateLiquid() {
       sheetLiquid.getRange(r, 9).setValue("FBA");             // Sell Site
       sheetLiquid.getRange(r, 10).setValue("FBA");            // Sell Order
       sheetLiquid.getRange(r, 11).setValue("0.01");           // Buy Price
+      sheetLiquid.getRange(r, 18).setValue("IN HOUSE");       // Set Month to IN HOUSE
 
       // Setup liquidation formulas for new entry.
       sheetLiquid.getRange(r, 14).setFormula("=M"+r+"-K"+r);  // Actual Profit
