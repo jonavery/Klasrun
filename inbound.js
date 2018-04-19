@@ -172,7 +172,7 @@ function importBlackwrap() {
 //  sheet.getRange(6, 1).setValue("BLACKWRAP "+String(blackNum+1));
 
   // Make banned items returns
-  nono(sheet, itemCount, 6);
+//  nono(sheet, itemCount, 6);
 
   // Copy formula output values and paste them as text.
   var vlookupValues = sheet.getRange(6, 6, itemCount, 3).getValues();
@@ -533,7 +533,7 @@ function lookupASINs() {
   Logger.log(itemCount);
 
   updateFormula(sheet, itemCount, line);
-  nono(sheet, itemCount, line);
+//  nono(sheet, itemCount, line);
 }
 
 function updateASINs() {
