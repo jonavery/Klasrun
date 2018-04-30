@@ -291,8 +291,9 @@ function bulkUpdateLiquid() {
   var workSKU = getCol(sheetListings.getRange(1, 2, workLastRow).getValues(), 0);
   var workValues = sheetListings.getDataRange().getValues();
   var liqLastRow = sheetLiquid.getLastRow();
-  var liquidSKU = getCol(sheetLiquid.getRange(1, 1, liqLastRow).getValues(), 0);
-  var liquidUPC = getCol(sheetLiquid.getRange(1, 5, liqLastRow).getValues(), 0);
+  var liqValues = sheetLiquid.getDataRange().getValues();
+  var liquidSKU = getCol(liqValues, 0);
+  var liquidTitles = getCol(liqValues, 2);
 
   // Initialize counting variables.
   var updated = 0;
@@ -307,7 +308,7 @@ function bulkUpdateLiquid() {
     var liquidIndex = liquidSKU.indexOf(sku);
 
     // Check if title is blank or already up to date.
-    if (workValues[i][2] == "" || workValues[i][3] == liquidUPC[liquidIndex]) {
+    if (workValues[i][2] == "" || workValues[i][2] == liquidTitles[liquidIndex]) {
       notUpdated++;
       continue;
     }
