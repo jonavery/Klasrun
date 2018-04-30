@@ -74,15 +74,15 @@ function dailyGoal() {
   var goalValues = sheetGoals.getDataRange().getDisplayValues();
   var goalDates = getCol(goalValues, 0);
   var goalDatesFormatted = [String(goalDates[0])];
-  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+//  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   for (var i=1; i < goalDates.length; i++) {
-    goalDates[i] = String(goalDates[i]);
-    var month = months.indexOf(goalDates[i].substr(4,3))+1;
-    if(month<10) {month = '0' + month;}
-    var day = goalDates[i].substr(8,2);
-    var year = goalDates[i].substr(11,4);
-    var dateFormatted = month + '/' + day + '/' + year;
-    goalDatesFormatted.push(dateFormatted);
+//    goalDates[i] = String(goalDates[i]);
+//    var month = months.indexOf(goalDates[i].substr(4,3))+1;
+//    if(month<10) {month = '0' + month;}
+//    var day = goalDates[i].substr(8,2);
+//    var year = goalDates[i].substr(11,4);
+//    var dateFormatted = month + '/' + day + '/' + year;
+    goalDatesFormatted.push(String(goalDates[i]));
   }
 
   // Cache today's date and find it in the Daily Goals sheet.
@@ -98,8 +98,8 @@ function dailyGoal() {
   var remaining = sheetListings.getRange(1, 1).getValue();
   sheetGoals.getRange(goalIndex, 4).setValue(remaining);
 
-
-  // Cache today's goal and update it in the Work sheet.
+  // Update goals, then cache today's goal and update it in the Work sheet.
+  goalValues = sheetGoals.getDataRange().getDisplayValues();
   var goals = getCol(goalValues, 3);
   sheetListings.getRange(2, 1).setValue(goals[goalIndex]);
 }
