@@ -1,631 +1,53 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Automation Menu')
-    .addItem('Import New Blackwrap', 'importBlackwrap')
-    .addItem('Generate Price Estimates', 'generatePrices')
-    .addItem('Import Price Estimates', 'importPrices')
+    .addItem('Get Next SKU From Liquidation', 'newSKU')
+    .addItem('Update All Work Items in Liquidation', 'bulkUpdateLiquid')
     .addSeparator()
-    .addItem('Update Export', 'updateExport')
-    .addItem('Export to LIQ & WORK', 'exportData')
+    .addItem('Transfer Returns and Salvages to Liquidation', 'liqTransfer')
     .addSeparator()
-    .addItem('Lookup ASINs', 'lookupASINs')
-    .addItem('Update ASIN DB', 'updateASINs')
-    .addToUi();
+    .addItem('Highlight AS IS Items', 'highlightAsIs')
+//    .addSubMenu(ui.createMenu('Generate MWS item array')                                                                                      
+//      // .addItem('Standard Small Parcel', 'createMWS')                                                                                          
+//      .addItem('Palleted', 'palletMWS')                                                                                            
+//      .addItem('Electronics', 'electronicsMWS'))
+//    .addItem('Populate MWS Tab', 'populateMWS')
+//    .addItem('Post Listings', 'postListings')
+//    .addSeparator()
+//    .addSubMenu(ui.createMenu('Create Shipments')
+//      // .addItem('Small Parcel', 'createShipments')
+//      .addItem('LTL (Palleted)', 'shipLTL')
+//      .addItem('Electronics', 'shipElectronics'))
+    .addToUi()
 }
 
-function testNono() {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Research');
-  var line = 6;
-  var item = sheet.getRange(line, 2).getValue();
-  var itemCount = 0;
-  while (item != "") {
-    itemCount++;
-    item = sheet.getRange(line+itemCount, 2).getValue();
-  }
-  updateFormula(sheet, itemCount, line);
-  nono(sheet, itemCount, line);
-}
-
-function updateFormula(sheet, itemCount, line) {
-  // Set summation formulas.
-  sheet.getRange(itemCount+line, 1, 2, 9).setFontStyle('bold');
-  sheet.getRange(itemCount+line, 1).setValue("SUBTOTAL");
-  sheet.getRange(itemCount+line+1, 1).setValue("MY BUY PRICE");
-  var countA1 = sheet.getRange(line, 3, itemCount).getA1Notation();
-  var amazonA1 = sheet.getRange(line, 7, itemCount).getA1Notation();
-  var feesA1 = sheet.getRange(line, 8, itemCount).getA1Notation();
-  sheet.getRange(itemCount+line, 3).setFormula("=SUM("+countA1+")");
-  sheet.getRange(itemCount+line, 7).setFormula("=SUM("+amazonA1+")");
-  var feeSumA1 = sheet.getRange(itemCount+line, 8).setFormula("=SUM("+feesA1+")").getA1Notation();
-  var buyA1 = sheet.getRange(itemCount+line+1, 8).setFormula("=SUM("+feeSumA1+"*0.6)").setBackgroundRGB(217, 234, 211).getA1Notation();
-  sheet.getRange(itemCount+line, 9, 2).setBackgroundRGB(255, 153, 0);
-  sheet.getRange(itemCount+line+1, 9).setFormula("=ROUND("+buyA1+"*0.9,2)");
-
-  // Set vlookup formulas.
-  var lastRow = sheet.getLastRow();
-  var rangeA1 = sheet.getRange(itemCount+line+5, 4, lastRow-itemCount-line-4, 5).getA1Notation();
-  for (var i = line; i < itemCount+line; i++) {
-    var asinA1 = sheet.getRange(i, 4).getA1Notation();
-    sheet.getRange(i, 6).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",3,FALSE)");
-    sheet.getRange(i, 7).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",4,FALSE)");
-    sheet.getRange(i, 8).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",5,FALSE)");
-    sheet.getRange(i, 10).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",7,FALSE)");
-    sheet.getRange(i, 11).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",8,FALSE)");
-    sheet.getRange(i, 12).setFormula("=VLOOKUP("+asinA1+","+rangeA1+",9,FALSE)");
-  }
-}
-
-function nono(sheet, itemCount, line) {
-  /**
-  * This function pulls information from the 'Ban List' sheet
-  * and makes items returns if they are on said ban list.
-  **/
-
-  // Initialize Ban List sheet and get its size and values.
-  var banSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Ban List');
-  var banList = banSheet.getDataRange().getValues();
-  var banCount = banSheet.getLastRow();
-
-  // Store banned brands and ASINs in seperate arrays.
-  var banBrand = [];
-  var banASIN = [];
-  for (var i = 1; i < banCount; i++) {
-    if (banList[i][0] != "") {banBrand.push(banList[i][0]);}
-    if (banList[i][1] != "") {banASIN.push(banList[i][1]);}
-  }
-
-  // Make items returns if they are on banned brands list.
-  var items = sheet.getRange(line, 2, itemCount).getValues();
-  for (var i = 0; i < itemCount; i++) {
-    for (var j = 0; j < banBrand.length; j++) {
-      if (items[i][0].indexOf(banBrand[j]) != -1) {
-        sheet.getRange(line+i, 6).setValue('R');
-        sheet.getRange(line+i, 1).setValue('BAN');
-        Logger.log("Title: "+items[i][0]+"     Brand: "+banBrand[j]);
-      }
-    }
-  }
-
-  // Make items returns if they are on banned ASIN list.
-  var itemASIN = sheet.getRange(line, 4, itemCount).getValues();
-  for (var i = 0; i < itemCount; i++) {
-    for (var j = 0; j < banASIN.length; j++) {
-      if (itemASIN[i][0] == banASIN[j]) {
-        sheet.getRange(line+i, line).setValue('R');
-        sheet.getRange(line+i, 1).setValue('BAN');
-        Logger.log("ItemASIN: "+itemASIN[i][0]+"     BanASIN: "+banASIN[j]);
-      }
-    }
-  }
-}
-
-function importBlackwrap() {
-  /**
-  * This script imports a new blackwrap manifest into the research tab.
-  **/
-
-  // Load active sheet and check to be sure it is a new blackwrap manifest.
-  var blackwrapSheet = SpreadsheetApp.getActiveSheet();
-  if (blackwrapSheet.getSheetName().length < 9) {
-    SpreadsheetApp.getUi().alert('Please select the new blackwrap manifest before running script.');
-    return;
-  }
-
-  // Load sheet and the values from the blackwrap manifest.
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Research');
-  var blackwrapValues = blackwrapSheet.getDataRange().getValues().slice(1);
-
-  // Sort the new values alphabetically by their titles.
-  blackwrapValues.sort(function(a, b) {
-    if (a[12] === b[12]) {
-      return 0;
-    }
-    else {
-      return (a[12] < b[12]) ? -1 : 1;
-    }
-  });
-
-  // Cache values to be transferred over to sheet.
-  for (var i = 0; i < blackwrapSheet.getLastColumn(); i++) {
-    var header = blackwrapSheet.getRange(1, i+1).getValue();
-    if (header == "Item Description") {var titleCol = i;}
-    if (header == "B00 ASIN") {var asinCol = i;}
-    if (header == "X-Z ASIN") {var lpnCol = i;}
-    if (header == "MSRP") {var msrpCol = i;}
-  }
-  var titles = getCol(blackwrapValues, titleCol);
-  var asins = getCol(blackwrapValues, asinCol);
-  var LPNs = getCol(blackwrapValues, lpnCol);
-  var MSRPs = getCol(blackwrapValues, msrpCol);
-
-  // Create appropriate number of rows in sheet.
-  var itemCount = blackwrapValues.length;
-  sheet.insertRowsBefore(6, blackwrapValues.length + 5);
-
-// Transfer values over to sheet.
-  for (var i = 0; i < itemCount; i++) {
-    var j = i + 6;
-    sheet.getRange(j, 2).setValue(titles[i]);
-    sheet.getRange(j, 3).setValue("1");
-    sheet.getRange(j, 4).setValue(asins[i]);
-    sheet.getRange(j, 5).setValue(LPNs[i]);
-    sheet.getRange(j, 9).setValue(MSRPs[i]);
-  }
-
-  // Set summation and VLOOKUP formulas.
-  updateFormula(sheet, itemCount, 6);
-
-  // @TODO: blackwrap filter is not finding anything. FIX THIS.
-  // Set order title.
-//  var orders = getCol(blackwrapValues, 0);
-//  var blackwraps = orders.filter(function(value) {
-//    return value.substr(0, 5) == "BLACK";
-//  });
-//  var blackNum = blackwraps.length;
-//  var n = -1;
-//  for (var i = 0; i < blackwraps.length; i++) {
-//    while (blackwraps[i].substr(n)[0] != "") {n--;}
-//    if (parseInt(blackwraps[i].substr(n)) > blackNum) {
-//      blackNum = blackwraps[i].substr(n);
-//    }
-//  }
-//  sheet.getRange(6, 1).setValue("BLACKWRAP "+String(blackNum+1));
-
-  // Make banned items returns
-//  nono(sheet, itemCount, 6);
-
-  // Copy formula output values and paste them as text.
-  var vlookupValues = sheet.getRange(6, 6, itemCount, 3).getValues();
-  sheet.getRange(6, 6, itemCount, 3).setValues(vlookupValues);
-}
-
-function generatePrices() {
-  /**
-  * This script uses the Amazon Products API in tandem with
-  * ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a JSON file of the
-  * products in sheet with their price, weight, and sales
-  * rank on Amazon.
-  */
-
-  var ui = SpreadsheetApp.getUi();
-  var response = ui.prompt('Enter first line of order:');
-
-  if (response.getSelectedButton() == ui.Button.OK) {
-    ui.alert(
-      'Go to the following URL and wait for a success message:\n\n'
-      + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/BlackwrapPricing.php'
-      + '?line=' + response.getResponseText());
-  } else {
-    ui.alert(
-      'Go to the following URL and wait for a success message:\n\n'
-      + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/BlackwrapPricing.php');
-  }
-}
-
-function importPrices() {
-  /**
-  * This script accomplishes the following tasks:
-  *  1. Pull json file from MWS server
-  *  2. Convert json into multidimensional array
-  *  3. Update sheet with ASINs/UPCs.
-  */
-
-  var ui = SpreadsheetApp.getUi();
-  var line = ui.prompt('Enter first line of order:').getResponseText();
-
-  // Fetch the json array from website and parse into JS object.
-  var response = UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/blackwrap.json');
-  var json = response.getContentText();
-  var data = JSON.parse(json);
-
-  // Convert data object into multidimensional array.
-  var itemCount = data.length;
-  var itemArray = [];
-  for (var i = 0; i < itemCount; i++) {
-    var item = data[i];
-    itemArray.push([
-      item.Price,
-      item.Rank,
-      item.Weight
-    ]);
-  }
-
-  // Push array into research tab.
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Research');
-  sheet.getRange(line, 10, itemCount, 3).setValues(itemArray);
-}
-
-function updateExport() {
-  /************************************************************************
-  * This script accomplishes the following tasks:
-  *   1. Find order in Research from its number in Cycles
-  *   2. Move order information into Export with correct formatting
-  *   3. Fill out all relevant formulas on the right side of Export
-  *   4. Adjust per item cost as weighted average of net profit
-  *************************************************************************/
-
-  // Prompt user for number of orders.
-  var ui = SpreadsheetApp.getUi();
-  var orderCount = Number(ui.prompt('Enter number of orders to be transferred:').getResponseText());
-
-  // Set ID for the spreadsheet file to be used.
-  var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
-
-  // Initialize the sheets to be accessed.
-  var sheetExp = SpreadsheetApp.openById(maniID).getSheetByName("Export");
-  var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");
-  var sheetCycles = SpreadsheetApp.openById(maniID).getSheetByName("Cycles");
-
-
-  // Save today's properly formatted date as a variable.
+function todayDate() {
+// Return today's properly formatted date.
   var today = new Date();
   var dd = today.getDate();
-  var mm = today.getMonth()+1; // .getMonth() is 0-indexed.
+  var mm = today.getMonth()+1; // .getMonth is 0-indexed.
   var yyyy = today.getFullYear();
   if(dd<10) { dd = '0' + dd;}
   if(mm<10) { mm = '0' + mm;}
   var today = mm + '/' + dd + '/' + yyyy;
-
-  // Extract first column from Research sheet and initialize order information.
-  var orders = sheetResearch.getDataRange().getValues();
-  var orderCol = getCol(orders,0);
-  var auctions = sheetCycles.getDataRange().getValues();
-
-  // Clear Export sheet and remove empty rows.
-  sheetExp.getRange(3, 1, sheetExp.getMaxRows()-2, sheetExp.getLastColumn()).clear();
-  var lastRow = sheetExp.getLastRow();
-  var copyCount = 0;
-  var itemCount = getCol(auctions.slice(3),13);
-  var itemTotal = sumArray(itemCount);
-  var rowDiff = itemTotal - sheetExp.getMaxRows() + 2;
-  if (rowDiff > 0) {sheetExp.insertRowsAfter(lastRow, rowDiff);}
-
-  for (var i=0; i<orderCount; i++) {
-    // Cache order ID, item count, and buy total.
-    var orderID = auctions[3+i][10];
-    var itemCount = auctions[3+i][13];
-    var orderTotal = auctions[3+i][12];
-
-    // Cache row positions.
-    var r = lastRow + 1;
-    var e = lastRow + itemCount;
-
-    // Find order in Research sheet
-    var orderIndex = orderCol.indexOf(orderID);
-    if (orderIndex == -1) {
-      SpreadsheetApp.getUi().alert('Could not find order #:' + orderID + '. Aborting...');
-      return;
-    }
-    // Save order as range with itemCount number of rows
-    var orderItems = sheetResearch.getRange(orderIndex+1, 2, itemCount, 5);
-    // Copy range values over to Export
-    orderItems.copyValuesToRange(sheetExp, 3, 7, r, e);
-    sheetExp.getRange(r, 1, itemCount, 9).setBackground('white');
-
-    // Copy A/E/R from Buy Site to correct column.
-    var AER = sheetExp.getRange(r, 8, itemCount);
-    sheetExp.getRange(r, 7, itemCount).moveTo(AER);
-    // Hard-code in the formula for weighted average pricing.
-    sheetExp.getRange(2, 15).setFormula("=IF(N2=0.01,0.01,ROUND(N2*K2/SUM(N$"+r+":N$"+e+"),2))");
-    var formulaRange = sheetExp.getRange(2, 10, 1, 6);
-    // Fill in date, buy site, and cost information.
-    for (var j=0; j < itemCount; j++) {
-      sheetExp.getRange(r+j, 2).setValue(today);
-      sheetExp.getRange(r+j, 7).setValue("LIQUIDATION");
-      sheetExp.getRange(r+j, 9).setValue(orderID);
-      formulaRange.copyTo(sheetExp.getRange(r+j, 10, 1, 6));
-    }
-
-    // Compare rounded cost to actual cost
-    var prices = sheetExp.getRange(r, 15, itemCount).getDisplayValues();
-    var roundedTotal = Number(round(sumArray(prices)), 2);
-    if (roundedTotal < orderTotal) {
-      // If rounded is lower, compensate top per item cost
-      sheetExp.getRange(r, 15).setValue(Number(prices[0]) + orderTotal - roundedTotal);
-    }
-    else if (roundedTotal > orderTotal) {
-      // If rounded is higher, compensate bottom per item cost
-      sheetExp.getRange(e, 15).setValue(Number(prices[itemCount-1]) + orderTotal - roundedTotal);
-    }
-    var lastRow = lastRow + itemCount;
-    var copyCount = copyCount + itemCount;
-  }
-  // Post dialogue box showing # of orders and items copied to LIQ FORMAT.
-  SpreadsheetApp.getUi().alert('Script finished.\n\nItems Copied: ' + copyCount);
+  return today;
 }
 
-function exportData() {
-  /*********************************************************************************************
-  * This function will accomplish the following:
-  *   1. Load the relevant Liquidation, Work, and Manifest sheets.
-  *   2. Save the needed ranges from the Manifest sheet.
-  *   3. Copy over the ranges into the Liquidation and Work sheets with the proper formatting.
-  *   4. Fill in any constant values in the Liquidation and Work Sheets.
-  **********************************************************************************************/
-
-  // Set ID's for the spreadsheet file to be used.
-  var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
-  var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
-  var liqID = "1Xqsc6Qe_hxrWN8wRd_vgdBdrCtJXVlvVC9w53XJ0BUM";
-
-  // Load the sheets between which data will be transferred.
-  var sheetExport = SpreadsheetApp.openById(maniID).getSheetByName("Export");
-  var sheetFuture = SpreadsheetApp.openById(workID).getSheetByName("Future Listing");
-  var sheetLiquid = SpreadsheetApp.openById(liqID).getSheetByName("Liquidation Orders");
-
-  // Save last row in each sheet to be used for indexing later.
-  var maniLastRow = sheetExport.getLastRow();
-  var liqLastRow = sheetLiquid.getLastRow();
-
-  // Load all of the values from manifest sheet.
-  var maniValues = sheetExport.getDataRange().getValues();
-
-  // Prepare the future listings sheet for data entry.
-  var futureMaxRows = sheetFuture.getMaxRows();
-  sheetFuture.getRange(2, 1, futureMaxRows-1, sheetFuture.getLastColumn()).clear();
-  var futureNeededRows = maniValues.length + 1 - futureMaxRows;
-  switch(true) {
-    case (futureNeededRows > 0):
-      // Add blank rows.
-      sheetFuture.insertRowsAfter(1, futureNeededRows);
-      break;
-    case (futureNeededRows == 0):
-      // Do nothing.
-      break;
-    case (futureNeededRows < 0):
-      // Delete rows.
-      sheetFuture.deleteRows(2, -futureNeededRows);
-      break;
-    default:
-      // Print error message.
-      SpreadsheetApp.getUi().alert('Something went wrong formatting blank rows.');
-      return;
-  }
-
-  // Add the proper number of rows to the liquidation sheet if needed.
-  var liqNeededRows = maniValues.length + liqLastRow - sheetLiquid.getMaxRows();
-  switch(true) {
-    case (liqNeededRows > 0):
-      // Add blank rows.
-      sheetLiquid.insertRowsAfter(liqLastRow, liqNeededRows);
-      break;
-    case (liqNeededRows == 0):
-    case (liqNeededRows < 0):
-      // Do nothing.
-      break;
-    default:
-      // Print error message.
-      SpreadsheetApp.getUi().alert('Something went wrong formatting blank rows.');
-      return;
-  }
-
-  // Load highest SKU # from liquidation sheet.
-  var allSKUs = getCol(sheetLiquid.getRange(2, 1, liqLastRow-1).getValues(), 0);
-  var highSKU = 1;
-  for (i=0; i < allSKUs.length; i++) {
-    if (allSKUs[i] > highSKU) {
-      var highSKU = allSKUs[i];
+function makeArray(w, h, val) {
+// Create array with 'w' columns, 'h' rows, and filled with 'val'
+  var arr = [];
+  for(i = 0; i < h; i++) {
+    arr[i] = [];
+    for(j = 0; j < w; j++) {
+      arr[i][j] = val;
     }
   }
-
-  // Cache all order numbers currently in liquidation sheet and check to see if data has already been transferred.
-  var allOrderNums = getCol(sheetLiquid.getRange(1, 8, liqLastRow).getValues(), 0);
-  for (var i=2; i < maniLastRow; i++) {
-    var k = i-1;
-    if (allOrderNums.indexOf(maniValues[i][8]) > -1) {
-      Logger.log('Order #' + maniValues[i][8] + ' has already been copied.');
-      break;
-    }
-    // To Future(column): Title(3), ASIN(4), LPN(5), A/E/R(6), and 7-digit Order #(7) from liq orders.
-    sheetFuture.getRange(i, 2).setValue(highSKU + k);       // SKU
-    sheetFuture.getRange(i, 3).setValue(maniValues[i][2]);  // Title
-    sheetFuture.getRange(i, 4).setValue(maniValues[i][4]);  // ASIN
-    sheetFuture.getRange(i, 5).setValue(maniValues[i][5]);  // LPN
-    sheetFuture.getRange(i, 6).setValue(maniValues[i][7]);  // A/E/R
-    sheetFuture.getRange(i, 7).setValue(maniValues[i][9]);  // Order #
-    // To Liquid(column): Date(2), Title(3), Quantity(4), ASIN(5), Buy Site(6), A/E/R(7), 7-digit #(8), Buy Price(11), and Card(12) from liq orders.
-    sheetLiquid.getRange(liqLastRow + k, 1).setValue(highSKU + k);       // SKU
-    sheetLiquid.getRange(liqLastRow + k, 2).setValue(maniValues[i][1]);  // Date
-    sheetLiquid.getRange(liqLastRow + k, 3).setValue(maniValues[i][2]);  // Title
-    sheetLiquid.getRange(liqLastRow + k, 4).setValue(maniValues[i][3]);  // Quantity
-    sheetLiquid.getRange(liqLastRow + k, 5).setValue(maniValues[i][4]);  // ASIN
-    sheetLiquid.getRange(liqLastRow + k, 6).setValue(maniValues[i][6]);  // Buy Site
-    sheetLiquid.getRange(liqLastRow + k, 7).setValue(maniValues[i][7]);  // A/E/R
-    sheetLiquid.getRange(liqLastRow + k, 8).setValue(maniValues[i][9]);  // Order #
-    sheetLiquid.getRange(liqLastRow + k, 9).setValue("FBA");             // Sell Site
-    sheetLiquid.getRange(liqLastRow + k, 10).setValue("FBA");            // Sell Order
-    sheetLiquid.getRange(liqLastRow + k, 11).setValue(maniValues[i][14]);// Buy Price
-    sheetLiquid.getRange(liqLastRow + k, 12).setValue(maniValues[i][11]);// Card
-    sheetLiquid.getRange(liqLastRow + k, 18).setValue("IN HOUSE");       // Set Month to IN HOUSE
-    // Setup liquidation formulas for new entry.
-    var r = String(liqLastRow + k);
-    sheetLiquid.getRange(liqLastRow + k, 14).setFormula("=M"+r+"-K"+r);  // Actual Profit
-    sheetLiquid.getRange(liqLastRow + k, 15).setFormula("=M"+r+"/K"+r);  // Actual % Increase
-    sheetLiquid.getRange(liqLastRow + k, 22).setFormula("=VLOOKUP(A"+r+",Returns!A:A,1,0)");        // RETURNS V
-    sheetLiquid.getRange(liqLastRow + k, 23).setFormula("=VLOOKUP(A"+r+",Salvage!A:A,1,0)");        // SALVAGE V
-    sheetLiquid.getRange(liqLastRow + k, 24).setFormula("=VLOOKUP(A"+r+",Reimbursements!F:F,1,0)"); // REIMBURSE V
-    sheetLiquid.getRange(liqLastRow + k, 25).setFormula("=VLOOKUP(A"+r+",Inventory!B:B,1,0)");      // INVENTORY V
-//    sheetLiquid.getRange(liqLastRow + k, 26).setFormula("=VLOOKUP(A"+r+",Connor!G:H,2,0)");         // FBA SHIPMENT STATUS
-//    sheetLiquid.getRange(liqLastRow + k, 27).setFormula("=VLOOKUP(A"+r+",Connor!K:K,1,0)");         // FBA SHIPMENT ISSUE
-  }
-  highlightAER();
-}
-
-function highlightAER() {
-  /**
-  * This script highlights each A/E/R cell according to its designation.
-  * The script is coded to leave highlighted cells/rows alone.
-  */
-
-  // Initialize sheet and save values.
-  var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
-  var sheetWork = SpreadsheetApp.openById(workID).getSheetByName("Future Listing");
-  var rangeWork = sheetWork.getDataRange();
-  var workValues = rangeWork.getValues();
-  var workColors = rangeWork.getBackgrounds();
-
-  // Cache A/E/R column of sheet.
-  var aerValues = getCol(workValues, 5);
-
-  // Loop through A/E/R column and color cells with a switch statement.
-  for (i=1; i<aerValues.length; i++) {
-    if (workColors[i][0] == "#ffffff") {
-      var activeRange = sheetWork.getRange(i+1, 2, 1, 6);
-      switch (aerValues[i]) {
-        case 'a':
-        case 'A':
-          activeRange.setBackground('white');
-          break;
-        case 'e':
-        case 'E':
-          activeRange.setBackground('#ff00ff');
-          break;
-        case 'r':
-        case 'R':
-          activeRange.setBackground('orange');
-          break;
-        case 'd':
-        case 'D':
-          activeRange.setBackground('red');
-          break;
-        case 'RHD':
-          activeRange.setBackground('blue');
-          activeRange.setFontColor('white');
-          break;
-        case 'c':
-        case 'C':
-          activeRange.setBackground('#cc3300');
-          activeRange.setFontColor('white');
-          break;
-        default:
-          activeRange.setBackground('gray');
-          break;
-      }
-    }
-  }
-}
-
-function lookupASINs() {
-  /**
-  * This script uses the Amazon Products API in tandem with
-  * ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a JSON file of the
-  * products in sheet with their price, weight, and sales
-  * rank on Amazon.
-  */
-
-  var ui = SpreadsheetApp.getUi();
-  var response = ui.prompt('Enter first line of order:')
-
-  if (response.getSelectedButton() == ui.Button.OK) {
-    UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/LookupASIN.php?line='+response.getResponseText());
-  } else {
-    UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/LookupASIN.php');
-  }
-
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Research");
-  var line = parseInt(response) || 6;
-  var item = sheet.getRange(line, 2).getValue();
-  var itemCount = 0;
-  while (item != "") {
-    itemCount++;
-    item = sheet.getRange(line+itemCount, 2).getValue();
-  }
-  Logger.log(itemCount);
-
-  updateFormula(sheet, itemCount, line);
-//  nono(sheet, itemCount, line);
-}
-
-function updateASINs() {
-  /************************************************************************
-  * This script accomplishes the following tasks:
-  *   1. Find unique items in Research
-  *   2. Filter out duplicate items and unresearched items
-  *   3. Move remaining items into asinDB
-  *************************************************************************/
-
-  // Set ID for the spreadsheet file to be used.
-  var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
-
-  // Initialize the sheets to be accessed.
-  var sheetDB = SpreadsheetApp.openById(maniID).getSheetByName("AsinDB");
-  var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");
-
-  // Cache values from Research.
-  var researchValues = sheetResearch.getDataRange().getValues();
-  // Remove rows with duplicate and blank ASINs from array.
-  var researchUnique = cleanArray(researchValues.slice(5),3);
-
-  // Cache values and ASINs from database.
-  var dbValues = sheetDB.getDataRange().getValues().slice(1);
-  var dbASINs = getCol(dbValues, 1);
-  Logger.log(researchValues);
-
-  for (var i=0; i<researchUnique.length; i++) {
-    // Compare Research items to database items.
-    var res = researchUnique[i];
-    // Make sure AERdesignation conforms to DB enumeration rules.
-    const enum = ['A','E','R','KEEP','CL','RHD'];
-    const letter = [];
-    for (var j=0; j<enum.length; j++) {letter.push(enum[j][0]);}
-    if (!containedIn(enum,res)) {
-      for (var j=0; j<letter.length; j++) {
-        if (res[5][0] == letter[j]) {res[5] = enum[j]; break;}
-        else {res[5] = enum[2];}
-      }
-    }
-    // Cache needed elements from research table.
-    var row = [
-        res[1],
-        res[3],
-        res[5],
-        res[6],
-        "",
-        res[7],
-        res[10],
-        res[8]
-      ];
-    // Add new Research items to database array.
-    if (dbASINs.indexOf(res[3]) == -1) {
-      dbValues.push(row);
-    // Update existing Research items in database array.
-    } else {
-      var index = dbASINs.indexOf(res[3]);
-      dbValues[index] = row;
-    }
-  }
-  // Move new values into database.
-  var dbLastRow = sheetDB.getLastRow();
-  var dbMaxRows = sheetDB.getMaxRows();
-  sheetDB.getRange(2,1,dbLastRow-1,8).clear();
-  var newLength = dbValues.length;
-  if (dbMaxRows < newLength + 1) {
-    sheetDB.insertRows(2, newLength-dbMaxRows+1);
-  }
-  sheetDB.getRange(2,1,newLength,8).setValues(dbValues).sort(1);
-  // Update MySQL database with new database values.
-  var response = UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/UpdateAsinDB.php');
-}
-
-function cleanArray(dirty, key) {
-  // Clean rows from a two-dimensional array that have duplicate or blank keys.
-  // @param {Array} dirty - Array containing duplicate and blank values.
-  // @param {int} key - 0-indexed column of the primary key used to check for duplicates.
-  const found = {};
-  const clean = [];
-  for (var i=0; i<dirty.length; i++) {
-    var item = dirty[i];
-    if (item[key] && !found[item[key]]) {
-      clean.push(item);
-      found[item[key]] = true;
-    }
-  }
-  return clean;
+  return arr;
 }
 
 function getCol(matrix, col){
-  // Take in a matrix and extract a column from it.
-  // @param {int} Col - 0-indexed number of column to be outputted.
+// Take in a matrix and slice off a column from it.
+// param Col is 0-indexed.
   var column = [];
   var l = matrix.length;
   for(var i=0; i<l; i++){
@@ -634,52 +56,524 @@ function getCol(matrix, col){
   return column;
 }
 
-function rep(obj, n) {
-  // Make an array of n length and obj identical inputs.
-  // @param {*} obj - value to be repeated inside array.
-  // @param {int} n - number of times to repeat value.
-  var arr = [[]];
-  for (i=0; i < n; i++) {arr[i][0].push(obj);}
-  return arr;
-}
-
-function sumArray(array) {
-  // Find the sum of an array.
-  // @param {Array} array - array of numerical values.
-  var sum = 0;
-  for (var i = 0; i < array.length; i++) {
-    var sum = sum + Number(array[i]);
+function dailyGoal() {
+  /**
+  * This script updates the daily end-of-day goal in the Work sheet.
+  * It runs automatically once every day at 5am.
+  */
+  
+  // Cache spreadsheet ID's.
+  var inboundID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
+  var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
+  
+  // Initialize Work and Liquidation sheets.
+  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName('Listings');
+  var sheetGoals = SpreadsheetApp.openById(inboundID).getSheetByName('DailyGoals');
+  
+  // Format dates in Goals sheet.
+  var goalValues = sheetGoals.getDataRange().getDisplayValues();
+  var goalDates = getCol(goalValues, 0);
+  var goalDatesFormatted = [String(goalDates[0])];
+//  var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  for (var i=1; i < goalDates.length; i++) {
+//    goalDates[i] = String(goalDates[i]);
+//    var month = months.indexOf(goalDates[i].substr(4,3))+1;
+//    if(month<10) {month = '0' + month;}
+//    var day = goalDates[i].substr(8,2);
+//    var year = goalDates[i].substr(11,4);
+//    var dateFormatted = month + '/' + day + '/' + year;
+    goalDatesFormatted.push(String(goalDates[i]));
   }
-  return sum;
-}
-
-function containedIn(needles, haystack) {
-  // Check to see if any objects from one array are contained in a second array.
-  // Outputs Boolean.
-  // @param {Array} needles - array of objects to be looked for.
-  // @param {Array} haystack - array to look in.
-  var check = [];
-  for (i=0; i < needles.length; i++) {
-    check[i] = haystack.indexOf(needles[i][0]) > -1;
+  
+  // Cache today's date and find it in the Daily Goals sheet.
+  var date = todayDate();
+  var goalLastRow = sheetGoals.getLastRow();
+  var goalIndex = goalDatesFormatted.indexOf(date);
+  if (goalIndex == -1) {
+    Logger.log(date + " not found in Daily Goals sheet.");
+    return;
   }
-  return check.indexOf(true) > -1;
+  
+  // Update yesterday's remaining items.
+  var remaining = sheetListings.getRange(1, 1).getValue();
+  sheetGoals.getRange(goalIndex, 4).setValue(remaining);
+  
+  // Check if today's goal was met or not and log it in the Inbound sheet.
+  var left = sheetListings.getRange(3,1).getDisplayValue();
+  Logger.log(left);
+  if (parseInt(left) <= 0) {
+    sheetGoals.getRange(goalIndex, 6).setValue("Y");
+  }
+  
+  // Update goals, then cache today's goal and update it in the Work sheet.
+  goalValues = sheetGoals.getDataRange().getDisplayValues();
+  var goals = getCol(goalValues, 3);
+  sheetListings.getRange(2, 1).setValue(goals[goalIndex]);
 }
 
-function round(value, exp) {
-  // Rounds a value to exp decimal places
-  // @param {float} value - number to be rounded.
-  // @param {int} exp - number of decimal places to round number. 0 will output an integer.
-  if (typeof exp === 'undefined' || +exp === 0)
-    return Math.round(value);
-  value = +value;
-  exp = +exp;
-  if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0))
-    return NaN;
-  // Shift
-  value = value.toString().split('e');
-  value = Math.round(+(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp)));
-  // Shift back
-  value = value.toString().split('e');
-  return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
+function liqTransfer() {
+  /**
+  * This script transfers all of the returns and salvages into the liquidation
+  * and Archive sheets.
+  */
+  
+  // Cache spreadsheet ID's
+  var liquidID = "1Xqsc6Qe_hxrWN8wRd_vgdBdrCtJXVlvVC9w53XJ0BUM";
+  var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
+  var inboundID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
+  
+  // Initialize the sheets to be used.
+  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName('Listings');
+  var sheetArchive = SpreadsheetApp.openById(workID).getSheetByName('Archive');
+  var sheetReturns = SpreadsheetApp.openById(liquidID).getSheetByName('Returns');
+  var sheetSalvage = SpreadsheetApp.openById(liquidID).getSheetByName('Salvage');
+  var sheetResearch = SpreadsheetApp.openById(inboundID).getSheetByName('Research');
+  
+  // Cache SKU's, return groups, and salvages from listings sheet.
+  var valuesListings = sheetListings.getDataRange().getValues();
+  var lastRowListings = sheetListings.getLastRow();
+  var lastRowArchive = sheetArchive.getLastRow();
+  var SKUs = getCol(valuesListings, 1);
+  var returnGroups = getCol(valuesListings, 9);
+  var salvages = getCol(valuesListings, 10);
+  
+  // Cache SKU's from liquidation returns and salvages sheets.
+  var valuesReturns = sheetReturns.getDataRange().getValues();
+  var returnSKUs = getCol(valuesReturns, 0);
+  var lastRowReturns = sheetReturns.getLastRow();
+  var valuesSalvage = sheetSalvage.getDataRange().getValues();
+  var salvageSKUs = getCol(valuesSalvage, 0);
+  var lastRowSalvage = sheetSalvage.getLastRow();
+  
+  // Cache ASIN's and MSRP's from research sheet.
+  var valuesResearch = sheetResearch.getDataRange().getValues();
+  var researchASINs = getCol(valuesResearch, 3);
+  var researchMSRPs = getCol(valuesResearch, 8);
+  
+  // Setup month to be input into sheets.
+  var months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  var today = new Date();
+  var mmm = months[today.getMonth()];
+  var yyyy = String(today.getFullYear());
+  var yy = yyyy.substr(-2);
+  var month = mmm + ". '" + yy;
+  
+  // Iterate through each return and salvage SKU in Listings and move to appropriate sheet.
+  for (var i=5; i < lastRowListings; i++) {
+    if (returnGroups[i] == "" && salvages[i] == "") {continue;}
+    var SKU = SKUs[i];
+    Logger.log(SKU+" ");
+    // Move Listing row to Archive.
+    sheetArchive.insertRowAfter(lastRowArchive);
+    lastRowArchive++;
+//    sheetListings.getRange(i+1, 1, 1, 18).copyFormatToRange(sheetArchive, 1, 18, lastRowArchive, lastRowArchive);
+//    sheetListings.getRange(i+1, 1, 1, 18).copyValuesToRange(sheetArchive, 1, 18, lastRowArchive, lastRowArchive);
+//    sheetListings.deleteRow(i+1);
+
+    if (returnSKUs.indexOf(SKU) > -1 || salvageSKUs.indexOf(SKU) > -1) {continue;}
+//    Logger.log(SKU+"\n");
+    if (returnGroups[i] == "") {
+      // Move SKU to new row in salvage sheet.
+      sheetSalvage.insertRowAfter(lastRowSalvage);
+      lastRowSalvage++;
+      var r = lastRowSalvage;
+      sheetSalvage.getRange(r, 1).setValue(SKU);
+      
+      // Set formulae
+      sheetSalvage.getRange(r, 2).setFormula("=VLOOKUP(A"+r+",'Liquidation Orders'!A:C,3,0)");
+      sheetSalvage.getRange(r, 3).setFormula("=COUNTIF(A"+r+",A:A)");
+      sheetSalvage.getRange(r, 4).setFormula("=VLOOKUP(A"+r+",'Liquidation Orders'!A:K,11,0)");
+      sheetSalvage.getRange(r, 5).setValue(month);
+    }
+    
+    if (salvages[i] == "") {
+      // Move SKU to new row in return sheet.
+      sheetReturns.insertRowAfter(lastRowReturns);
+      lastRowReturns++;
+      var r = lastRowReturns;
+      var rUP = r-1;
+      sheetReturns.getRange(r, 1).setValue(SKU);
+      
+      // Set formulae
+      var rangeMSRP = sheetReturns.getRange(r,4);
+      var rangeASIN = sheetReturns.getRange(r,5);
+      sheetReturns.getRange(r, 2).setFormula("=VLOOKUP(A"+r+",'Liquidation Orders'!A:C,3,0)");
+      sheetReturns.getRange(r, 3).setValue(1);
+      rangeMSRP.setFormula("=INDEX($D$2:$D"+rUP+",MATCH(E"+r+",$E$2:$E"+rUP+",0))");
+      rangeASIN.setFormula("=VLOOKUP(A"+r+",'Liquidation Orders'!A:E,5,0)");
+      sheetReturns.getRange(r, 6).setFormula("=COUNTIF(A:A,A"+r+")");
+      sheetReturns.getRange(r, 7).setFormula("=VLOOKUP(A"+r+",'Liquidation Orders'!A:L,11,0)");
+      sheetReturns.getRange(r, 8).setValue(month);
+      sheetReturns.getRange(r, 9).setValue(returnGroups[i]);
+      
+      // Lookup MSRP if not found
+//      var ASIN = rangeASIN.getDisplayValue();
+//      if (rangeMSRP.getDisplayValue() == "#N/A" && ASIN != "#N/A") {
+//        var indexResearch = researchASINs.indexOf(ASIN);
+//        var MSRP = researchMSRPs[indexResearch];
+//        if (MSRP == "") {break;}
+//        rangeMSRP.setValue(MSRP);
+//      }
+      
+      // CopyPaste MSRP to make literal value instead of formula.
+//      rangeMSRP.setValue(rangeMSRP.getDisplayValue());
+      
+    }  
+  }
+  // Sort Returns sheet by Cutoff Group (Column I/9).
+  sheetReturns.sort(9);
+}
+
+function highlightAsIs() {
+  /**
+  * This script highlights all AS IS items.
+  */
+  
+  // Cache spreadsheet ID's
+  var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
+  
+  // Initialize the sheets to be used.
+  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName('Listings');
+  
+  // Cache comments from listings sheet.
+  var valuesListings = sheetListings.getDataRange().getValues();
+  var lastRowListings = sheetListings.getLastRow();
+  var comments = getCol(valuesListings, 18);
+  
+  
+  // Iterate through each comment in Listings and highlight salmon if AS IS.
+  for (var i=5; i < lastRowListings; i++) {
+    if (comments[i] == "") {continue;}
+    var comment = String(comments[i]);
+    var firstFiveLetters = comment.substr(0,5);
+    if (firstFiveLetters == "AS IS")  {
+      sheetListings.getRange(i+1, 1, 1, 19).setBackgroundRGB(253, 171, 179);
+    }
+  }  
+}
+
+
+function newSKU() {
+  /**
+  * This script posts the next new SKU number by checking the Liquidation sheet
+  * for the current maximum SKU and incrementing it by one.
+  */
+  
+  // Initialize sheets.
+  var sheetLiquid = SpreadsheetApp.openById("1Xqsc6Qe_hxrWN8wRd_vgdBdrCtJXVlvVC9w53XJ0BUM").getSheetByName("Liquidation Orders");
+  var liqLastRow = sheetLiquid.getLastRow();
+  
+  // Load highest SKU # from liquidation sheet.
+  var allSKUs = getCol(sheetLiquid.getRange(2, 1, liqLastRow-1).getValues(), 0);
+  var highSKU = 1;
+  for (i=0; i < allSKUs.length; i++) {
+    if (allSKUs[i] > highSKU) {
+      var highSKU = allSKUs[i];
+    }
+  }
+  
+  // Show SKU to user.
+  var ui = SpreadsheetApp.getUi();
+  var response = ui.alert('Use this SKU for new item: ' + String(highSKU + 1));
+}
+
+function bulkUpdateLiquid() {
+  /**
+  * This script synchronizes values in the Liquidation sheet
+  * to match those in the Work sheet.
+  *
+  * It runs automatically once every hour.
+  */
+  
+  // Cache spreadsheet ID's
+  var liquidID = "1Xqsc6Qe_hxrWN8wRd_vgdBdrCtJXVlvVC9w53XJ0BUM";
+  var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
+  
+  // Initialize Work and Liquidation sheets.
+  var sheetListings = SpreadsheetApp.openById(workID).getSheetByName('Listings');
+  var sheetLiquid = SpreadsheetApp.openById(liquidID).getSheetByName("Liquidation Orders");
+  
+  // Cache user-given SKU and initialize work and liquidation SKU's.
+  var workLastRow = sheetListings.getLastRow();
+  var workSKU = getCol(sheetListings.getRange(1, 2, workLastRow).getValues(), 0);
+  var workValues = sheetListings.getDataRange().getValues();
+  var liqLastRow = sheetLiquid.getLastRow();
+  var liqValues = sheetLiquid.getDataRange().getValues();
+  var liquidSKU = getCol(liqValues, 0);
+  var liquidTitles = getCol(liqValues, 2);
+    
+  // Initialize counting variables.
+  var updated = 0;
+  var notUpdated = 0;
+  var created = 0;
+    
+  for (var i = 4; i < workSKU.length; i++) {
+    // Find index of SKU in work and liquidation.
+    var sku = Number(workSKU[i]);
+    if (isNaN(sku) || sku == "") {continue;}
+    var workIndex = workSKU.indexOf(sku);
+    var liquidIndex = liquidSKU.indexOf(sku);
+      
+    // Check if title is blank or already up to date.
+    if (workValues[i][2] == "" || workValues[i][2] == liquidTitles[liquidIndex]) {
+      notUpdated++;
+      continue;
+    }
+      
+    if (liquidIndex == -1) {
+      created++;
+      liquidIndex = liqLastRow;
+      var r = String(liquidIndex + 1);
+      sheetLiquid.insertRowAfter(liqLastRow);
+      sheetLiquid.getRange(r, 1, 1, 27).clearFormat();
+       
+      // Enter values from Work sheet.
+      sheetLiquid.getRange(r, 1).setValue(workValues[i][1]);
+      sheetLiquid.getRange(r, 2).setValue(todayDate());
+      sheetLiquid.getRange(r, 4).setValue("1");
+      sheetLiquid.getRange(r, 6).setValue("LIQUIDATION");
+      sheetLiquid.getRange(r, 8).setValue(workValues[i][6]);
+       
+      // Enter FBA information for new entry.
+      sheetLiquid.getRange(r, 9).setValue("FBA");             // Sell Site
+      sheetLiquid.getRange(r, 10).setValue("FBA");            // Sell Order
+      sheetLiquid.getRange(r, 11).setValue("0.01");           // Buy Price
+      sheetLiquid.getRange(r, 18).setValue("IN HOUSE");       // Set Month to IN HOUSE
+       
+      // Setup liquidation formulas for new entry.
+      sheetLiquid.getRange(r, 14).setFormula("=M"+r+"-K"+r);  // Actual Profit
+      sheetLiquid.getRange(r, 15).setFormula("=M"+r+"/K"+r);  // Actual % Increase
+      sheetLiquid.getRange(r, 22).setFormula("=VLOOKUP(A"+r+",Returns!A:A,1,0)");        // RETURNS V
+      sheetLiquid.getRange(r, 23).setFormula("=VLOOKUP(A"+r+",Salvage!A:A,1,0)");        // SALVAGE V
+      sheetLiquid.getRange(r, 24).setFormula("=VLOOKUP(A"+r+",Reimbursements!F:F,1,0)"); // REIMBURSE V
+      sheetLiquid.getRange(r, 25).setFormula("=VLOOKUP(A"+r+",Inventory!B:B,1,0)");      // INVENTORY V
+//       sheetLiquid.getRange(liqLastRow + k, 26).setFormula("=VLOOKUP(A"+r+",Connor!G:H,2,0)");         // FBA SHIPMENT STATUS
+//       sheetLiquid.getRange(liqLastRow + k, 27).setFormula("=VLOOKUP(A"+r+",Connor!K:K,1,0)");         // FBA SHIPMENT ISSUE
+      sheetLiquid.getRange(r, 27).setFormula("=IF(OR(ISBLANK($E"+r+"),LEFT($E"+r+",2)<>\"B0\",ISNA(VLOOKUP($E"+r+",Categories!A:E,5,0))),\"0000 Misc/Not Listed\",VLOOKUP($E"+r+",Categories!A:E,5,0))");// CATEGORY V
+   }
+      
+    // Copy work information into liquidation.
+    sheetLiquid.getRange(liquidIndex+1, 3).setValue(workValues[i][2]);
+    sheetLiquid.getRange(liquidIndex+1, 5).setValue(workValues[i][3]);
+    sheetLiquid.getRange(liquidIndex+1, 7).setValue(workValues[i][5]);
+    // Check if SKU is in liquidation sheet.
+    if (liquidIndex == liqLastRow) {liqLastRow++; continue;}
+      updated++;
+    }
+  Logger.log(
+    'Items updated: ' + updated
+    + '\nItems already up to date: ' + notUpdated
+    + '\nItems created: ' + created);
+}
+
+function createMWS() {
+  /**
+  * This script uses the Amazon Products API in tandem with
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a JSON file of the 
+  * items in the SCRAP sheet currently waiting to be listed.
+  *
+  * Use this function in tandem with the populateMWS() and
+  * postListings() functions to list products on Amazon.
+  */
+  
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateItemArray.php');
+}
+
+function palletMWS() {
+  /**
+  * This script uses the Amazon Products API in tandem with
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a JSON file of the 
+  * items in the SCRAP sheet currently waiting to be listed.
+  *
+  * Only oversize items marked with a 'P' will be included.
+  *
+  * Use this function in tandem with the populateMWS() and
+  * postListings() functions to list products on Amazon.
+  */
+  
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreatePalletArray.php');
+}
+
+function electronicsMWS() {
+  /**
+  * This script uses the Amazon Products API in tandem with
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a JSON file of the 
+  * items in the SCRAP sheet currently waiting to be listed.
+  *
+  * Only small items marked with an 'E' will be included.
+  *
+  * Use this function in tandem with the populateMWS() and
+  * postListings() functions to list products on Amazon.
+  */
+  
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateElectronicArray.php');
+}
+
+function populateMWS() {
+   /**
+   * This script accomplishes the following tasks:
+   *  1. Pull json file from MWS server
+   *  2. Convert json into multidimensional array
+   *  3. Push array into MWS tab.
+   */
+   
+   // Fetch the json array from website and parse into JS object.
+   var response = UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/MWS.json');
+   var json = response.getContentText();
+   var data = JSON.parse(json);
+   
+   // Convert data object into multidimensional array.
+   // Ordering is same as in MWS tab.
+   var itemCount = data.length;
+   var itemArray = makeArray(12, itemCount, "");
+   for (i = 0; i < itemCount; i++) {
+     var item = data[i];
+     try {                                                                                                                                    
+       itemArray[i] = ([                                                                                                                      
+         item.SellerSKU,                                                                                                                      
+         item.Title,                                                                                                                          
+         item.UPC,                                                                                                                            
+         item.ASIN,                                                                                                                           
+         item.ItemPrice.toFixed(2),                                                                                                               
+         item.Dimensions.Weight,                                                                                                              
+         item.Dimensions.Length,                                                                                                              
+         item.Dimensions.Width,                                                                                                               
+         item.Dimensions.Height,                                                                                                              
+         item.Condition,                                                                                                                      
+         item.Comment,                                                                                                                        
+         ""                                                                                                                                   
+       ]);                                                                                                                                    
+     } catch(err) {                                                                                                                              
+       itemArray[i] = ([                                                                                                                      
+         item.SellerSKU,                                                                                                                      
+         item.Title,                                                                                                                          
+         item.UPC,                                                                                                                            
+         item.ASIN,                                                                                                                           
+         item.ItemPrice,                                                                                                                          
+         item.Dimensions.Weight,                                                                                                              
+         item.Dimensions.Length,                                                                                                              
+         item.Dimensions.Width,                                                                                                               
+         item.Dimensions.Height,                                                                                                              
+         item.Condition,                                                                                                                      
+         item.Comment,                                                                                                                        
+         ""                                                                                                                                   
+       ]);                                                                                                                                    
+     }
+   }
+ 
+   // Push array into MWS tab.
+   var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
+   sheetMWS.getRange(2, 1, sheetMWS.getMaxRows()-1, 12).clearContent().setBackground('white');
+   var range = sheetMWS.getRange(2, 1, itemCount, 12);
+   range.setValues(itemArray);
+   
+   // Highlight undefined prices and wonky dimensions.
+   var prices = sheetMWS.getRange(2, 5, itemCount, 6).getValues();
+   for (i = 0; i < itemCount; i++) {
+     if (prices[i][0] == "MANUAL" || prices[i][0] == "") {
+       sheetMWS.getRange(2+i, 5).setBackground('red');
+     }
+     if (Number(prices[i][1]) < 1 || Number(prices[i][1]) > 100 || Number(prices[i][1]) == "NaN") {
+       sheetMWS.getRange(2+i, 6).setBackground('red');
+     }
+     if (Number(prices[i][2]) < 1 || Number(prices[i][2]) > 75 || Number(prices[i][2]) == "NaN") {
+       sheetMWS.getRange(2+i, 7).setBackground('red');
+     }
+     if (Number(prices[i][3]) < 1 || Number(prices[i][3]) > 75 || Number(prices[i][3]) == "NaN") {
+       sheetMWS.getRange(2+i, 8).setBackground('red');
+     }
+     if (Number(prices[i][4]) < 1 || Number(prices[i][4]) > 75 || Number(prices[i][4]) == "NaN") {
+       sheetMWS.getRange(2+i, 9).setBackground('red');
+     }
+   }
+ }
+
+function postListings() {
+  /**
+  * This script uses the XML exporter web apps in combination
+  * with http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripts to send product listings
+  * to Amazon.
+  *
+  * Use this function in tandem with the auditListings() function
+  * to verify completion of the listings.
+  */
+  
+  // Send product feeds to Amazon.
+  var response = UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebService/Functions/CreateNewListings.php?pass=K1@$run');
+}
+
+function createShipments() {
+  /**
+  * This script uses the Amazon FBAInboundMWS API in tandem with
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a shipment with all items
+  * in the MWS sheet.
+  */
+  
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/MasterShipment.php');
+}
+
+function shipLTL() {
+  /**
+  * This script uses the Amazon FBAInboundMWS API in tandem with
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a palleted shipment with
+  * all items in the MWS sheet.
+  */
+  
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/PalletShip.php');
+}
+
+function shipElectronics() {
+  /**
+  * This script uses the Amazon FBAInboundMWS API in tandem with
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a small item, all-in-one-box
+  * shipment with all items in the MWS sheet.
+  */
+    
+  SpreadsheetApp.getUi().alert(
+    'Go to the following URL and wait for a success message:\n\n'
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/ElectronicShip.php');
+}
+
+function importShipments() {
+// Fetch the json array from website and parse into JS object.
+  var response = UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/shipID.json');
+  var json = response.getContentText();
+  var data = JSON.parse(json);
+   
+  // Convert data object into multidimensional array.
+  var shipments = Object.keys(data);
+  var shipCount = shipments.length;
+  var itemArray = {};
+  var itemCount = [];
+  var k = 0;
+  for (var i = 0; i < shipCount; i++) {
+    var id = shipments[i];
+    itemCount[i] = data[id].length;
+    
+    for (var j = 0; j < itemCount[i]; j++) {
+      itemArray[data[id][j]] = id;
+    }
+  }
+ 
+  // Initialize sheet variables.
+  var sheetMWS = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
+  var lastRow = sheetMWS.getLastRow();
+  var SKUs = sheetMWS.getRange(1, 1, lastRow).getValues();
+  
+  // Import shipmentId's into sheet.
+  sheetMWS.getRange(2, 12, lastRow-1, 1).clearContent();
+  for (var i = 1; i < lastRow; i++) {
+    sheetMWS.getRange(i+1, 12).setValue(itemArray[SKUs[i][0]]);
+  }
 }
 
