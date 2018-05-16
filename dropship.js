@@ -41,14 +41,20 @@ function importListings() {
         var sheetVA = SpreadsheetApp.openById(vaIDs[i]).getSheetByName("Listings");
         var vaValues = sheetVA.getDataRange().getValues();
         var vaLastRow = sheetVA.getLastRow();
+        var vaLastCol = sheetVA.getLastColumn();
         var vaItemNums = getCol(vaValues, 0);
         Logger.log(vaLastRow - 1 + ' VA entries loaded.\n');
 
+        listingLoop:
         for (var j = 1; j < vaItemNums.length; j++) {
             Logger.log('Checking item ' + j + '...');
             var itemID = Number(vaItemNums[j]);
-            // Skip entry if no item number or title is blank.
+            // Skip entry if no item number.
             if (isNaN(itemID) || itemID == "" || vaValues[j][6] == "") {continue;}
+            // Skip entry if any values are blank.
+            for (var k = 0; k < vaLastCol - 1; k++) {
+              if (vaValues[j][k] == "") {continue listingLoop;}
+            }
             // Find index of SKU in work and liquidation.
             var masterIndex = masterItemNums.indexOf(itemID);
             // Skip entry if already in master sheet.
@@ -63,7 +69,7 @@ function importListings() {
               sheetMaster.getRange(r, k+1).setValue(vaValues[j][k]);
             }
 
-            // Setup liquidation formulas for new entry.
+            // Setup ban formula for new entry.
             sheetMaster.getRange(r, 4).setFormula('=IF(ISNA(VLOOKUP(C'+r+',BanList!A:A,1,0)),IF(ISNA(VLOOKUP(C'+r+',BanList!B:B,1,0)),"UNSURE","OK"),"BAN")');
 
             // Increment variables accordingly.
