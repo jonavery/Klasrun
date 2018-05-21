@@ -7,17 +7,17 @@ function onOpen() {
     .addItem('Transfer Returns and Salvages to Liquidation', 'liqTransfer')
     .addSeparator()
     .addItem('Highlight AS IS Items', 'highlightAsIs')
-//    .addSubMenu(ui.createMenu('Generate MWS item array')
-//      // .addItem('Standard Small Parcel', 'createMWS')
-//      .addItem('Palleted', 'palletMWS')
-//      .addItem('Electronics', 'electronicsMWS'))
-//    .addItem('Populate MWS Tab', 'populateMWS')
-//    .addItem('Post Listings', 'postListings')
-//    .addSeparator()
-//    .addSubMenu(ui.createMenu('Create Shipments')
-//      // .addItem('Small Parcel', 'createShipments')
-//      .addItem('LTL (Palleted)', 'shipLTL')
-//      .addItem('Electronics', 'shipElectronics'))
+    .addSubMenu(ui.createMenu('Generate MWS item array')
+      // .addItem('Standard Small Parcel', 'createMWS')
+      .addItem('Palleted', 'palletMWS')
+      .addItem('Electronics', 'electronicsMWS'))
+    .addItem('Populate MWS Tab', 'populateMWS')
+    .addItem('Post Listings', 'postListings')
+    .addSeparator()
+    .addSubMenu(ui.createMenu('Create Shipments')
+      // .addItem('Small Parcel', 'createShipments')
+      .addItem('LTL (Palleted)', 'shipLTL')
+      .addItem('Electronics', 'shipElectronics'))
     .addToUi()
 }
 
@@ -97,6 +97,13 @@ function dailyGoal() {
   // Update yesterday's remaining items.
   var remaining = sheetListings.getRange(1, 1).getValue();
   sheetGoals.getRange(goalIndex, 4).setValue(remaining);
+
+  // Check if today's goal was met or not and log it in the Inbound sheet.
+  var left = sheetListings.getRange(3,1).getDisplayValue();
+  Logger.log(left);
+  if (parseInt(left) <= 0) {
+    sheetGoals.getRange(goalIndex, 6).setValue("Y");
+  }
 
   // Update goals, then cache today's goal and update it in the Work sheet.
   goalValues = sheetGoals.getDataRange().getDisplayValues();
@@ -371,7 +378,7 @@ function createMWS() {
 
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
-    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateItemArray.php');
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateArray.php?type=sp');
 }
 
 function palletMWS() {
@@ -388,7 +395,7 @@ function palletMWS() {
 
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
-    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreatePalletArray.php');
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateArray.php?type=o');
 }
 
 function electronicsMWS() {
@@ -405,7 +412,7 @@ function electronicsMWS() {
 
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
-    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateElectronicArray.php');
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/CreateArray.php?type=e');
 }
 
 function populateMWS() {
