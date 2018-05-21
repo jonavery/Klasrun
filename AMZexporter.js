@@ -34,6 +34,23 @@ function setMarkdown(number) {
   }
 }
 
+function setComment(number) {
+  switch (number) {
+    case 1:
+      return "Item may have mild to severe cosmetic and packaging damage. Item may be missing accessories. Item may not come in original packaging.";
+    case 2:
+      return "Item includes all major components needed to function. Item may not come in original packaging.";
+    case 3:
+      return "";
+    case 4:
+      return "";
+    case 5:
+      return "";
+    default:
+      return "";
+  }
+}
+
 function getXML() {
   var root = XmlService.createElement('items');
   var items = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('AMZ').getDataRange().getValues();
@@ -45,7 +62,7 @@ function getXML() {
       .addContent(XmlService.createElement('Title').setText(items[i][2]))
       .addContent(XmlService.createElement('ASIN').setText(items[i][3]))
       .addContent(XmlService.createElement('Condition').setText(getCondition(parseInt(items[i][16]))))
-      .addContent(XmlService.createElement('Comment').setText(items[i][18]))
+      .addContent(XmlService.createElement('Comment').setText(setComment(items[i][16])))
       .addContent(XmlService.createElement('Defect').setText(setMarkdown(parseInt(items[i][16]))));
     var grandchild = XmlService.createElement('Dimensions')
       .addContent(XmlService.createElement('Weight').setText(items[i][11]))
