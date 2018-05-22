@@ -58,12 +58,12 @@ function getXML() {
     if(!(items[i][8] == "1" || items[i][8] == "2")) {continue;}
     if((items[i][11] == "")) {continue;}
     var child = XmlService.createElement('item')
-      .addContent(XmlService.createElement('SKU').setText(items[i][1]))
+      .addContent(XmlService.createElement('SKU').setText(items[i][1]+items[i][16]))
       .addContent(XmlService.createElement('Title').setText(items[i][2]))
       .addContent(XmlService.createElement('ASIN').setText(items[i][3]))
-      .addContent(XmlService.createElement('Condition').setText(getCondition(parseInt(items[i][16]))))
-      .addContent(XmlService.createElement('Comment').setText(setComment(items[i][16])))
-      .addContent(XmlService.createElement('Defect').setText(setMarkdown(parseInt(items[i][16]))));
+      .addContent(XmlService.createElement('Condition').setText(getCondition(parseInt(items[i][8]))))
+      .addContent(XmlService.createElement('Comment').setText(setComment(items[i][8])))
+      .addContent(XmlService.createElement('Defect').setText(setMarkdown(parseInt(items[i][8]))));
     var grandchild = XmlService.createElement('Dimensions')
       .addContent(XmlService.createElement('Weight').setText(items[i][11]))
       .addContent(XmlService.createElement('Length').setText(items[i][12]))
