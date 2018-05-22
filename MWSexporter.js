@@ -4,8 +4,12 @@ function doGet() {
 
 function getXML() {
   var Items = XmlService.createElement('items');
-  var products = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS').getDataRange().getValues();
-  
+  var MWSsheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('MWS');
+  var products = MWSsheet.getDataRange().getValues();
+  var lastRow = MWSsheet.getLastRow();
+  var range = MWSsheet.getRange(2, 1, lastRow-1, 12);
+  range.sort([{column: 1, ascending: true}, {column: 12, ascending: true}]);
+
   for (var i = 1; i < products.length; i++) {
     if(products[i][4] == "" || products[i][4] == "undefined") {continue;}
     var Dimensions = XmlService.createElement('Dimensions')
@@ -20,9 +24,10 @@ function getXML() {
       .addContent(Dimensions);
     Items.addContent(Member);
   }
-  
+
   var document = XmlService.createDocument(Items);
   var xml = XmlService.getPrettyFormat().format(document);
   Logger.log(xml)
   return ContentService.createTextOutput(xml);
 }
+
