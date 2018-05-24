@@ -37,9 +37,9 @@ function setMarkdown(number) {
 function setComment(number) {
   switch (number) {
     case 1:
-      return "Item may have mild to severe cosmetic and packaging damage. Item may be missing accessories. Item may not come in original packaging.";
+      return "Item will show signs of usage. Item may have mild to severe cosmetic and packaging damage. Item may be missing accessories. Item may not come in original packaging.";
     case 2:
-      return "Item includes all major components needed to function. Item may not come in original packaging.";
+      return "Item may show minor signs of wear and tear. Item includes all major components needed to function. Item may be missing non-essential accessories. Item may not come in original packaging.";
     case 3:
       return "";
     case 4:
