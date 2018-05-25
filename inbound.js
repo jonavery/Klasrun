@@ -4,6 +4,7 @@ function onOpen() {
     .addItem('Import New Blackwrap', 'importBlackwrap')
     .addItem('Generate Price Estimates', 'generatePrices')
     .addItem('Import Price Estimates', 'importPrices')
+    .addItem('Research A/E/R/CL', 'researchItems')
     .addSeparator()
     .addItem('Update Export', 'updateExport')
     .addItem('Export to LIQ & WORK', 'exportData')
@@ -28,6 +29,13 @@ function testNono() {
 
 function designate(msrp, weight) {
   var score = msrp - weight;
+  if (weight > 75) {
+    if (msrp > 100) {
+      return "CL";
+    } else {
+      return "R";
+    }
+  }
   if (score >= 100) {
     return "E";
   }
@@ -275,6 +283,33 @@ function researchItems() {
   var ui = SpreadsheetApp.getUi();
   var line = ui.prompt('Enter first line of order:').getResponseText();
 
+  // Set ID for the spreadsheet file to be used.
+  var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
+
+  // Initialize the sheets to be accessed.
+  var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");
+
+  // Find and cache last row of order.
+  var cell = 1;
+  var lastItemRow = line;
+  while (cell == 1) {
+    lastItemRow++;
+    var cell = sheetResearch.getRange(lastItemRow+1, 3).getValue();
+  }
+
+  // Cache weights, msrp's, and current designations.
+  var dataResearch = sheetResearch.getDataRange().getValues();
+  var colWeight = getCol(dataResearch, 11);
+  var colMSRP = getCol(dataResearch, 8);
+  var colAER = getCol(dataResearch, 5);
+
+  // Cycle through all items and sort into A, E, R, and CL.
+  for (var i = line-1; i < lastItemRow; i++) {
+    var preDesig = colAER[i];
+    if (preDesig.indexOf('P') > -1) {continue;}
+    var postDesig = designate(colMSRP[i], colWeight[i]);
+    sheetResearch.getRange(i+1, 6).setValue(postDesig);
+  }
 }
 
 
