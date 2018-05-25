@@ -26,6 +26,32 @@ function testNono() {
   nono(sheet, itemCount, line);
 }
 
+function designate(msrp, weight) {
+  var score = msrp - weight;
+  if (score >= 100) {
+    return "E";
+  }
+  if (weight > 50) {
+    if (msrp > 100) {
+      return "CL";
+    } else {
+      return "R";
+    }
+  }
+  if (weight > 30) {
+    if (msrp < 100) {
+      return "R";
+    } else {
+      return "A";
+    }
+  }
+  if (score < 50) {
+    return "R";
+  } else {
+    return "A";
+  }
+}
+
 function updateFormula(sheet, itemCount, line) {
   // Set summation formulas.
   sheet.getRange(itemCount+line, 1, 2, 9).setFontStyle('bold');
@@ -234,6 +260,23 @@ function importPrices() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Research');
   sheet.getRange(line, 10, itemCount, 3).setValues(itemArray);
 }
+
+function researchItems() {
+  /**
+  * This script utilizes the designate function to sort items into categories of:
+  *   A = Amazon
+  *   E = eBay
+  *   R = Return (liquidate)
+  *   CL = CraigsList (local listing)
+  *
+  * A "P" after the designation signifies permanence, and will not be edited by the code.
+  */
+
+  var ui = SpreadsheetApp.getUi();
+  var line = ui.prompt('Enter first line of order:').getResponseText();
+
+}
+
 
 function updateExport() {
   /************************************************************************
