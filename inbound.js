@@ -266,9 +266,12 @@ function importPrices() {
   // Push array into research tab.
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Research');
   sheet.getRange(line, 10, itemCount, 3).setValues(itemArray);
+
+  // Sort items into A, E, R, and ? designations.
+  researchItems(line);
 }
 
-function researchItems() {
+function researchItems(line) {
   /**
   * This script utilizes the designate function to sort items into categories of:
   *   A = Amazon
@@ -278,9 +281,6 @@ function researchItems() {
   *
   * A "P" after the designation signifies permanence, and will not be edited by the code.
   */
-
-  var ui = SpreadsheetApp.getUi();
-  var line = ui.prompt('Enter first line of order:').getResponseText();
 
   // Set ID for the spreadsheet file to be used.
   var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
