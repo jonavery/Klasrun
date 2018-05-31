@@ -29,6 +29,12 @@ function testNono() {
 
 function designate(msrp, weight) {
   var score = msrp - weight;
+  if (msrp < 50) {
+    return "R";
+  }
+  if (weight == "undefined") {
+    return "?";
+  }
   if (weight > 75) {
     if (score >= 100) {
       return "?";
