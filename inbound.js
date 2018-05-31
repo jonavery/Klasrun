@@ -30,8 +30,8 @@ function testNono() {
 function designate(msrp, weight) {
   var score = msrp - weight;
   if (weight > 75) {
-    if (msrp > 100) {
-      return "CL";
+    if (score >= 100) {
+      return "?";
     } else {
       return "R";
     }
@@ -39,24 +39,17 @@ function designate(msrp, weight) {
   if (score >= 100) {
     return "E";
   }
-  if (weight > 50) {
-    if (msrp > 100) {
-      return "CL";
-    } else {
-      return "R";
-    }
-  }
-  if (weight > 30) {
+  if (weight > 30 && weight < 50) {
     if (msrp < 100) {
       return "R";
     } else {
       return "A";
     }
   }
-  if (score < 50) {
-    return "R";
-  } else {
+  if (score >= 50) {
     return "A";
+  } else {
+    return "R";
   }
 }
 
