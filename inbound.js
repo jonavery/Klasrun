@@ -27,12 +27,12 @@ function testNono() {
   nono(sheet, itemCount, line);
 }
 
-function designate(msrp, weight) {
-  var score = msrp - weight;
-  if (msrp < 50) {
+function designate(salePrice, weight) {
+  var score = salePrice - weight;
+  if (salePrice < 25 || score < 20) {
     return "R";
   }
-  if (weight == "undefined") {
+  if (weight == "undefined" || salePrice == "undefined") {
     return "?";
   }
   if (weight > 75) {
@@ -46,13 +46,13 @@ function designate(msrp, weight) {
     return "E";
   }
   if (weight > 30 && weight < 50) {
-    if (msrp < 100) {
+    if (salePrice < 100) {
       return "R";
     } else {
       return "A";
     }
   }
-  if (score >= 50) {
+  if (score >= 20) {
     return "A";
   } else {
     return "R";
@@ -299,14 +299,14 @@ function researchItems(line) {
   // Cache weights, msrp's, and current designations.
   var dataResearch = sheetResearch.getDataRange().getValues();
   var colWeight = getCol(dataResearch, 11);
-  var colMSRP = getCol(dataResearch, 8);
+  var colSalePrice = getCol(dataResearch, 9);
   var colAER = getCol(dataResearch, 5);
 
   // Cycle through all items and sort into A, E, R, and CL.
   for (var i = line-1; i < lastItemRow; i++) {
     var preDesig = colAER[i];
     if (preDesig.indexOf('P') > -1) {continue;}
-    var postDesig = designate(colMSRP[i], colWeight[i]);
+    var postDesig = designate(colSalePrice[i], colWeight[i]);
     sheetResearch.getRange(i+1, 6).setValue(postDesig);
   }
 }
