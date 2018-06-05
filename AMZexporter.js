@@ -41,9 +41,9 @@ function setComment(number) {
     case 2:
       return "Item may show minor signs of wear and tear. Item includes all major components needed to function. Item may be missing non-essential accessories. Item may not come in original packaging.";
     case 3:
-      return "";
+      return "Item may be missing original packaging and/or instruction manual. Item includes all major accessories and is fully functinal.";
     case 4:
-      return "";
+      return "Item may be missing original packaging, or original packaging may be damaged. Item itself is in excellent, like new condition with no cosmetic damage.";
     case 5:
       return "";
     default:
