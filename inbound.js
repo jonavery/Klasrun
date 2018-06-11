@@ -32,7 +32,7 @@ function designate(salePrice, weight) {
   if (salePrice < 25 || score < 20) {
     return "R";
   }
-  if (weight == "undefined" || salePrice == "undefined") {
+  if (weight == "undefined" || salePrice == "undefined" || salePrice == "MANUAL") {
     return "?";
   }
   if (weight > 75) {
@@ -267,6 +267,14 @@ function importPrices() {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Research');
   sheet.getRange(line, 10, itemCount, 3).setValues(itemArray);
 
+  // Wait for Sheets to process new values.
+  var checkValue = itemArray[0][0];
+  var cellValue = sheet.getRange(line, 10).getDisplayValue();
+  var stopper = 0;
+  while (String(checkValue) != String(cellValue) && stopper < 10000) {
+    var cellValue = sheet.getRange(line, 10).getDisplayValue();
+    stopper++;
+  }
   // Sort items into A, E, R, and ? designations.
   researchItems(line);
 }
