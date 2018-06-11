@@ -4,7 +4,6 @@ function onOpen() {
     .addItem('Import New Blackwrap', 'importBlackwrap')
     .addItem('Generate Price Estimates', 'generatePrices')
     .addItem('Import Price Estimates', 'importPrices')
-    .addItem('Research A/E/R/CL', 'researchItems')
     .addSeparator()
     .addItem('Update Export', 'updateExport')
     .addItem('Export to LIQ & WORK', 'exportData')
