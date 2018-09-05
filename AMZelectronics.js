@@ -53,11 +53,10 @@ function setComment(number) {
 
 function getXML() {
   var root = XmlService.createElement('items');
-  var items = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('SCRAP').getDataRange().getValues();
+  var items = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('AMZ').getDataRange().getValues();
   for (i=1; i<items.length; i++) {
     if(!(items[i][8] == "1" || items[i][8] == "2" || items[i][8] == "3" || items[i][8] == "4" || items[i][8] == "5")) {continue;}
     if(!(items[i][17] == "E" || items[i][17] == "e")) {continue;}
-    if((items[i][11] == "")) {continue;}
     var child = XmlService.createElement('item')
       .addContent(XmlService.createElement('SKU').setText(items[i][1]+items[i][16]))
       .addContent(XmlService.createElement('Title').setText(items[i][2]))
