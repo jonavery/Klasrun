@@ -301,13 +301,14 @@ function bulkUpdateLiquid() {
   var liqValues = sheetLiquid.getDataRange().getValues();
   var liquidSKU = getCol(liqValues, 0);
   var liquidTitles = getCol(liqValues, 2);
+  var liquidASINs = getCol(liqValues, 4);
 
   // Initialize counting variables.
   var updated = 0;
   var notUpdated = 0;
   var created = 0;
 
-  for (var i = 4; i < workSKU.length; i++) {
+  for (var i = 5; i < workSKU.length; i++) {
     // Find index of SKU in work and liquidation.
     var sku = Number(workSKU[i]);
     if (isNaN(sku) || sku == "") {continue;}
@@ -315,7 +316,7 @@ function bulkUpdateLiquid() {
     var liquidIndex = liquidSKU.indexOf(sku);
 
     // Check if title is blank or already up to date.
-    if (workValues[i][2] == "" || workValues[i][2] == liquidTitles[liquidIndex]) {
+    if (workValues[i][2] == "" || workValues[i][2] == liquidTitles[liquidIndex] && workValues[i][3] == liquidASINs[liquidIndex]) {
       notUpdated++;
       continue;
     }
@@ -328,11 +329,11 @@ function bulkUpdateLiquid() {
       sheetLiquid.getRange(r, 1, 1, 27).clearFormat();
 
       // Enter values from Work sheet.
-      sheetLiquid.getRange(r, 1).setValue(workValues[i][1]);
-      sheetLiquid.getRange(r, 2).setValue(todayDate());
-      sheetLiquid.getRange(r, 4).setValue("1");
-      sheetLiquid.getRange(r, 6).setValue("LIQUIDATION");
-      sheetLiquid.getRange(r, 8).setValue(workValues[i][6]);
+      sheetLiquid.getRange(r, 1).setValue(workValues[i][1]); // SKU
+      sheetLiquid.getRange(r, 2).setValue(todayDate());      // Date
+      sheetLiquid.getRange(r, 4).setValue("1");              // Quantity
+      sheetLiquid.getRange(r, 6).setValue("LIQUIDATION");    // Buy Site
+      sheetLiquid.getRange(r, 8).setValue(workValues[i][6]); // Buy Order
 
       // Enter FBA information for new entry.
       sheetLiquid.getRange(r, 9).setValue("FBA");             // Sell Site
@@ -353,13 +354,13 @@ function bulkUpdateLiquid() {
    }
 
     // Copy work information into liquidation.
-    sheetLiquid.getRange(liquidIndex+1, 3).setValue(workValues[i][2]);
-    sheetLiquid.getRange(liquidIndex+1, 5).setValue(workValues[i][3]);
-    sheetLiquid.getRange(liquidIndex+1, 7).setValue(workValues[i][5]);
+    sheetLiquid.getRange(liquidIndex+1, 3).setValue(workValues[i][2]); // Title
+    sheetLiquid.getRange(liquidIndex+1, 5).setValue(workValues[i][3]); // ASIN
+    sheetLiquid.getRange(liquidIndex+1, 7).setValue(workValues[i][5]); // AER Designation
     // Check if SKU is in liquidation sheet.
     if (liquidIndex == liqLastRow) {liqLastRow++; continue;}
-      updated++;
-    }
+    if (liquidIndex > -1) {updated++;}
+  }
   Logger.log(
     'Items updated: ' + updated
     + '\nItems already up to date: ' + notUpdated
