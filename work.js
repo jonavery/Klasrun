@@ -15,7 +15,7 @@ function onOpen() {
     .addItem('Post Listings', 'postListings')
     .addSeparator()
     .addSubMenu(ui.createMenu('Create Shipments')
-      // .addItem('Small Parcel', 'createShipments')
+      .addItem('Small Parcel', 'shipSP')
       .addItem('LTL (Palleted)', 'shipLTL')
       .addItem('Electronics', 'shipElectronics'))
     .addToUi()
@@ -509,16 +509,16 @@ function postListings() {
   var response = UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebService/Functions/CreateNewListings.php?pass=K1@$run');
 }
 
-function createShipments() {
+function shipSP() {
   /**
   * This script uses the Amazon FBAInboundMWS API in tandem with
-  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a shipment with all items
-  * in the MWS sheet.
+  * http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com PHP scripting to create a small parcel shipment
+  * with all items in the MWS sheet.
   */
 
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
-    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/MasterShipment.php');
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/MasterShip.php?type=sp');
 }
 
 function shipLTL() {
@@ -530,7 +530,7 @@ function shipLTL() {
 
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
-    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/PalletShip.php');
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/MasterShip.php?type=ltl');
 }
 
 function shipElectronics() {
@@ -542,7 +542,7 @@ function shipElectronics() {
 
   SpreadsheetApp.getUi().alert(
     'Go to the following URL and wait for a success message:\n\n'
-    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/ElectronicShip.php');
+    + 'http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/FBAInboundServiceMWS/Functions/MasterShip.php?type=e');
 }
 
 function importShipments() {
