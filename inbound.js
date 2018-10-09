@@ -290,10 +290,10 @@ function researchItems(line) {
   */
 
   // Set ID for the spreadsheet file to be used.
-  var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
+  var inboundID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
 
   // Initialize the sheets to be accessed.
-  var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");
+  var sheetResearch = SpreadsheetApp.openById(inboundID).getSheetByName("Research");
 
   // Find and cache last row of order.
   var cell = 1;
@@ -334,22 +334,12 @@ function updateExport() {
   var orderCount = Number(ui.prompt('Enter number of orders to be transferred:').getResponseText());
 
   // Set ID for the spreadsheet file to be used.
-  var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
+  var inboundID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
 
   // Initialize the sheets to be accessed.
-  var sheetExp = SpreadsheetApp.openById(maniID).getSheetByName("Export");
-  var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");
-  var sheetCycles = SpreadsheetApp.openById(maniID).getSheetByName("Cycles");
-
-
-  // Save today's properly formatted date as a variable.
-  var today = new Date();
-  var dd = today.getDate();
-  var mm = today.getMonth()+1; // .getMonth() is 0-indexed.
-  var yyyy = today.getFullYear();
-  if(dd<10) { dd = '0' + dd;}
-  if(mm<10) { mm = '0' + mm;}
-  var today = mm + '/' + dd + '/' + yyyy;
+  var sheetExp = SpreadsheetApp.openById(inboundID).getSheetByName("Export");
+  var sheetResearch = SpreadsheetApp.openById(inboundID).getSheetByName("Research");
+  var sheetCycles = SpreadsheetApp.openById(inboundID).getSheetByName("Cycles");
 
   // Extract first column from Research sheet and initialize order information.
   var orders = sheetResearch.getDataRange().getValues();
@@ -395,7 +385,7 @@ function updateExport() {
     var formulaRange = sheetExp.getRange(2, 10, 1, 6);
     // Fill in date, buy site, and cost information.
     for (var j=0; j < itemCount; j++) {
-      sheetExp.getRange(r+j, 2).setValue(today);
+      sheetExp.getRange(r+j, 2).setValue(today());
       sheetExp.getRange(r+j, 7).setValue("LIQUIDATION");
       sheetExp.getRange(r+j, 9).setValue(orderID);
       formulaRange.copyTo(sheetExp.getRange(r+j, 10, 1, 6));
@@ -429,12 +419,12 @@ function exportData() {
   **********************************************************************************************/
 
   // Set ID's for the spreadsheet file to be used.
-  var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
+  var inboundID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
   var workID = "1okDFF9236lGc4vU6W7HOD8D-3ak8e_zntehvFatYxnI";
   var liqID = "1Xqsc6Qe_hxrWN8wRd_vgdBdrCtJXVlvVC9w53XJ0BUM";
 
   // Load the sheets between which data will be transferred.
-  var sheetExport = SpreadsheetApp.openById(maniID).getSheetByName("Export");
+  var sheetExport = SpreadsheetApp.openById(inboundID).getSheetByName("Export");
   var sheetFuture = SpreadsheetApp.openById(workID).getSheetByName("Future Listing");
   var sheetLiquid = SpreadsheetApp.openById(liqID).getSheetByName("Liquidation Orders");
 
@@ -443,12 +433,12 @@ function exportData() {
   var liqLastRow = sheetLiquid.getLastRow();
 
   // Load all of the values from manifest sheet.
-  var maniValues = sheetExport.getDataRange().getValues();
+  var inboundValues = sheetExport.getDataRange().getValues();
 
   // Prepare the future listings sheet for data entry.
   var futureMaxRows = sheetFuture.getMaxRows();
   sheetFuture.getRange(2, 1, futureMaxRows-1, sheetFuture.getLastColumn()).clear();
-  var futureNeededRows = maniValues.length + 1 - futureMaxRows;
+  var futureNeededRows = inboundValues.length + 1 - futureMaxRows;
   switch(true) {
     case (futureNeededRows > 0):
       // Add blank rows.
@@ -468,7 +458,7 @@ function exportData() {
   }
 
   // Add the proper number of rows to the liquidation sheet if needed.
-  var liqNeededRows = maniValues.length + liqLastRow - sheetLiquid.getMaxRows();
+  var liqNeededRows = inboundValues.length + liqLastRow - sheetLiquid.getMaxRows();
   switch(true) {
     case (liqNeededRows > 0):
       // Add blank rows.
@@ -495,32 +485,34 @@ function exportData() {
 
   // Cache all order numbers currently in liquidation sheet and check to see if data has already been transferred.
   var allOrderNums = getCol(sheetLiquid.getRange(1, 8, liqLastRow).getValues(), 0);
+  var inboundOrderNums = [];
   for (var i=2; i < maniLastRow; i++) {
     var k = i-1;
-    if (allOrderNums.indexOf(maniValues[i][8]) > -1) {
-      Logger.log('Order #' + maniValues[i][8] + ' has already been copied.');
+    if (inboundOrderNums.indexOf(inboundValues[i][8]) == -1) {inboundOrderNums[i-2] = inboundValues[i][8];}
+    if (allOrderNums.indexOf(inboundValues[i][8]) > -1) {
+      Logger.log('Order #' + inboundValues[i][8] + ' has already been copied.');
       break;
     }
     // To Future(column): Title(3), ASIN(4), LPN(5), A/E/R(6), and 7-digit Order #(7) from liq orders.
     sheetFuture.getRange(i, 2).setValue(highSKU + k);       // SKU
-    sheetFuture.getRange(i, 3).setValue(maniValues[i][2]);  // Title
-    sheetFuture.getRange(i, 4).setValue(maniValues[i][4]);  // ASIN
-    sheetFuture.getRange(i, 5).setValue(maniValues[i][5]);  // LPN
-    sheetFuture.getRange(i, 6).setValue(maniValues[i][7]);  // A/E/R
-    sheetFuture.getRange(i, 7).setValue(maniValues[i][9]);  // Order #
+    sheetFuture.getRange(i, 3).setValue(inboundValues[i][2]);  // Title
+    sheetFuture.getRange(i, 4).setValue(inboundValues[i][4]);  // ASIN
+    sheetFuture.getRange(i, 5).setValue(inboundValues[i][5]);  // LPN
+    sheetFuture.getRange(i, 6).setValue(inboundValues[i][7]);  // A/E/R
+    sheetFuture.getRange(i, 7).setValue(inboundValues[i][9]);  // Order #
     // To Liquid(column): Date(2), Title(3), Quantity(4), ASIN(5), Buy Site(6), A/E/R(7), 7-digit #(8), Buy Price(11), and Card(12) from liq orders.
     sheetLiquid.getRange(liqLastRow + k, 1).setValue(highSKU + k);       // SKU
-    sheetLiquid.getRange(liqLastRow + k, 2).setValue(maniValues[i][1]);  // Date
-    sheetLiquid.getRange(liqLastRow + k, 3).setValue(maniValues[i][2]);  // Title
-    sheetLiquid.getRange(liqLastRow + k, 4).setValue(maniValues[i][3]);  // Quantity
-    sheetLiquid.getRange(liqLastRow + k, 5).setValue(maniValues[i][4]);  // ASIN
-    sheetLiquid.getRange(liqLastRow + k, 6).setValue(maniValues[i][6]);  // Buy Site
-    sheetLiquid.getRange(liqLastRow + k, 7).setValue(maniValues[i][7]);  // A/E/R
-    sheetLiquid.getRange(liqLastRow + k, 8).setValue(maniValues[i][9]);  // Order #
+    sheetLiquid.getRange(liqLastRow + k, 2).setValue(inboundValues[i][1]);  // Date
+    sheetLiquid.getRange(liqLastRow + k, 3).setValue(inboundValues[i][2]);  // Title
+    sheetLiquid.getRange(liqLastRow + k, 4).setValue(inboundValues[i][3]);  // Quantity
+    sheetLiquid.getRange(liqLastRow + k, 5).setValue(inboundValues[i][4]);  // ASIN
+    sheetLiquid.getRange(liqLastRow + k, 6).setValue(inboundValues[i][6]);  // Buy Site
+    sheetLiquid.getRange(liqLastRow + k, 7).setValue(inboundValues[i][7]);  // A/E/R
+    sheetLiquid.getRange(liqLastRow + k, 8).setValue(inboundValues[i][9]);  // Order #
     sheetLiquid.getRange(liqLastRow + k, 9).setValue("FBA");             // Sell Site
     sheetLiquid.getRange(liqLastRow + k, 10).setValue("FBA");            // Sell Order
-    sheetLiquid.getRange(liqLastRow + k, 11).setValue(maniValues[i][14]);// Buy Price
-    sheetLiquid.getRange(liqLastRow + k, 12).setValue(maniValues[i][11]);// Card
+    sheetLiquid.getRange(liqLastRow + k, 11).setValue(inboundValues[i][14]);// Buy Price
+    sheetLiquid.getRange(liqLastRow + k, 12).setValue(inboundValues[i][11]);// Card
     sheetLiquid.getRange(liqLastRow + k, 18).setValue("IN HOUSE");       // Set Month to IN HOUSE
     // Setup liquidation formulas for new entry.
     var r = String(liqLastRow + k);
@@ -534,6 +526,14 @@ function exportData() {
 //    sheetLiquid.getRange(liqLastRow + k, 27).setFormula("=VLOOKUP(A"+r+",Connor!K:K,1,0)");         // FBA SHIPMENT ISSUE
   }
   highlightAER();
+
+  // Note in cycles sheet that auction has been imported.
+  var sheetCycles = SpreadsheetApp.openById(inboundID).getSheetByName("Cycles");
+  var auctionCol = getCol(sheetCycles.getDataRange().getValues(),1);
+  for (var i=0; i < inboundOrderNums.length; i++) {
+    var auctionIndex = auctionCol.indexOf(inboundOrderNums[i]);
+    sheetCycles.getRange(auctionIndex+1, 9).setValue(today());
+  }
 }
 
 function highlightAER() {
@@ -630,11 +630,11 @@ function updateASINs() {
   *************************************************************************/
 
   // Set ID for the spreadsheet file to be used.
-  var maniID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
+  var inboundID = "1TaxBUL8WjTvV3DjJEMduPK6Qs3A5GoFDmZHiUcc-LUY";
 
   // Initialize the sheets to be accessed.
-  var sheetDB = SpreadsheetApp.openById(maniID).getSheetByName("AsinDB");
-  var sheetResearch = SpreadsheetApp.openById(maniID).getSheetByName("Research");
+  var sheetDB = SpreadsheetApp.openById(inboundID).getSheetByName("AsinDB");
+  var sheetResearch = SpreadsheetApp.openById(inboundID).getSheetByName("Research");
 
   // Cache values from Research.
   var researchValues = sheetResearch.getDataRange().getValues();
@@ -690,6 +690,18 @@ function updateASINs() {
   sheetDB.getRange(2,1,newLength,8).setValues(dbValues).sort(1);
   // Update MySQL database with new database values.
   var response = UrlFetchApp.fetch('http://ec2-13-57-188-159.us-west-1.compute.amazonaws.com/AmazonMWS/MarketplaceWebServiceProducts/Functions/UpdateAsinDB.php');
+}
+
+function today() {
+  // Return today's date in MM/DD/YYYY format.
+  var today = new Date();
+  var dd = today.getDate();
+  var mm = today.getMonth()+1; // .getMonth() is 0-indexed.
+  var yyyy = today.getFullYear();
+  if(dd<10) { dd = '0' + dd;}
+  if(mm<10) { mm = '0' + mm;}
+  var today = mm + '/' + dd + '/' + yyyy;
+  return today;
 }
 
 function cleanArray(dirty, key) {
