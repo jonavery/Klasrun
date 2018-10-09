@@ -371,36 +371,35 @@ function updateExport() {
       SpreadsheetApp.getUi().alert('Could not find order #:' + orderID + '. Aborting...');
       return;
     }
-    // Save order as range with itemCount number of rows
-    var orderItems = sheetResearch.getRange(orderIndex+1, 2, itemCount, 5);
+    // Save order columns as ranges with itemCount number of rows
+    var orderItems = sheetResearch.getRange(orderIndex+1, 2, itemCount, 4);
+    var orderAERs = sheetResearch.getRange(orderIndex+1, 6, itemCount);
+    var orderMSRPs = sheetResearch.getRange(orderIndex+1, 9, itemCount);
     // Copy range values over to Export
-    orderItems.copyValuesToRange(sheetExp, 3, 7, r, e);
-    sheetExp.getRange(r, 1, itemCount, 9).setBackground('white');
+    orderItems.copyValuesToRange(sheetExp, 2, 5, r, e);
+    orderAERs.copyValuesToRange(sheetExp, 7, 7, r, e);
+    sheetExp.getRange(r, 1, itemCount, 8).setBackground('white');
 
-    // Copy A/E/R from Buy Site to correct column.
-    var AER = sheetExp.getRange(r, 8, itemCount);
-    sheetExp.getRange(r, 7, itemCount).moveTo(AER);
     // Hard-code in the formula for weighted average pricing.
-    sheetExp.getRange(2, 15).setFormula("=IF(N2=0.01,0.01,ROUND(N2*K2/SUM(N$"+r+":N$"+e+"),2))");
-    var formulaRange = sheetExp.getRange(2, 10, 1, 6);
+    sheetExp.getRange(2, 15).setFormula("=ROUND(N2*J2/SUM(N$"+r+":N$"+e+"),2)");
+    var formulaRange = sheetExp.getRange(2, 9, 1, 7);
     // Fill in date, buy site, and cost information.
     for (var j=0; j < itemCount; j++) {
-      sheetExp.getRange(r+j, 2).setValue(today());
-      sheetExp.getRange(r+j, 7).setValue("LIQUIDATION");
-      sheetExp.getRange(r+j, 9).setValue(orderID);
-      formulaRange.copyTo(sheetExp.getRange(r+j, 10, 1, 6));
+      sheetExp.getRange(r+j, 1).setValue(today());
+      sheetExp.getRange(r+j, 6).setValue("LIQUIDATION");
+      sheetExp.getRange(r+j, 8).setValue(orderID);
+      formulaRange.copyTo(sheetExp.getRange(r+j, 9, 1, 7));
     }
+    orderMSRPs.copyValuesToRange(sheetExp, 14, 14, r, e);
 
     // Compare rounded cost to actual cost
     var prices = sheetExp.getRange(r, 15, itemCount).getDisplayValues();
-    var roundedTotal = Number(round(sumArray(prices)), 2);
-    if (roundedTotal < orderTotal) {
-      // If rounded is lower, compensate top per item cost
-      sheetExp.getRange(r, 15).setValue(Number(prices[0]) + orderTotal - roundedTotal);
-    }
-    else if (roundedTotal > orderTotal) {
-      // If rounded is higher, compensate bottom per item cost
-      sheetExp.getRange(e, 15).setValue(Number(prices[itemCount-1]) + orderTotal - roundedTotal);
+    var roundedTotal = sumArray(prices);
+    if (roundedTotal != orderTotal) {
+      // Compensate top per item cost
+      sheetExp.getRange(r, 15).setValue(Number(prices[0]) + Number(orderTotal) - roundedTotal);
+      Logger.log(Number(prices[0]) + orderTotal - roundedTotal);
+      SpreadsheetApp.getUi().alert("Order Total: "+orderTotal+"\nRounded Total: "+roundedTotal);
     }
     var lastRow = lastRow + itemCount;
     var copyCount = copyCount + itemCount;
@@ -527,7 +526,7 @@ function exportData() {
   }
   highlightAER();
 
-  // Note in cycles sheet that auction has been imported.
+  // Note in cycles sheet that auction has been exported.
   var sheetCycles = SpreadsheetApp.openById(inboundID).getSheetByName("Cycles");
   var auctionCol = getCol(sheetCycles.getDataRange().getValues(),1);
   for (var i=0; i < inboundOrderNums.length; i++) {
