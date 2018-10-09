@@ -330,6 +330,7 @@ function updateExport() {
 
   // Prompt user for number of orders.
   var ui = SpreadsheetApp.getUi();
+  var firstOrder = Number(ui.prompt('Enter number of first order row:').getResponseText()-1);
   var orderCount = Number(ui.prompt('Enter number of orders to be transferred:').getResponseText());
 
   // Set ID for the spreadsheet file to be used.
@@ -366,9 +367,9 @@ function updateExport() {
 
   for (var i=0; i<orderCount; i++) {
     // Cache order ID, item count, and buy total.
-    var orderID = auctions[3+i][10];
-    var itemCount = auctions[3+i][13];
-    var orderTotal = auctions[3+i][12];
+    var orderID = auctions[firstOrder+i][1];
+    var itemCount = auctions[firstOrder+i][3];
+    var orderTotal = auctions[firstOrder+i][2];
 
     // Cache row positions.
     var r = lastRow + 1;
