@@ -1,10 +1,10 @@
 function onOpen() {
   var ui = SpreadsheetApp.getUi();
   ui.createMenu('Automation Menu')
-    .addItem('Import New Blackwrap', 'importBlackwrap')
-    .addItem('Generate Price Estimates', 'generatePrices')
-    .addItem('Import Price Estimates', 'importPrices')
-    .addSeparator()
+    //.addItem('Import New Blackwrap', 'importBlackwrap')
+    //.addItem('Generate Price Estimates', 'generatePrices')
+    //.addItem('Import Price Estimates', 'importPrices')
+    //.addSeparator()
     .addItem('Update Export', 'updateExport')
     .addItem('Export to LIQ & WORK', 'exportData')
     .addSeparator()
@@ -341,6 +341,9 @@ function updateExport() {
   var sheetResearch = SpreadsheetApp.openById(inboundID).getSheetByName("Research");
   var sheetCycles = SpreadsheetApp.openById(inboundID).getSheetByName("Cycles");
 
+  // Sort Research sheet by Auction ID to group auctions together.
+  sheetResearch.sort(1);
+
   // Extract first column from Research sheet and initialize order information.
   var orders = sheetResearch.getDataRange().getValues();
   var orderCol = getCol(orders,0);
@@ -350,7 +353,7 @@ function updateExport() {
   sheetExp.getRange(3, 1, sheetExp.getMaxRows()-2, sheetExp.getLastColumn()).clear();
   var lastRow = sheetExp.getLastRow();
   var copyCount = 0;
-  var itemCount = getCol(auctions.slice(3),13);
+  var itemCount = getCol(auctions.slice(firstOrder,firstOrder+orderCount),3);
   var itemTotal = sumArray(itemCount);
   var rowDiff = itemTotal - sheetExp.getMaxRows() + 2;
   if (rowDiff > 0) {sheetExp.insertRowsAfter(lastRow, rowDiff);}
@@ -363,34 +366,59 @@ function updateExport() {
 
     // Cache row positions.
     var r = lastRow + 1;
-    var e = lastRow + itemCount;
 
     // Find order in Research sheet
-    var orderIndex = orderCol.indexOf(orderID);
-    if (orderIndex == -1) {
+    var orderStart = orderCol.indexOf(orderID);
+    if (orderStart < 0) {
       SpreadsheetApp.getUi().alert('Could not find order #:' + orderID + '. Aborting...');
       return;
     }
+    var orderEnd = orderCol.lastIndexOf(orderID)+1;
+    var rowCount = orderEnd-orderStart;
+    var e = r+rowCount-1;
     // Save order columns as ranges with itemCount number of rows
-    var orderItems = sheetResearch.getRange(orderIndex+1, 2, itemCount, 4);
-    var orderAERs = sheetResearch.getRange(orderIndex+1, 6, itemCount);
-    var orderMSRPs = sheetResearch.getRange(orderIndex+1, 9, itemCount);
+    var orderItems = sheetResearch.getRange(orderStart+1, 2, rowCount, 4);
+    var orderAERs = sheetResearch.getRange(orderStart+1, 6, rowCount);
+    var orderMSRPs = sheetResearch.getRange(orderStart+1, 9, rowCount);
+
+    // Check to see if any items need to be duplicated.
+    var qtyCol = getCol(sheetResearch.getRange(orderStart+1, 3, rowCount).getValues(),0);
+    var dupCheck = 0;
+    var dupRows = [];
+    for (var j=0; j < rowCount; j++) {
+      if (Number(qtyCol[j]) > 1) {
+        dupCheck++;
+        dupRows.push(j);
+      }
+    }
+
     // Copy range values over to Export
     orderItems.copyValuesToRange(sheetExp, 2, 5, r, e);
     orderAERs.copyValuesToRange(sheetExp, 7, 7, r, e);
-    sheetExp.getRange(r, 1, itemCount, 8).setBackground('white');
+    orderMSRPs.copyValuesToRange(sheetExp, 9, 9, r, e);
+    sheetExp.getRange(r, 1, rowCount, 8).setBackground('white');
+
+    // Duplicate any items with quantity >1 and set qty to 1.
+    for (var j=0; j < dupCheck; j++) {
+      var itmQty = Number(qtyCol[dupRows[j]]);
+      sheetExp.getRange(r+dupRows[j], 3).setValue(1);
+      var rowValues = sheetExp.getRange(r+dupRows[j], 1, 1, 9).getValues();
+      for (var k=1; k < itmQty; k++) {
+        sheetExp.getRange(e+1, 1, 1, 9).setValues(rowValues);
+        e++;
+      }
+    }
 
     // Hard-code in the formula for weighted average pricing.
-    sheetExp.getRange(2, 15).setFormula("=ROUND(N2*J2/SUM(N$"+r+":N$"+e+"),2)");
-    var formulaRange = sheetExp.getRange(2, 9, 1, 7);
+    sheetExp.getRange(2, 15).setFormula("=ROUND(K2*I2/SUM(I$"+r+":I$"+e+"),2)");
+    var formulaRange = sheetExp.getRange(2, 10, 1, 6);
     // Fill in date, buy site, and cost information.
     for (var j=0; j < itemCount; j++) {
       sheetExp.getRange(r+j, 1).setValue(today());
       sheetExp.getRange(r+j, 6).setValue("LIQUIDATION");
       sheetExp.getRange(r+j, 8).setValue(orderID);
-      formulaRange.copyTo(sheetExp.getRange(r+j, 9, 1, 7));
+      formulaRange.copyTo(sheetExp.getRange(r+j, 10, 1, 6));
     }
-    orderMSRPs.copyValuesToRange(sheetExp, 14, 14, r, e);
 
     // Compare rounded cost to actual cost
     var prices = sheetExp.getRange(r, 15, itemCount).getDisplayValues();
@@ -399,7 +427,6 @@ function updateExport() {
       // Compensate top per item cost
       sheetExp.getRange(r, 15).setValue(Number(prices[0]) + Number(orderTotal) - roundedTotal);
       Logger.log(Number(prices[0]) + orderTotal - roundedTotal);
-      SpreadsheetApp.getUi().alert("Order Total: "+orderTotal+"\nRounded Total: "+roundedTotal);
     }
     var lastRow = lastRow + itemCount;
     var copyCount = copyCount + itemCount;
@@ -755,10 +782,26 @@ function containedIn(needles, haystack) {
   // @param {Array} needles - array of objects to be looked for.
   // @param {Array} haystack - array to look in.
   var check = [];
-  for (i=0; i < needles.length; i++) {
+  for (var i=0; i < needles.length; i++) {
     check[i] = haystack.indexOf(needles[i][0]) > -1;
   }
   return check.indexOf(true) > -1;
+}
+
+function findNeedles(needle, haystack) {
+  // Find all locations where needle is contained in an array.
+  // Outputs array of needle indices.
+  // @param {Array} needle - object to be looked for.
+  // @param {Array} haystack - array to look in.
+  var needleLocs = [];
+  var j = 0;
+  for (var i=0; i < haystack.length; i++) {
+    if (haystack[i] == needle) {
+      needleLocs[j] = i;
+      j++;
+    }
+  }
+  return needleLocs;
 }
 
 function round(value, exp) {
