@@ -514,32 +514,33 @@ function exportData() {
   var inboundOrderNums = [];
   for (var i=2; i < maniLastRow; i++) {
     var k = i-1;
-    if (inboundOrderNums.indexOf(inboundValues[i][8]) == -1) {inboundOrderNums[i-2] = inboundValues[i][8];}
-    if (allOrderNums.indexOf(inboundValues[i][8]) > -1) {
-      Logger.log('Order #' + inboundValues[i][8] + ' has already been copied.');
+    if (inboundOrderNums.indexOf(inboundValues[i][9]) == -1) {inboundOrderNums[i-2] = inboundValues[i][9];}
+    if (allOrderNums.indexOf(inboundValues[i][9]) > -1) {
+      Logger.log('Order #' + inboundValues[i][9] + ' has already been copied.');
       break;
     }
     // To Future(column): Title(3), ASIN(4), LPN(5), A/E/R(6), and 7-digit Order #(7) from liq orders.
     sheetFuture.getRange(i, 2).setValue(highSKU + k);       // SKU
-    sheetFuture.getRange(i, 3).setValue(inboundValues[i][2]);  // Title
-    sheetFuture.getRange(i, 4).setValue(inboundValues[i][4]);  // ASIN
-    sheetFuture.getRange(i, 5).setValue(inboundValues[i][5]);  // LPN
-    sheetFuture.getRange(i, 6).setValue(inboundValues[i][7]);  // A/E/R
+    sheetFuture.getRange(i, 3).setValue(inboundValues[i][1]);  // Title
+    sheetFuture.getRange(i, 4).setValue(inboundValues[i][3]);  // ASIN
+    sheetFuture.getRange(i, 5).setValue(inboundValues[i][4]);  // LPN
+    sheetFuture.getRange(i, 6).setValue(inboundValues[i][6]);  // A/E/R
     sheetFuture.getRange(i, 7).setValue(inboundValues[i][9]);  // Order #
     // To Liquid(column): Date(2), Title(3), Quantity(4), ASIN(5), Buy Site(6), A/E/R(7), 7-digit #(8), Buy Price(11), and Card(12) from liq orders.
     sheetLiquid.getRange(liqLastRow + k, 1).setValue(highSKU + k);       // SKU
-    sheetLiquid.getRange(liqLastRow + k, 2).setValue(inboundValues[i][1]);  // Date
-    sheetLiquid.getRange(liqLastRow + k, 3).setValue(inboundValues[i][2]);  // Title
-    sheetLiquid.getRange(liqLastRow + k, 4).setValue(inboundValues[i][3]);  // Quantity
-    sheetLiquid.getRange(liqLastRow + k, 5).setValue(inboundValues[i][4]);  // ASIN
-    sheetLiquid.getRange(liqLastRow + k, 6).setValue(inboundValues[i][6]);  // Buy Site
-    sheetLiquid.getRange(liqLastRow + k, 7).setValue(inboundValues[i][7]);  // A/E/R
+    sheetLiquid.getRange(liqLastRow + k, 2).setValue(inboundValues[i][0]);  // Date
+    sheetLiquid.getRange(liqLastRow + k, 3).setValue(inboundValues[i][1]);  // Title
+    sheetLiquid.getRange(liqLastRow + k, 4).setValue(inboundValues[i][2]);  // Quantity
+    sheetLiquid.getRange(liqLastRow + k, 5).setValue(inboundValues[i][3]);  // ASIN
+    sheetLiquid.getRange(liqLastRow + k, 6).setValue(inboundValues[i][5]);  // Buy Site
+    sheetLiquid.getRange(liqLastRow + k, 7).setValue(inboundValues[i][6]);  // A/E/R
     sheetLiquid.getRange(liqLastRow + k, 8).setValue(inboundValues[i][9]);  // Order #
     sheetLiquid.getRange(liqLastRow + k, 9).setValue("FBA");             // Sell Site
     sheetLiquid.getRange(liqLastRow + k, 10).setValue("FBA");            // Sell Order
     sheetLiquid.getRange(liqLastRow + k, 11).setValue(inboundValues[i][14]);// Buy Price
     sheetLiquid.getRange(liqLastRow + k, 12).setValue(inboundValues[i][11]);// Card
     sheetLiquid.getRange(liqLastRow + k, 18).setValue("IN HOUSE");       // Set Month to IN HOUSE
+    sheetLiquid.getRange(liqLastRow + k, 29).setValue(inboundValues[i][12]);// Category
     // Setup liquidation formulas for new entry.
     var r = String(liqLastRow + k);
     sheetLiquid.getRange(liqLastRow + k, 14).setFormula("=M"+r+"-K"+r);  // Actual Profit
@@ -548,16 +549,17 @@ function exportData() {
     sheetLiquid.getRange(liqLastRow + k, 23).setFormula("=VLOOKUP(A"+r+",Salvage!A:A,1,0)");        // SALVAGE V
     sheetLiquid.getRange(liqLastRow + k, 24).setFormula("=VLOOKUP(A"+r+",Reimbursements!F:F,1,0)"); // REIMBURSE V
     sheetLiquid.getRange(liqLastRow + k, 25).setFormula("=VLOOKUP(A"+r+",Inventory!B:B,1,0)");      // INVENTORY V
-//    sheetLiquid.getRange(liqLastRow + k, 26).setFormula("=VLOOKUP(A"+r+",Connor!G:H,2,0)");         // FBA SHIPMENT STATUS
-//    sheetLiquid.getRange(liqLastRow + k, 27).setFormula("=VLOOKUP(A"+r+",Connor!K:K,1,0)");         // FBA SHIPMENT ISSUE
+    sheetLiquid.getRange(liqLastRow + k, 26).setFormula("=VLOOKUP(A"+r+",Connor!G:H,2,0)");         // FBA SHIPMENT STATUS
+    sheetLiquid.getRange(liqLastRow + k, 27).setFormula("=VLOOKUP(A"+r+",Connor!K:K,1,0)");         // FBA SHIPMENT ISSUE
   }
   highlightAER();
 
   // Note in cycles sheet that auction has been exported.
   var sheetCycles = SpreadsheetApp.openById(inboundID).getSheetByName("Cycles");
-  var auctionCol = getCol(sheetCycles.getDataRange().getValues(),1);
+  var auctionCol = getCol(sheetCycles.getDataRange().getValues(),4);
   for (var i=0; i < inboundOrderNums.length; i++) {
-    var auctionIndex = auctionCol.indexOf(inboundOrderNums[i]);
+    var auctionIndex = auctionCol.indexOf(Number(inboundOrderNums[i]));
+    Logger.log(auctionIndex);
     sheetCycles.getRange(auctionIndex+1, 9).setValue(today());
   }
 }
