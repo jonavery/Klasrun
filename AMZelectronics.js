@@ -43,9 +43,9 @@ function setComment(number) {
     case 3:
       return "Item may be missing original packaging and/or instruction manual. Item includes all major accessories and is fully functinal.";
     case 4:
-      return "Item may be missing original packaging, or original packaging may be damaged. Item itself is in excellent, like new condition with no cosmetic damage.";
+      return "Item may be missing original packaging, or original packaging may be damaged. Item itself is in excellent, like new condition with no cosmetic damage or signs of use.";
     case 5:
-      return "";
+      return "Item is brand new and has never been used. Item comes in unopened, original packaging.";
     default:
       return "";
   }
@@ -77,4 +77,3 @@ function getXML() {
   Logger.log(xml)
   return ContentService.createTextOutput(xml);
 }
-
