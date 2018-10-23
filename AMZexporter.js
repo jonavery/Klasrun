@@ -43,9 +43,9 @@ function setComment(number) {
     case 3:
       return "Item may be missing original packaging and/or instruction manual. Item includes all major accessories and is fully functinal.";
     case 4:
-      return "Item may be missing original packaging, or original packaging may be damaged. Item itself is in excellent, like new condition with no cosmetic damage.";
+      return "Item may be missing original packaging, or original packaging may be damaged. Item itself is in excellent, like new condition with no cosmetic damage or signs of use.";
     case 5:
-      return "";
+      return "Item is brand new and has never been used. Item comes in unopened, original packaging.";
     default:
       return "";
   }
@@ -55,7 +55,8 @@ function getXML() {
   var root = XmlService.createElement('items');
   var items = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('AMZ').getDataRange().getValues();
   for (i=1; i<items.length; i++) {
-    if(!(items[i][8] == "1" || items[i][8] == "2")) {continue;}
+    if(!(items[i][8] == "1" || items[i][8] == "2" || items[i][8] == "3" || items[i][8] == "4" || items[i][8] == "5")) {continue;}
+    if((items[i][17] == "E" || items[i][17] == "e")) {continue;}
     if((items[i][11] == "")) {continue;}
     var child = XmlService.createElement('item')
       .addContent(XmlService.createElement('SKU').setText(items[i][1]+items[i][16]))
